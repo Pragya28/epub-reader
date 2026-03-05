@@ -1,0 +1,55 @@
+.epub-reader {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.epub-reader__toolbar {
+    align-self: center;
+}
+
+.epub-reader__metadata {
+    margin: 10px 0;
+    font-weight: 600;
+}
+
+.epub-reader__body {
+    display: flex;
+    flex: 1;
+    padding: 48px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.epub-reader__toc {
+    flex: 0.3;
+    display: flex;
+    flex-direction: column;
+    overflow: scroll;
+}
+
+.epub-reader__toc-item {
+    cursor: pointer;
+    margin: 4px 0;
+    padding: 4px 8px;
+}
+
+.epub-reader__toc-item--active {
+    background: #ffe4e4;
+}
+
+.epub-reader__iframe {
+    flex: 0.7;
+    height: 80vh;
+    border: none;
+}
+
+.epub-reader__pagination {
+    margin-top: 10px;
+}
+
+.epub-reader__pagination-label {
+    margin: 0 12px;
+}

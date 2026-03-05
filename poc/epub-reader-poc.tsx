@@ -1,207 +1,133 @@
-import JSZip from "jszip";
-import React, { useCallback, useMemo } from "react";
-import { buildReadingOrder } from "./handlers/build-reading-order";
-import { parseContainerXml } from "./handlers/parse-container-xml";
-import { parseOpfFile } from "./handlers/parse-opf-file";
-import { parseToc } from "./handlers/parse-toc";
-import { processCssFiles } from "./handlers/process-css-files";
-import { resolveChapterImages } from "./handlers/resolve-chapter-images";
-import type { BookMetadata, ManifestItem, TOC } from "./interface";
+import React, { useMemo } from "react";
+import { useChapterJump } from "./hooks/chapter-jump";
+import { useChapterRenderer } from "./hooks/chapter-renderer";
+import { useEpubLoader } from "./hooks/epub-loader";
+import { useIframeEvents } from "./hooks/iframe-events";
+import { useScrollEngine } from "./hooks/scroll-engine";
+import "./epub-reader-poc.css";
 
 export const EpubReaderPoc: React.FC = () => {
+  // ---- Refs shared across hooks ----
+  const iframeRef = React.useRef<HTMLIFrameElement>(null);
   const cssBlobUrlsRef = React.useRef<string[]>([]);
   const chapterBlobUrlsRef = React.useRef<string[]>([]);
-  const iframeRef = React.useRef<HTMLIFrameElement>(null);
-
-  const [zipFile, setZipFile] = React.useState<JSZip | null>(null);
-  const [readingOrder, setReadingOrder] = React.useState<string[]>([]);
-  const [currentIndex, setCurrentIndex] = React.useState(0);
-  const [basePath, setBasePath] = React.useState("");
-  const [manifest, setManifest] = React.useState<Record<string, ManifestItem>>(
-    {},
+  const loadedChaptersRef = React.useRef<Set<number>>(new Set());
+  const isLoadingChapterRef = React.useRef(false);
+  const isJumpingRef = React.useRef(false);
+  const visibleChapterRef = React.useRef(0);
+  const readingOrderRef = React.useRef<string[]>([]);
+  const renderChapterRef = React.useRef<(index: number) => Promise<void>>(
+    async () => {},
   );
-  const [bookMetadata, setBookMetadata] = React.useState<
-    BookMetadata | undefined
-  >();
-  const [combinedCss, setCombinedCss] = React.useState("");
-  const [toc, setToc] = React.useState<TOC[]>([]);
 
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // ---- UI state ----
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+  const [visibleChapter, setVisibleChapter] = React.useState(0);
 
-    const zip = await JSZip.loadAsync(file);
-    setZipFile(zip);
+  // ---- Hooks ----
+  const { zipFile, readingOrder, bookMetadata, combinedCss, toc, handleFile } =
+    useEpubLoader({
+      iframeRef,
+      cssBlobUrlsRef,
+      chapterBlobUrlsRef,
+      loadedChaptersRef,
+      isLoadingChapterRef,
+      isJumpingRef,
+      readingOrderRef,
+    });
 
-    const opfPath = await parseContainerXml(zip);
+  const { renderChapter } = useChapterRenderer({
+    zipFile,
+    readingOrder,
+    combinedCss,
+    iframeRef,
+    chapterBlobUrlsRef,
+    loadedChaptersRef,
+    renderChapterRef,
+  });
 
-    const { metadata, manifest, spine, basePath } = await parseOpfFile(
-      zip,
-      opfPath,
-    );
-    setBookMetadata(metadata);
-    setManifest(manifest);
-    setBasePath(basePath);
-    const readingOrder = buildReadingOrder(spine, manifest, basePath);
-    setReadingOrder(readingOrder);
-    setCurrentIndex(0);
+  const { jumpToChapter } = useChapterJump({
+    iframeRef,
+    loadedChaptersRef,
+    isJumpingRef,
+    visibleChapterRef,
+    renderChapter,
+    setCurrentIndex,
+    setVisibleChapter,
+  });
 
-    const { combinedCss, blobUrls: cssBlobUrls } = await processCssFiles(
-      zip,
-      manifest,
-      basePath,
-    );
-    setCombinedCss(combinedCss);
-    cssBlobUrlsRef.current.push(...cssBlobUrls);
+  useScrollEngine({
+    iframeRef,
+    readingOrderRef,
+    loadedChaptersRef,
+    isLoadingChapterRef,
+    isJumpingRef,
+    visibleChapterRef,
+    renderChapterRef,
+    setVisibleChapter,
+  });
 
-    const toc = await parseToc(zip, manifest, basePath);
-    setToc(toc);
-  };
+  useIframeEvents({ iframeRef, readingOrder, setCurrentIndex });
+
+  // Render chapter whenever currentIndex changes
+  React.useEffect(() => {
+    if (zipFile && readingOrder[currentIndex]) {
+      renderChapter(currentIndex);
+    }
+  }, [zipFile, readingOrder, currentIndex, renderChapter]);
 
   const chapterIndexMap = useMemo(() => {
     const map = new Map<string, number>();
-
-    readingOrder.forEach((path, index) => {
-      map.set(path, index);
-    });
-
+    readingOrder.forEach((path, index) => map.set(path, index));
     return map;
   }, [readingOrder]);
 
-  const renderChapter = useCallback(
-    async (index: number) => {
-      if (!zipFile || !readingOrder[index]) return;
-
-      chapterBlobUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
-      chapterBlobUrlsRef.current = [];
-
-      const chapterPath = readingOrder[index];
-      const chapterFile = zipFile.file(chapterPath);
-      if (!chapterFile) return;
-
-      const chapterContent = await chapterFile.async("string");
-      const chapterDoc = new DOMParser().parseFromString(
-        chapterContent,
-        "application/xhtml+xml",
-      );
-
-      const head = chapterDoc.querySelector("head");
-      if (head) {
-        const metaViewport = chapterDoc.createElement("meta");
-        metaViewport.setAttribute("name", "viewport");
-        metaViewport.setAttribute(
-          "content",
-          "width=device-width, initial-scale=1",
-        );
-        head.appendChild(metaViewport);
-      }
-
-      const chapterBasePath = chapterPath.substring(
-        0,
-        chapterPath.lastIndexOf("/") + 1,
-      );
-      const { blobUrls: imageBlobUrls } = await resolveChapterImages(
-        chapterDoc,
-        chapterBasePath,
-        zipFile,
-      );
-      chapterBlobUrlsRef.current.push(...imageBlobUrls);
-
-      if (head && combinedCss) {
-        const styleEl = chapterDoc.createElement("style");
-        styleEl.textContent = combinedCss;
-        head.appendChild(styleEl);
-      }
-
-      const serialized = new XMLSerializer().serializeToString(chapterDoc);
-      if (iframeRef.current) {
-        const iframeDoc = iframeRef.current?.contentDocument;
-        if (!iframeDoc) return;
-
-        iframeDoc.open();
-        iframeDoc.write(serialized);
-        iframeDoc.close();
-      }
-    },
-    [zipFile, readingOrder, combinedCss],
-  );
-
-  React.useEffect(() => {
-    if (!readingOrder[currentIndex]) return;
-    if (zipFile && readingOrder.length > 0) {
-      renderChapter(currentIndex);
-    }
-
-    return () => {
-      chapterBlobUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, [zipFile, readingOrder, currentIndex, renderChapter]);
-
   return (
-    <div
-      style={{
-        display: "flex",
-        flex: 1,
-        flexDirection: "column",
-        height: "100vh",
-        overflow: "hidden",
-      }}
-    >
-      <div style={{ alignSelf: "center" }}>
+    <div className="epub-reader">
+      <div className="epub-reader__toolbar">
         <input type="file" accept=".epub" onChange={handleFile} />
         {zipFile && (
-          <div style={{ margin: "10px 0", fontWeight: 600 }}>
+          <div className="epub-reader__metadata">
             {bookMetadata?.title} — {bookMetadata?.author}
           </div>
         )}
       </div>
-      <div
-        style={{
-          display: "flex",
-          flex: 1,
-          padding: "48px",
-          boxSizing: "border-box",
-          overflow: "hidden",
-        }}
-      >
+
+      <div className="epub-reader__body">
         {toc.length > 0 && (
-          <div
-            style={{
-              flex: 0.3,
-              display: "flex",
-              flexDirection: "column",
-              overflow: "scroll",
-            }}
-          >
+          <div className="epub-reader__toc">
             <h3>Table of Contents</h3>
-            {toc.map((item, i) => (
-              <div
-                key={i}
-                style={{ cursor: "pointer", margin: "4px 0" }}
-                onClick={() => {
-                  const index = chapterIndexMap.get(item.href);
-                  if (index) setCurrentIndex(index);
-                }}
-              >
-                {item.label}
-              </div>
-            ))}
+            {toc.map((item, i) => {
+              const isActive =
+                visibleChapter === chapterIndexMap.get(item.href);
+              return (
+                <div
+                  key={i}
+                  className={`epub-reader__toc-item${isActive ? " epub-reader__toc-item--active" : ""}`}
+                  onClick={() => {
+                    const index = chapterIndexMap.get(item.href);
+                    if (index !== undefined) jumpToChapter(index);
+                  }}
+                >
+                  {item.label}
+                </div>
+              );
+            })}
           </div>
         )}
-        <iframe
-          ref={iframeRef}
-          style={{ flex: 0.7, height: "80vh", border: "none" }}
-        />
+
+        <iframe ref={iframeRef} className="epub-reader__iframe" />
       </div>
+
       {zipFile && (
-        <div style={{ marginTop: 10 }}>
+        <div className="epub-reader__pagination">
           <button
             onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
             disabled={currentIndex === 0}
           >
             Previous
           </button>
-          <span style={{ margin: "0 12px" }}>
+          <span className="epub-reader__pagination-label">
             {currentIndex + 1} / {readingOrder.length}
           </span>
           <button
