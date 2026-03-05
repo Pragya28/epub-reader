@@ -10,7 +10,7 @@ import type { BookMetadata, TOC } from "../interface";
 interface UseEpubLoaderProps {
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
   cssBlobUrlsRef: React.RefObject<string[]>;
-  chapterBlobUrlsRef: React.RefObject<string[]>;
+  chapterBlobUrlsRef: React.RefObject<Map<number, string[]>>;
   loadedChaptersRef: React.RefObject<Set<number>>;
   isLoadingChapterRef: React.RefObject<boolean>;
   isJumpingRef: React.RefObject<boolean>;
@@ -46,18 +46,27 @@ export function useEpubLoader({
   // Revoke all blob URLs on unmount
   React.useEffect(() => {
     return () => {
-      chapterBlobUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      chapterBlobUrlsRef.current.forEach((urls) =>
+        urls.forEach((url) => URL.revokeObjectURL(url)),
+      );
       cssBlobUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
     };
-  }, []);
+  }, [chapterBlobUrlsRef, cssBlobUrlsRef]);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     // Reset all mutable state before loading a new file
+    // cleanup previous blobs
+    chapterBlobUrlsRef.current.forEach((urls) =>
+      urls.forEach((url) => URL.revokeObjectURL(url)),
+    );
+    cssBlobUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+
     loadedChaptersRef.current.clear();
     isLoadingChapterRef.current = false;
     isJumpingRef.current = false;
+    readingOrderRef.current = [];
     cssBlobUrlsRef.current = [];
-    chapterBlobUrlsRef.current = [];
+    chapterBlobUrlsRef.current = new Map();
 
     const iframeDoc = iframeRef.current?.contentDocument;
     if (iframeDoc) {
@@ -99,6 +108,7 @@ export function useEpubLoader({
 
     const toc = await parseToc(zip, manifest, basePath);
     setToc(toc);
+    e.target.value = "";
   };
 
   return { zipFile, readingOrder, bookMetadata, combinedCss, toc, handleFile };

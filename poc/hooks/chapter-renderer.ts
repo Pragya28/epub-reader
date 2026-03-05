@@ -7,7 +7,7 @@ interface UseChapterRendererProps {
   readingOrder: string[];
   combinedCss: string;
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
-  chapterBlobUrlsRef: React.RefObject<string[]>;
+  chapterBlobUrlsRef: React.RefObject<Map<number, string[]>>;
   loadedChaptersRef: React.RefObject<Set<number>>;
   renderChapterRef: React.RefObject<(index: number) => Promise<void>>;
 }
@@ -27,57 +27,67 @@ export function useChapterRenderer({
     const iframeDoc = iframeRef.current?.contentDocument;
     if (!iframeDoc) return;
 
-    // Inject CSS once, on the very first chapter render
-    if (combinedCss && loadedChaptersRef.current.size === 0) {
-      const styleEl = iframeDoc.createElement("style");
-      styleEl.textContent = combinedCss;
-      iframeDoc.head.appendChild(styleEl);
-    }
-
-    // Prevent duplicate renders
     if (loadedChaptersRef.current.has(index)) return;
-    loadedChaptersRef.current.add(index);
 
-    const chapterPath = readingOrder[index];
-    const chapterFile = zipFile.file(chapterPath);
-    if (!chapterFile) return;
+    try {
+      const chapterPath = readingOrder[index];
+      const chapterFile = zipFile.file(chapterPath);
+      if (!chapterFile) return;
 
-    const chapterContent = await chapterFile.async("string");
-    const chapterDoc = new DOMParser().parseFromString(
-      chapterContent,
-      "application/xhtml+xml",
-    );
-
-    const chapterBasePath = chapterPath.substring(
-      0,
-      chapterPath.lastIndexOf("/") + 1,
-    );
-    const { blobUrls } = await resolveChapterImages(
-      chapterDoc,
-      chapterBasePath,
-      zipFile,
-    );
-    chapterBlobUrlsRef.current.push(...blobUrls);
-
-    const wrapper = iframeDoc.createElement("section");
-    wrapper.setAttribute("data-chapter", String(index));
-    wrapper.style.marginBottom = "48px";
-    wrapper.innerHTML = chapterDoc.body.innerHTML;
-
-    // Insert in reading order
-    let inserted = false;
-    iframeDoc.querySelectorAll("section[data-chapter]").forEach((section) => {
-      const existingIndex = Number(section.getAttribute("data-chapter"));
-      if (!inserted && existingIndex > index) {
-        iframeDoc.body.insertBefore(wrapper, section);
-        inserted = true;
+      // Inject CSS once
+      if (combinedCss && loadedChaptersRef.current.size === 0) {
+        const styleEl = iframeDoc.createElement("style");
+        styleEl.textContent = combinedCss;
+        iframeDoc.head.appendChild(styleEl);
       }
-    });
-    if (!inserted) iframeDoc.body.appendChild(wrapper);
+
+      const chapterContent = await chapterFile.async("string");
+
+      const chapterDoc = new DOMParser().parseFromString(
+        chapterContent,
+        "application/xhtml+xml",
+      );
+
+      const chapterBasePath = chapterPath.substring(
+        0,
+        chapterPath.lastIndexOf("/") + 1,
+      );
+
+      const { blobUrls } = await resolveChapterImages(
+        chapterDoc,
+        chapterBasePath,
+        zipFile,
+      );
+
+      // store all blob urls for this chapter
+      chapterBlobUrlsRef.current.set(index, blobUrls);
+
+      const wrapper = iframeDoc.createElement("section");
+      wrapper.setAttribute("data-chapter", String(index));
+      wrapper.style.marginBottom = "48px";
+      wrapper.innerHTML = chapterDoc.body.innerHTML;
+
+      // insert in reading order
+      let inserted = false;
+
+      iframeDoc.querySelectorAll("section[data-chapter]").forEach((section) => {
+        const existingIndex = Number(section.getAttribute("data-chapter"));
+
+        if (!inserted && existingIndex > index) {
+          iframeDoc.body.insertBefore(wrapper, section);
+          inserted = true;
+        }
+      });
+
+      if (!inserted) iframeDoc.body.appendChild(wrapper);
+
+      loadedChaptersRef.current.add(index);
+    } catch (err) {
+      loadedChaptersRef.current.delete(index);
+      console.error("Failed to render chapter", err);
+    }
   };
 
-  // Keep renderChapterRef current so the scroll engine always has the latest
-  // version without needing renderChapter as a dep of the scroll effect.
   React.useEffect(() => {
     renderChapterRef.current = renderChapter;
   }, [renderChapter]);

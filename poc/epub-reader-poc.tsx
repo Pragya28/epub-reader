@@ -10,7 +10,7 @@ export const EpubReaderPoc: React.FC = () => {
   // ---- Refs shared across hooks ----
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
   const cssBlobUrlsRef = React.useRef<string[]>([]);
-  const chapterBlobUrlsRef = React.useRef<string[]>([]);
+  const chapterBlobUrlsRef = React.useRef<Map<number, string[]>>(new Map());
   const loadedChaptersRef = React.useRef<Set<number>>(new Set());
   const isLoadingChapterRef = React.useRef(false);
   const isJumpingRef = React.useRef(false);
@@ -65,6 +65,8 @@ export const EpubReaderPoc: React.FC = () => {
     visibleChapterRef,
     renderChapterRef,
     setVisibleChapter,
+    chapterBlobUrlsRef,
+    readingOrderLength: readingOrder.length,
   });
 
   useIframeEvents({ iframeRef, readingOrder, setCurrentIndex });

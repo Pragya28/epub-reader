@@ -1,5 +1,5 @@
 import JSZip from "jszip";
-import { resolvePath } from "../utilities";
+import { resolvePath } from "../utils/resolve-path";
 import type { ResolvedChapterImages } from "../interface";
 
 export async function resolveChapterImages(
