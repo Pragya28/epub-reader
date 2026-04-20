@@ -1,6 +1,138 @@
-body {
+@import "tailwindcss";
+
+/* =========================
+   DESIGN TOKENS (THEME)
+   ========================= */
+
+@theme {
+  /* Colors */
+  --color-bg: #f4ecd8;
+  --color-surface: #e9dfc7;
+  --color-surface-high: #e4d6b8;
+
+  --color-text-primary: #1e1e1e;
+  --color-text-secondary: rgba(30, 30, 30, 0.65);
+
+  --color-accent: #cbb27a;
+
+  --color-border: rgba(30, 30, 30, 0.15);
+
+  /* Gradient */
+  --gradient-primary: linear-gradient(90deg, #705c2c, #cbb27a);
+
+  /* Radius */
+  --radius-card: 8px;
+  --radius-input: 6px;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Typography */
+  --font-display: "Cinzel", serif;
+  --font-reading: "Literata", serif;
+  --font-ui: "Plus Jakarta Sans", sans-serif;
+
+  /* Reading */
+  --reading-max-width: 68ch;
+  --reading-line-height: 1.7;
+}
+
+/* =========================
+   BASE STYLES
+   ========================= */
+
+@layer base {
+  html,
+  body {
     margin: 0;
-    display: flex;
-    min-width: 100vw;
-    min-height: 100vh;
+    padding: 0;
+  }
+
+  body {
+    @apply bg-bg text-text-primary;
+    font-family: var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Typography hierarchy */
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: 0.04em;
+  }
+
+  p {
+    font-family: var(--font-ui);
+    line-height: 1.6;
+  }
+
+  /* Links */
+
+  a {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  /* Subtle separators */
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--color-border);
+  }
+}
+
+/* =========================
+   REUSABLE UTILITY CLASSES
+   ========================= */
+
+@layer utilities {
+  /* Surface layers */
+
+  .surface {
+    background: var(--color-bg);
+  }
+
+  .surface-container {
+    background: var(--color-surface);
+  }
+
+  .surface-container-high {
+    background: var(--color-surface-high);
+  }
+
+  /* Text variants */
+
+  .text-secondary {
+    color: var(--color-text-secondary);
+  }
+
+  /* Card */
+
+  .card {
+    background: var(--color-surface);
+    border-radius: var(--radius-card);
+    padding: var(--space-4);
+  }
+
+  /* Reading layout */
+
+  .reading-container {
+    max-width: var(--reading-max-width);
+    margin: 0 auto;
+    line-height: var(--reading-line-height);
+    font-family: var(--font-reading);
+  }
+
+  /* Subtle elevation (no heavy shadows) */
+
+  .elevated-soft {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
 }
