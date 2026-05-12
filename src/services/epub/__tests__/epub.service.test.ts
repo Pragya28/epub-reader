@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { loadFixture } from "../../../test/utils/load-fixtures";
+import { loadFixture } from "@/tests/utils/load-fixtures";
 import { EpubServiceImpl } from "../epub.service";
 
 describe("EpubService", () => {
