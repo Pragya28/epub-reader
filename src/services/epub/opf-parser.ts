@@ -9,7 +9,6 @@ export class OpfParser {
     const metadata = this.parseMetadata(opfXml);
     const manifest = this.parseManifest(opfXml);
     const spine = this.parseSpine(opfXml);
-
     return {
       metadata,
       manifest,
@@ -65,6 +64,7 @@ export class OpfParser {
       const idref = this.getElementAttribute(item, "idref");
       if (idref) spineItems.push(idref);
     });
+    if (spineItems.length === 0) throw new Error("spine itemref missing idref");
     return spineItems;
   }
 

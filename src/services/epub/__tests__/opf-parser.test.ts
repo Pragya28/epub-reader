@@ -225,4 +225,28 @@ describe("OpfParser", () => {
 
     expect(() => parser.parse(doc)).toThrow("spine is empty");
   });
+
+  it("throws when spine itemrefs have no idref", () => {
+    const xml = `
+    <package>
+      <metadata />
+
+      <manifest>
+        <item
+          id="chapter-1"
+          href="chapter-1.xhtml"
+          media-type="application/xhtml+xml"
+        />
+      </manifest>
+
+      <spine>
+        <itemref />
+      </spine>
+    </package>
+  `;
+
+    const doc = parseXml(xml);
+
+    expect(() => parser.parse(doc)).toThrow("spine itemref missing idref");
+  });
 });
