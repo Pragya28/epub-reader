@@ -25,7 +25,7 @@ export class OpfParser {
     if (!metadata) throw new Error("metadata not found");
 
     const title =
-      this.getTextContent(metadata, ["dc:title", "title"]) ?? "Not Available";
+      this.getTextContent(metadata, ["title", "dc:title"]) ?? "Not Available";
     const author =
       this.getTextContent(metadata, ["creator", "dc:creator"]) ?? "Unknown";
     const language = this.getTextContent(metadata, ["language", "dc:language"]);
