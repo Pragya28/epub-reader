@@ -1,0 +1,228 @@
+import { describe, expect, it } from "vitest";
+import { OpfParser } from "../opf-parser";
+
+describe("OpfParser", () => {
+  const parser = new OpfParser();
+
+  const parseXml = (xml: string): Document => {
+    return new DOMParser().parseFromString(xml, "application/xml");
+  };
+
+  it("extracts metadata correctly", () => {
+    const xml = `
+      <package>
+        <metadata>
+          <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">
+            Test Book
+          </dc:title>
+
+          <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">
+            Test Author
+          </dc:creator>
+
+          <dc:language xmlns:dc="http://purl.org/dc/elements/1.1/">
+            en
+          </dc:language>
+        </metadata>
+
+        <manifest>
+          <item
+            id="chapter-1"
+            href="text/chapter-1.xhtml"
+            media-type="application/xhtml+xml"
+          />
+        </manifest>
+
+        <spine>
+          <itemref idref="chapter-1" />
+        </spine>
+      </package>
+    `;
+
+    const doc = parseXml(xml);
+
+    const result = parser.parse(doc);
+
+    expect(result.metadata.title).toBe("Test Book");
+    expect(result.metadata.author).toBe("Test Author");
+    expect(result.metadata.language).toBe("en");
+  });
+
+  it("extracts manifest correctly", () => {
+    const xml = `
+      <package>
+        <metadata />
+
+        <manifest>
+          <item
+            id="chapter-1"
+            href="text/chapter-1.xhtml"
+            media-type="application/xhtml+xml"
+          />
+
+          <item
+            id="style"
+            href="styles/main.css"
+            media-type="text/css"
+          />
+        </manifest>
+
+        <spine>
+          <itemref idref="chapter-1" />
+        </spine>
+      </package>
+    `;
+
+    const doc = parseXml(xml);
+
+    const result = parser.parse(doc);
+
+    expect(Object.keys(result.manifest)).toHaveLength(2);
+
+    expect(result.manifest["chapter-1"]).toEqual({
+      href: "text/chapter-1.xhtml",
+      properties: "",
+    });
+
+    expect(result.manifest["style"]).toEqual({
+      href: "styles/main.css",
+      properties: "",
+    });
+  });
+
+  it("extracts spine correctly", () => {
+    const xml = `
+      <package>
+        <metadata />
+
+        <manifest>
+          <item
+            id="chapter-1"
+            href="chapter-1.xhtml"
+            media-type="application/xhtml+xml"
+          />
+
+          <item
+            id="chapter-2"
+            href="chapter-2.xhtml"
+            media-type="application/xhtml+xml"
+          />
+        </manifest>
+
+        <spine>
+          <itemref idref="chapter-1" />
+          <itemref idref="chapter-2" />
+        </spine>
+      </package>
+    `;
+
+    const doc = parseXml(xml);
+
+    const result = parser.parse(doc);
+
+    expect(result.spine).toEqual(["chapter-1", "chapter-2"]);
+  });
+
+  it("maintains correct spine order", () => {
+    const xml = `
+      <package>
+        <metadata />
+
+        <manifest>
+          <item
+            id="intro"
+            href="intro.xhtml"
+            media-type="application/xhtml+xml"
+          />
+
+          <item
+            id="chapter-1"
+            href="chapter-1.xhtml"
+            media-type="application/xhtml+xml"
+          />
+
+          <item
+            id="chapter-2"
+            href="chapter-2.xhtml"
+            media-type="application/xhtml+xml"
+          />
+        </manifest>
+
+        <spine>
+          <itemref idref="intro" />
+          <itemref idref="chapter-1" />
+          <itemref idref="chapter-2" />
+        </spine>
+      </package>
+    `;
+
+    const doc = parseXml(xml);
+
+    const result = parser.parse(doc);
+    expect(result.spine).toEqual(["intro", "chapter-1", "chapter-2"]);
+  });
+
+  it("handles missing metadata safely", () => {
+    const xml = `
+      <package>
+        <metadata />
+
+        <manifest>
+          <item
+            id="chapter-1"
+            href="chapter-1.xhtml"
+            media-type="application/xhtml+xml"
+          />
+        </manifest>
+
+        <spine>
+          <itemref idref="chapter-1" />
+        </spine>
+      </package>
+    `;
+
+    const doc = parseXml(xml);
+
+    const result = parser.parse(doc);
+
+    expect(result.metadata.title).toBe("Not Available");
+    expect(result.metadata.author).toBe("Unknown");
+    expect(result.metadata.language).toBe(null);
+  });
+
+  it("throws for empty manifest", () => {
+    const xml = `
+    <package>
+      <metadata />
+      <manifest />
+      <spine />
+    </package>
+  `;
+
+    const doc = parseXml(xml);
+
+    expect(() => parser.parse(doc)).toThrow("manifest is empty");
+  });
+
+  it("throws for empty spine", () => {
+    const xml = `
+    <package>
+      <metadata />
+
+      <manifest>
+        <item
+          id="chapter-1"
+          href="chapter-1.xhtml"
+          media-type="application/xhtml+xml"
+        />
+      </manifest>
+
+      <spine />
+    </package>
+  `;
+
+    const doc = parseXml(xml);
+
+    expect(() => parser.parse(doc)).toThrow("spine is empty");
+  });
+});
