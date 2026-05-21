@@ -1,17 +1,12 @@
 import { beforeEach, describe, expect, it } from "vitest";
-
-import { db } from "@/services/storage/db";
 import { getAllBooks } from "@/services/storage/book-repository";
-
 import { importBook } from "../import-book";
 import { createBookId } from "@/utils/create-book-id";
 import { loadFixture } from "@/tests/utils/load-fixtures";
+import { resetTestDb } from "@/tests/utils/reset-test-db";
 
 describe("importBook", () => {
-  beforeEach(async () => {
-    await db.delete();
-    await db.open();
-  });
+  beforeEach(resetTestDb);
 
   it("imports and persists a book", async () => {
     const file = await loadFixture("valid-book.epub");
@@ -24,6 +19,12 @@ describe("importBook", () => {
     const books = await getAllBooks();
 
     expect(Array.isArray(books)).toBe(true);
+  });
+
+  it("supports nested opf paths", async () => {
+    const file = await loadFixture("nested-opf.epub");
+
+    await expect(importBook(file)).resolves.not.toThrow();
   });
 
   it("handles missing metadata gracefully", async () => {
@@ -50,5 +51,24 @@ describe("importBook", () => {
     }
 
     expect(ids.size).toBe(100);
+  });
+
+  it("supports multiple imports", async () => {
+    const first = await loadFixture("valid-book.epub");
+
+    const second = await loadFixture("valid-book-2.epub");
+
+    await importBook(first);
+    await importBook(second);
+
+    const books = await getAllBooks();
+
+    expect(books).toHaveLength(2);
+  });
+
+  it("imports large epub", async () => {
+    const file = await loadFixture("large-book.epub");
+
+    await expect(importBook(file)).resolves.not.toThrow();
   });
 });
