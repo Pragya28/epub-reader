@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { OpfParser } from "../opf-parser";
+import { loadFixture } from "@/tests/utils/load-fixtures";
+import { EpubServiceImpl } from "../epub.service";
 
 describe("OpfParser", () => {
+  const epubService = new EpubServiceImpl();
   const parser = new OpfParser();
 
   const parseXml = (xml: string): Document => {
@@ -248,5 +251,15 @@ describe("OpfParser", () => {
     const doc = parseXml(xml);
 
     expect(() => parser.parse(doc)).toThrow("spine itemref missing idref");
+  });
+
+  it("throws for invalid spine references", async () => {
+    const file = await loadFixture("broken-spine.epub");
+
+    const { opfXml } = await epubService.extractOpf(file);
+
+    expect(() => parser.parse(opfXml)).toThrow(
+      "Invalid spine reference: missing-chapter",
+    );
   });
 });

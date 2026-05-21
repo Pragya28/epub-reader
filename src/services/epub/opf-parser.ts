@@ -9,6 +9,9 @@ export class OpfParser {
     const metadata = this.parseMetadata(opfXml);
     const manifest = this.parseManifest(opfXml);
     const spine = this.parseSpine(opfXml);
+
+    this.validateSpine(spine, manifest);
+
     return {
       metadata,
       manifest,
@@ -66,6 +69,17 @@ export class OpfParser {
     });
     if (spineItems.length === 0) throw new Error("spine itemref missing idref");
     return spineItems;
+  }
+
+  private validateSpine(
+    spine: string[],
+    manifest: Record<string, ManifestItem>,
+  ): void {
+    for (const idref of spine) {
+      if (!manifest[idref]) {
+        throw new Error(`Invalid spine reference: ${idref}`);
+      }
+    }
   }
 
   // ---- Utilities ----

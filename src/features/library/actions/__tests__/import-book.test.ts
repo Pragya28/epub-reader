@@ -71,4 +71,10 @@ describe("importBook", () => {
 
     await expect(importBook(file)).resolves.not.toThrow();
   });
+
+  it("throws for invalid spine references", async () => {
+    const file = await loadFixture("broken-spine.epub");
+
+    await expect(importBook(file)).rejects.toThrow(/Invalid spine reference/);
+  });
 });
