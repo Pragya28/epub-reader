@@ -13,11 +13,16 @@ export interface EpubService {
 export interface ParsedEpubMetadata {
   title: string;
   author: string;
-  language?: string;
+  language: string | null;
+}
+
+export interface ManifestItem {
+  href: string;
+  properties: string;
 }
 
 export interface ParsedEpub {
   metadata: ParsedEpubMetadata;
-  manifest: Record<string, string>;
+  manifest: Record<string, ManifestItem>;
   spine: string[];
 }
