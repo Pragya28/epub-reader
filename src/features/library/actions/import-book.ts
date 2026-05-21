@@ -1,6 +1,6 @@
 import { EpubServiceImpl } from "@/services/epub/epub.service";
 import { OpfParser } from "@/services/epub/opf-parser";
-import { v7 } from "uuid";
+import { createBookId } from "@/utils/create-book-id";
 import {
   saveBookFile,
   saveBookMetadata,
@@ -17,7 +17,7 @@ export async function importBook(file: File) {
   const parsedBook = opfParser.parse(extraction.opfXml);
 
   // 3. Create app-level ID
-  const bookId = v7();
+  const bookId = createBookId();
 
   // 4. Persist metadata
   await saveBookMetadata({

@@ -15,3 +15,7 @@ export async function saveBookFile(bookId: string, file: Blob) {
 export async function getAllBooks() {
   return db.books.orderBy("createdAt").reverse().toArray();
 }
+
+export async function getBookFile(bookId: string) {
+  return db.bookFiles.get(bookId);
+}
