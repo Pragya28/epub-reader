@@ -4,9 +4,13 @@ import { importBook } from "../import-book";
 import { createBookId } from "@/utils/create-book-id";
 import { loadFixture } from "@/tests/utils/load-fixtures";
 import { resetTestDb } from "@/tests/utils/reset-test-db";
+import { resetLibraryStore } from "@/tests/utils/reset-store";
 
 describe("importBook", () => {
-  beforeEach(resetTestDb);
+  beforeEach(async () => {
+    await resetTestDb();
+    resetLibraryStore();
+  });
 
   it("imports and persists a book", async () => {
     const file = await loadFixture("valid-book.epub");
@@ -80,13 +84,9 @@ describe("importBook", () => {
 
   it("rejects duplicate book imports", async () => {
     const file = await loadFixture("valid-book.epub");
-
     await importBook(file);
-
     await expect(importBook(file)).rejects.toThrow("Book already imported");
-
     const books = await getAllBooks();
-
     expect(books).toHaveLength(1);
   });
 });
