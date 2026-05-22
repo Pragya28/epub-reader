@@ -4,6 +4,7 @@ export interface StoredBook {
   author?: string;
   language?: string | null;
   createdAt: number;
+  fileHash: string;
 }
 
 export interface StoredBookFile {

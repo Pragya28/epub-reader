@@ -8,8 +8,8 @@ class LibruneDB extends Dexie {
   constructor() {
     super("librune-db");
 
-    this.version(2).stores({
-      books: "id, title, author, createdAt",
+    this.version(1).stores({
+      books: "id, title, author, createdAt, &fileHash",
       bookFiles: "bookId",
     });
   }

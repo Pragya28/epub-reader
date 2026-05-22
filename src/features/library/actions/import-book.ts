@@ -5,6 +5,8 @@ import {
   saveBookFile,
   saveBookMetadata,
 } from "@/services/storage/book-repository";
+import { hashFile } from "@/utils/hash-file";
+import { db } from "@/services/storage/db";
 
 export async function importBook(file: File) {
   const epubService = new EpubServiceImpl();
@@ -19,6 +21,11 @@ export async function importBook(file: File) {
   // 3. Create app-level ID
   const bookId = createBookId();
 
+  const fileHash = await hashFile(file);
+
+  const existing = await db.books.where("fileHash").equals(fileHash).first();
+  if (existing) throw new Error("Book already imported");
+
   // 4. Persist metadata
   await saveBookMetadata({
     id: bookId,
@@ -26,6 +33,7 @@ export async function importBook(file: File) {
     author: parsedBook.metadata.author,
     language: parsedBook.metadata.language,
     createdAt: Date.now(),
+    fileHash,
   });
 
   // 5. Persist original EPUB
