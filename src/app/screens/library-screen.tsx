@@ -1,28 +1,25 @@
+import { useEffect, type FC } from "react";
 import { ImportBookButton } from "@/features/library/components/import-book-button";
-import { getAllBooks } from "@/services/storage/book-repository";
-import type { StoredBook } from "@/services/storage/storage-types";
-import { useEffect, useState, type FC } from "react";
+import { useLibraryStore } from "@/features/library/store/library-store";
+import { loadLibrary } from "@/features/library/actions/load-library";
 
 export const LibraryScreen: FC = () => {
-  const [books, setBooks] = useState<StoredBook[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const books = useLibraryStore((state) => state.books);
+
+  const isLoading = useLibraryStore((state) => state.isLoading);
+
+  const error = useLibraryStore((state) => state.error);
 
   useEffect(() => {
-    const loadBooks = async () => {
-      try {
-        const storedBooks = await getAllBooks();
-
-        setBooks(storedBooks);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    void loadBooks();
+    void loadLibrary();
   }, []);
 
   if (isLoading) {
     return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
   }
 
   return (
@@ -42,7 +39,8 @@ export const LibraryScreen: FC = () => {
           ))}
         </ul>
       )}
-      <ImportBookButton setBooks={setBooks} />
+
+      <ImportBookButton />
     </div>
   );
 };
