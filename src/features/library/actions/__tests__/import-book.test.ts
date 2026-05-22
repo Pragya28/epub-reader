@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { getAllBooks } from "@/services/storage/book-repository";
 import { importBook } from "../import-book";
-import { createBookId } from "@/utils/create-book-id";
+import { createBookId } from "@/shared/utils/create-book-id";
 import { loadFixture } from "@/tests/utils/load-fixtures";
 import { resetTestDb } from "@/tests/utils/reset-test-db";
 import { resetLibraryStore } from "@/tests/utils/reset-store";
