@@ -17,13 +17,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "^11.1.2",
-      "onFail": "download"
-    }
-  },
+  "packageManager": "pnpm@11.1.2",
   "dependencies": {
     "dexie": "^4.4.2",
     "jszip": "^3.10.1",
