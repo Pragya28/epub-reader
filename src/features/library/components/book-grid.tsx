@@ -6,13 +6,31 @@ interface BookGridProps {
   isLoading: boolean;
   isSearch: boolean;
   books: BookWithProgress[];
+  error?: string | null;
 }
 
-export const BookGrid: FC<BookGridProps> = ({ isLoading, isSearch, books }) => {
+export const BookGrid: FC<BookGridProps> = ({
+  isLoading,
+  isSearch,
+  books,
+  error,
+}) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-24 text-sm text-secondary">
         Loading your library…
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
+        <span className="text-9xl opacity-30">⚠</span>
+        <p className="text-s uppercase tracking-[0.15em] text-secondary body-display">
+          Failed to load library
+        </p>
+        <p className="text-xs text-secondary opacity-60 max-w-55">{error}</p>
       </div>
     );
   }

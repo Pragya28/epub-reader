@@ -84,14 +84,14 @@ export const BookCover: FC<BookCoverProps> = ({ book, index }) => {
       {/* Author */}
       {book.author && (
         <p
-          className={`text-center uppercase tracking-[0.16em] leading-none z-10 text-[9px] ${palette.subColor}`}
+          className={`text-center tracking-[0.16em] leading-none z-10 text-[9px] ${palette.subColor}`}
         >
           {book.author}
         </p>
       )}
       {/* Title */}
       <p
-        className={`text-center uppercase wrap-break-word leading-[1.2] tracking-[0.06em] text-[15px] z-10 body-display ${palette.accent}`}
+        className={`text-center wrap-break-word leading-[1.2] tracking-[0.06em] text-[15px] z-10 body-display ${palette.accent}`}
       >
         {book.title}
       </p>

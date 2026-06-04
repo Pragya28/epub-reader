@@ -36,6 +36,7 @@ export const LibraryScreen: FC = () => {
   const [search, setSearch] = useState("");
   const books = libraryStore((state) => state.books);
   const isLoading = libraryStore((state) => state.isLoading);
+  const error = libraryStore((state) => state.error);
 
   useEffect(() => {
     void loadLibrary();
@@ -97,6 +98,7 @@ export const LibraryScreen: FC = () => {
           isLoading={isLoading}
           isSearch={search.length !== 0}
           books={filtered}
+          error={error}
         />
       </main>
 
