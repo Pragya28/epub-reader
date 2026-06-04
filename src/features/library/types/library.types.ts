@@ -9,3 +9,12 @@ export interface LibraryStore {
   setLoading: (value: boolean) => void;
   setError: (value: string | null) => void;
 }
+
+export type ReadingStatus = "reading" | "unread" | "finished";
+
+export interface BookWithProgress extends StoredBook {
+  progress?: number; // 0-100
+  status: ReadingStatus;
+  isNew?: boolean;
+  coverBg?: string;
+}
