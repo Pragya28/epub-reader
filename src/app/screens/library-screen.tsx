@@ -2,7 +2,7 @@ import type { StoredBook } from "@/services/storage/storage-types";
 import { ROUTES } from "@/shared/utils/routes";
 import { useEffect, useState, type FC } from "react";
 import { Link } from "react-router-dom";
-import { useLibraryStore } from "@/features/library/store/library-store";
+import { libraryStore } from "@/features/library/store/library-store";
 import { loadLibrary } from "@/features/library/actions/load-library";
 import type {
   BookWithProgress,
@@ -34,8 +34,8 @@ function enrichBooks(books: StoredBook[]): BookWithProgress[] {
 
 export const LibraryScreen: FC = () => {
   const [search, setSearch] = useState("");
-  const books = useLibraryStore((state) => state.books);
-  const isLoading = useLibraryStore((state) => state.isLoading);
+  const books = libraryStore((state) => state.books);
+  const isLoading = libraryStore((state) => state.isLoading);
 
   useEffect(() => {
     void loadLibrary();

@@ -1,9 +1,9 @@
 import { getAllBooks } from "@/services/storage/book-repository";
 
-import { useLibraryStore } from "../store/library-store";
+import { libraryStore } from "../store/library-store";
 
 export async function loadLibrary() {
-  const store = useLibraryStore.getState();
+  const store = libraryStore.getState();
 
   try {
     store.setLoading(true);

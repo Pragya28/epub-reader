@@ -1,7 +1,7 @@
 import type { LibraryStore } from "../types/library.types";
 import { createStore } from "@/stores/create-store";
 
-export const useLibraryStore = createStore<LibraryStore>(
+export const libraryStore = createStore<LibraryStore>(
   (set) => ({
     books: [],
     isLoading: false,

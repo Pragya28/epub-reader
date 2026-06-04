@@ -6,11 +6,11 @@ import {
 } from "@/services/storage/book-repository";
 import { createBookId } from "@/shared/utils/create-book-id";
 import { hashFile } from "@/shared/utils/hash-file";
-import { useLibraryStore } from "../store/library-store";
+import { libraryStore } from "../store/library-store";
 import type { StoredBook } from "@/services/storage/storage-types";
 
 export async function importBook(file: File) {
-  const store = useLibraryStore.getState();
+  const store = libraryStore.getState();
 
   try {
     store.setLoading(true);

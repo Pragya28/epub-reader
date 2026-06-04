@@ -1,7 +1,7 @@
-import { useLibraryStore } from "@/features/library/store/library-store";
+import { libraryStore } from "@/features/library/store/library-store";
 
 export function resetLibraryStore() {
-  useLibraryStore.setState({
+  libraryStore.setState({
     books: [],
     isLoading: false,
     error: null,
