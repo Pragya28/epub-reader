@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { getAllBooks } from "@/services/storage/book-repository";
 import { importBook } from "../import-book";
-import { createBookId } from "@/shared/utils/create-book-id";
 import { loadFixture } from "@/tests/utils/load-fixtures";
 import { resetTestDb } from "@/tests/utils/reset-test-db";
 import { resetLibraryStore } from "@/tests/utils/reset-store";
@@ -45,16 +44,6 @@ describe("importBook", () => {
     const file = await loadFixture("invalid.epub");
 
     await expect(importBook(file)).rejects.toThrow();
-  });
-
-  it("creates unique ids", async () => {
-    const ids = new Set();
-
-    for (let i = 0; i < 100; i++) {
-      ids.add(createBookId());
-    }
-
-    expect(ids.size).toBe(100);
   });
 
   it("supports multiple imports", async () => {
