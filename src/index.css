@@ -6,40 +6,75 @@
 
 @theme {
   /* Colors */
-  --color-bg: #f4ecd8;
-  --color-surface: #e9dfc7;
-  --color-surface-high: #e4d6b8;
+  --color-bg: #fff9ee;
+  --color-surface-low: #fbf3df;
+  --color-surface: #f5edd9;
+  --color-surface-high: #f0e8d4;
+  --color-surface-highest: #eae2ce;
 
-  --color-text-primary: #1e1e1e;
-  --color-text-secondary: rgba(30, 30, 30, 0.65);
+  --color-text-primary: #1f1c0f;
+  --color-text-secondary: #444748;
 
-  --color-accent: #cbb27a;
+  --color-primary: #040505;
+  --color-primary-container: #1e1e1e;
 
-  --color-border: rgba(30, 30, 30, 0.15);
+  --color-secondary: #695d4a;
+  --color-secondary-container: #f2e0c8;
 
-  /* Gradient */
-  --gradient-primary: linear-gradient(90deg, #705c2c, #cbb27a);
+  --color-border: #c4c7c7;
+  --color-divider: #eae2ce;
+  --color-accent: #695d4a;
 
-  /* Radius */
-  --radius-card: 8px;
-  --radius-input: 6px;
+  --cover-dark: #2b241c;
+  --cover-gold: #c9a84c;
 
-  /* Spacing scale */
+  /* Spacing */
   --space-1: 4px;
   --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 64px;
+
+  --margin-mobile: 1.25rem;
+  --margin-page: 4rem;
+
+  /* Radius */
+
+  --radius-sm: 0.125rem;
+  --radius-default: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
 
   /* Typography */
   --font-display: "Cinzel", serif;
   --font-reading: "Literata", serif;
   --font-ui: "Plus Jakarta Sans", sans-serif;
 
+  --text-display-lg: 48px;
+  --text-display-lg-mobile: 32px;
+
+  --text-headline: 24px;
+
+  --text-reading-lg: 20px;
+  --text-reading-md: 17px;
+
+  --text-ui: 14px;
+  --text-ui-sm: 12px;
+  --text-meta: 11px;
+
   /* Reading */
   --reading-max-width: 68ch;
-  --reading-line-height: 1.7;
+  --reading-line-height: 1.6;
+
+  /* Elevation */
+  --shadow-soft: 0 2px 8px rgba(31, 28, 15, 0.04);
+  --shadow-floating: 0 8px 40px rgba(0, 0, 0, 0.5);
+
+  /* Header */
+  --header-height: 80px;
+  --header-blur: 12px;
 }
 
 /* =========================
@@ -51,40 +86,21 @@
   body {
     margin: 0;
     padding: 0;
-  }
-
-  body {
-    @apply bg-bg text-text-primary;
+    background: var(--color-bg);
+    color: var(--color-text-primary);
     font-family: var(--font-ui);
-    -webkit-font-smoothing: antialiased;
   }
 
-  /* Typography hierarchy */
+  .font-ui {
+    font-family: var(--font-ui);
+  }
 
-  h1,
-  h2,
-  h3 {
+  .font-reading {
+    font-family: var(--font-reading);
+  }
+
+  .body-display {
     font-family: var(--font-display);
-    letter-spacing: 0.04em;
-  }
-
-  p {
-    font-family: var(--font-ui);
-    line-height: 1.6;
-  }
-
-  /* Links */
-
-  a {
-    color: var(--color-accent);
-    text-decoration: none;
-  }
-
-  /* Subtle separators */
-
-  hr {
-    border: none;
-    border-top: 1px solid var(--color-border);
   }
 }
 
@@ -108,31 +124,67 @@
   }
 
   /* Text variants */
+  .text-primary {
+    color: var(--color-text-primary);
+  }
 
   .text-secondary {
     color: var(--color-text-secondary);
-  }
-
-  /* Card */
-
-  .card {
-    background: var(--color-surface);
-    border-radius: var(--radius-card);
-    padding: var(--space-4);
   }
 
   /* Reading layout */
 
   .reading-container {
     max-width: var(--reading-max-width);
-    margin: 0 auto;
+    margin-inline: auto;
+    font-size: var(--text-reading-md);
     line-height: var(--reading-line-height);
-    font-family: var(--font-reading);
+  }
+
+  .reader-content {
+    font-size: var(--text-reading-md);
+    line-height: var(--reading-line-height);
   }
 
   /* Subtle elevation (no heavy shadows) */
 
   .elevated-soft {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* Header */
+
+  .folio-header {
+    position: sticky;
+    top: 0;
+    height: var(--header-height);
+    backdrop-filter: blur(var(--header-blur));
+    background: rgb(255 249 238 / 85%);
+    border-bottom: 0.5px solid var(--color-divider);
+  }
+
+  .metadata {
+    font-size: var(--text-meta);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+  }
+
+  .display-title {
+    font-family: var(--font-display);
+    letter-spacing: 0.08em;
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: var(--text-headline);
+    letter-spacing: 0.05em;
+  }
+
+  .input-folio {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--color-divider);
+    border-radius: 0;
   }
 }
