@@ -28,7 +28,7 @@ export const ImportBookButton: FC = () => {
       <input
         ref={inputRef}
         type="file"
-        accept=".epub"
+        accept=".epub,application/epub+zip"
         onChange={onImport}
         className="hidden"
       />
