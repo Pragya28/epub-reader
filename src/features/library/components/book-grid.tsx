@@ -20,8 +20,8 @@ export const BookGrid: FC<BookGridProps> = ({ isLoading, isSearch, books }) => {
   if (books.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
-        <span className="text-4xl opacity-20">📚</span>
-        <p className="text-xs uppercase tracking-[0.15em] text-secondary body-display">
+        <span className="text-9xl opacity-20">📚</span>
+        <p className="text-s uppercase tracking-[0.15em] text-secondary body-display">
           {isSearch ? "No books found" : "Your library is empty"}
         </p>
         {!isSearch && (
