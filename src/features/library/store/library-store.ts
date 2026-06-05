@@ -1,18 +1,30 @@
+import { devtools } from "zustand/middleware";
 import type { LibraryStore } from "../types/library.types";
-import { createStore } from "@/stores/create-store";
+import { create } from "zustand";
 
-export const libraryStore = createStore<LibraryStore>(
-  (set) => ({
-    books: [],
-    isLoading: false,
-    error: null,
-    setBooks: (books) => set({ books }),
-    addBook: (book) =>
-      set((state) => ({
-        books: [book, ...state.books],
-      })),
-    setLoading: (value) => set({ isLoading: value }),
-    setError: (value) => set({ error: value }),
-  }),
-  { name: "library-store" },
+export const libraryStore = create<LibraryStore>()(
+  devtools(
+    (set) => ({
+      books: [],
+      isLoading: false,
+      error: null,
+
+      setBooks: (books) => set({ books }, false, "library/setBooks"),
+
+      addBook: (book) =>
+        set(
+          (state) => ({
+            books: [book, ...state.books],
+          }),
+          false,
+          "library/addBook",
+        ),
+
+      setLoading: (value) =>
+        set({ isLoading: value }, false, "library/setLoading"),
+
+      setError: (value) => set({ error: value }, false, "library/setError"),
+    }),
+    { name: "library-store" },
+  ),
 );
