@@ -42,6 +42,8 @@ export const ImportBookButton: FC = () => {
 
       <input
         type="file"
+        id="epubPicker"
+        accept="application/epub+zip, .epub"
         onChange={onImport}
         disabled={isLoading}
         aria-label="Import book"
