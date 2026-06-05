@@ -10,6 +10,12 @@ export const ImportBookButton: FC = () => {
   const onImport = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const isEpub = file.name.toLowerCase().endsWith(".epub");
+
+    if (!isEpub) {
+      console.warn("Not an EPUB file");
+      return;
+    }
     setIsLoading(true);
     try {
       await importBook(file);
@@ -36,7 +42,6 @@ export const ImportBookButton: FC = () => {
 
       <input
         type="file"
-        accept=".epub,application/epub+zip"
         onChange={onImport}
         disabled={isLoading}
         aria-label="Import book"
