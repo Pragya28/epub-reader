@@ -1,4 +1,4 @@
-import type { ChangeEvent, FC } from "react";
+import type { FC } from "react";
 import { useState } from "react";
 import { importBook } from "../actions/import-book";
 import { loadLibrary } from "../actions/load-library";
@@ -6,49 +6,80 @@ import { PlusIcon, SpinnerIcon } from "@/assets/icons";
 
 export const ImportBookButton: FC = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const onImport = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const isEpub = file.name.toLowerCase().endsWith(".epub");
+  const handleImport = () => {
+    const input = document.createElement("input");
+    input.style.display = "none";
+    input.setAttribute("type", "file");
+    input.setAttribute("accept", "*/*");
+    document.body.appendChild(input);
 
-    if (!isEpub) {
-      console.warn("Not an EPUB file");
-      return;
-    }
-    setIsLoading(true);
-    try {
-      await importBook(file);
-      await loadLibrary();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-      e.target.value = "";
-    }
+    input.addEventListener("change", async () => {
+      const file = input.files?.[0];
+      document.body.removeChild(input);
+
+      if (!file) return;
+
+      setError(null);
+
+      const isEpub =
+        file.name.toLowerCase().endsWith(".epub") ||
+        file.type === "application/epub+zip";
+
+      if (!isEpub) {
+        setError("Please select an EPUB file (.epub).");
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        await importBook(file);
+        await loadLibrary();
+      } catch (err) {
+        console.error(err);
+        setError("Failed to import book. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    });
+
+    const event = new MouseEvent("click");
+    input.dispatchEvent(event);
   };
 
   return (
-    <div
-      className={[
-        "fixed bottom-5 right-2 w-12 h-12 rounded-2xl",
-        "flex items-center justify-center z-40",
-        "transition-transform duration-100 active:scale-95",
-        "bg-(--cover-dark) text-(--cover-gold) shadow-(--shadow-floating)",
-        isLoading ? "opacity-60 pointer-events-none" : "hover:opacity-90",
-      ].join(" ")}
-    >
-      {isLoading ? <SpinnerIcon /> : <PlusIcon />}
+    <>
+      {error && (
+        <div
+          role="alert"
+          onClick={() => setError(null)}
+          className={[
+            "fixed bottom-20 right-2 left-2 z-50",
+            "px-4 py-3 rounded-xl text-sm text-center",
+            "bg-(--cover-dark) text-(--color-error)",
+            "shadow-(--shadow-floating) cursor-pointer",
+          ].join(" ")}
+        >
+          {error}
+        </div>
+      )}
 
-      <input
-        type="file"
-        id="epubPicker"
-        accept="application/*"
-        onChange={onImport}
+      <button
+        onClick={handleImport}
         disabled={isLoading}
         aria-label="Import book"
-        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-      />
-    </div>
+        className={[
+          "fixed bottom-5 right-2 w-12 h-12 rounded-2xl",
+          "flex items-center justify-center z-40",
+          "border-none cursor-pointer",
+          "transition-transform duration-100 active:scale-95",
+          "bg-(--cover-dark) text-(--cover-gold) shadow-(--shadow-floating)",
+          isLoading ? "opacity-60 pointer-events-none" : "hover:opacity-90",
+        ].join(" ")}
+      >
+        {isLoading ? <SpinnerIcon /> : <PlusIcon />}
+      </button>
+    </>
   );
 };
