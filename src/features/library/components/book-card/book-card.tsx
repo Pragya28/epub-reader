@@ -2,6 +2,8 @@ import type { FC } from "react";
 import type { BookWithProgress } from "../../types/library.types";
 import { BookCover } from "./book-cover";
 import { ThreeVerticalDots } from "@/assets/icons";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/shared/utils/routes";
 
 interface BookCardProps {
   book: BookWithProgress;
@@ -9,11 +11,16 @@ interface BookCardProps {
 }
 
 export const BookCard: FC<BookCardProps> = ({ book, index }) => {
+  const navigate = useNavigate();
+
   const isFinished = book.status === "finished";
   const isReading = book.status === "reading";
 
   return (
-    <div className="flex flex-col gap-2.5">
+    <div
+      className="flex flex-col gap-2.5"
+      onClick={() => navigate(ROUTES.READER.replace(":bookId", book.id))}
+    >
       <div className="relative w-full rounded-xl overflow-hidden shadow-[0 4px 16px rgba(20,16,8,0.22)] aspect-2/3">
         <BookCover book={book} index={index} />
 

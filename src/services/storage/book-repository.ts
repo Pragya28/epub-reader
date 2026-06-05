@@ -16,6 +16,26 @@ export async function getAllBooks() {
   return db.books.orderBy("createdAt").reverse().toArray();
 }
 
+export async function getBook(bookId: string) {
+  return db.books.get(bookId);
+}
+
 export async function getBookFile(bookId: string) {
   return db.bookFiles.get(bookId);
+}
+
+export async function getBookWithFile(bookId: string) {
+  const [book, bookFile] = await Promise.all([
+    db.books.get(bookId),
+    db.bookFiles.get(bookId),
+  ]);
+
+  if (!book || !bookFile) {
+    return null;
+  }
+
+  return {
+    book,
+    file: bookFile.file,
+  };
 }
