@@ -1,4 +1,3 @@
-import type { StoredBook } from "@/services/storage/storage-types";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import type { ReaderStore } from "../types/reader-types";

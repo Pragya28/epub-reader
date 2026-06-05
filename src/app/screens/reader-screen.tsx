@@ -1,5 +1,5 @@
 import { loadReaderBook } from "@/features/reader/actions/load-reader-book";
-import { readerStore } from "@/features/reader/stores/reader-store";
+import { readerStore } from "@/features/reader/store/reader-store";
 import { useEffect, type FC } from "react";
 import { useParams } from "react-router-dom";
 
