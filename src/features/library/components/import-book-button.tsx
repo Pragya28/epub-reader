@@ -12,7 +12,7 @@ export const ImportBookButton: FC = () => {
     const input = document.createElement("input");
     input.style.display = "none";
     input.setAttribute("type", "file");
-    input.setAttribute("accept", "*/*");
+    input.setAttribute("accept", "application/*");
     document.body.appendChild(input);
 
     input.addEventListener("change", async () => {
