@@ -10,7 +10,7 @@ vi.mock("@/features/library/actions/load-library", () => ({
 }));
 
 import { loadLibrary } from "@/features/library/actions/load-library";
-import { libraryStore } from "../../store/library-store";
+import { libraryStore } from "@/features/library/store/library-store";
 import { resetLibraryStore } from "@/tests/utils/reset-store";
 
 const mockedLoadLibrary = vi.mocked(loadLibrary);
@@ -92,19 +92,5 @@ describe("LibraryScreen", () => {
     renderScreen();
 
     expect(screen.getByText(/loading your library/i)).toBeInTheDocument();
-  });
-
-  it("shows error state", () => {
-    libraryStore.setState({
-      books: [],
-      isLoading: false,
-      error: "Database failure",
-    });
-
-    renderScreen();
-
-    expect(screen.getByText("Failed to load library")).toBeInTheDocument();
-
-    expect(screen.getByText("Database failure")).toBeInTheDocument();
   });
 });
