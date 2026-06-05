@@ -13,6 +13,7 @@ import { BookGrid } from "@/features/library/components/book-grid";
 import { ContinueReadingBanner } from "@/features/library/components/continue-reading-banner";
 import { ImportBookButton } from "@/features/library/components/import-book-button";
 import { FilterIcon, SearchIcon, SettingsIcon } from "@/assets/icons";
+import { toastStore } from "@/stores/toast-store";
 
 function enrichBooks(books: StoredBook[]): BookWithProgress[] {
   return books.map((b, i) => {
@@ -52,6 +53,12 @@ export const LibraryScreen: FC = () => {
     : enriched;
 
   const currentBook = enriched.find((b) => b.status === "reading") ?? null;
+
+  useEffect(() => {
+    if (error) {
+      toastStore.getState().showError(error);
+    }
+  }, [error]);
 
   return (
     <div className="min-h-screen flex flex-col surface font-ui">
@@ -98,7 +105,6 @@ export const LibraryScreen: FC = () => {
           isLoading={isLoading}
           isSearch={search.length !== 0}
           books={filtered}
-          error={error}
         />
       </main>
 

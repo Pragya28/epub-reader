@@ -1,11 +1,13 @@
 import { type FC } from "react";
 import { BrowserRouter } from "react-router-dom";
 import { Router } from "./router";
+import { ToastContainer } from "@/components/toast/toast-container";
 
 const App: FC = () => {
   return (
     <BrowserRouter>
       <Router />
+      <ToastContainer />
     </BrowserRouter>
   );
 };
