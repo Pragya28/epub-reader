@@ -2,7 +2,7 @@ import JSZip from "jszip";
 import { type EpubExtractionResult, type EpubService } from "./epub-types";
 
 export class EpubServiceImpl implements EpubService {
-  async extractOpf(file: File): Promise<EpubExtractionResult> {
+  async extractOpf(file: Blob): Promise<EpubExtractionResult> {
     const zip = await this.loadZip(file);
     const containerXml = await this.loadContainerXml(zip);
     const opfPath = this.extractOpfPath(containerXml);
@@ -16,7 +16,7 @@ export class EpubServiceImpl implements EpubService {
   }
 
   // ---- Step 1 ----
-  private async loadZip(file: File): Promise<JSZip> {
+  private async loadZip(file: Blob): Promise<JSZip> {
     return JSZip.loadAsync(file);
   }
 

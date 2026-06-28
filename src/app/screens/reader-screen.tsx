@@ -1,31 +1,55 @@
-import { loadReaderBook } from "@/features/reader/actions/load-reader-book";
-import { readerStore } from "@/features/reader/store/reader-store";
 import { useEffect, type FC } from "react";
 import { useParams } from "react-router-dom";
 
+import { loadReaderBook } from "@/features/reader/actions/load-reader-book";
+import { ReaderFrame } from "@/features/reader/components/reader-frame";
+import { readerStore } from "@/features/reader/store/reader-store";
+import { EpubParser } from "@/services/epub/epub-parser";
+
 export const ReaderScreen: FC = () => {
   const { bookId } = useParams();
+  const parser = new EpubParser();
 
-  const { document, isLoading, error, setDocument, setLoading, setError } =
-    readerStore();
+  const {
+    document,
+    parsedBook,
+    isLoading,
+    error,
+
+    setDocument,
+    setParsedBook,
+    setLoading,
+    setError,
+  } = readerStore();
 
   useEffect(() => {
-    if (!bookId) return;
+    if (!bookId) {
+      return;
+    }
 
     let mounted = true;
 
     async function load() {
       try {
         setLoading(true);
+        setError(null);
 
-        if (!bookId) return;
-        const book = await loadReaderBook(bookId);
+        if (!bookId) return null;
+        const readerDocument = await loadReaderBook(bookId);
 
-        if (!mounted) return;
+        const parsedBook = await parser.parseBook(readerDocument.file);
 
-        setDocument(book);
+        if (!mounted) {
+          return;
+        }
+
+        setDocument(readerDocument);
+
+        setParsedBook(parsedBook);
       } catch (err) {
-        if (!mounted) return;
+        if (!mounted) {
+          return;
+        }
 
         setError(err instanceof Error ? err.message : "Failed to load book");
       } finally {
@@ -35,12 +59,12 @@ export const ReaderScreen: FC = () => {
       }
     }
 
-    load();
+    void load();
 
     return () => {
       mounted = false;
     };
-  }, [bookId, setDocument, setLoading, setError]);
+  }, [bookId, setDocument, setParsedBook, setLoading, setError]);
 
   if (isLoading) {
     return <div>Loading reader...</div>;
@@ -50,19 +74,22 @@ export const ReaderScreen: FC = () => {
     return <div>{error}</div>;
   }
 
-  if (!document) {
+  if (!document || !parsedBook) {
     return <div>No book loaded</div>;
   }
 
+  const chapter = parsedBook.chapters[0];
+
   return (
-    <div className="min-h-screen surface text-primary">
+    <div className="flex h-screen flex-col surface text-primary">
       <header className="border-b border-stone-200 p-4">
         <h1 className="text-xl font-semibold">{document.book.title}</h1>
+
         <p className="text-sm text-stone-600">{document.book.author}</p>
       </header>
 
-      <main className="mx-auto max-w-3xl p-6">
-        Reader engine starts tomorrow.
+      <main className="flex-1 overflow-hidden">
+        <ReaderFrame chapterHtml={chapter} />
       </main>
     </div>
   );

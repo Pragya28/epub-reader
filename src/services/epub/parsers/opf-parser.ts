@@ -2,7 +2,7 @@ import type {
   ManifestItem,
   ParsedEpub,
   ParsedEpubMetadata,
-} from "./epub-types";
+} from "../epub-types";
 
 export class OpfParser {
   parse(opfXml: Document): ParsedEpub {

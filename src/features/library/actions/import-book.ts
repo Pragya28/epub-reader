@@ -1,5 +1,4 @@
-import { EpubServiceImpl } from "@/services/epub/epub.service";
-import { OpfParser } from "@/services/epub/opf-parser";
+import { EpubParser } from "@/services/epub/epub-parser";
 import {
   saveBookFile,
   saveBookMetadata,
@@ -11,19 +10,14 @@ import type { StoredBook } from "@/services/storage/storage-types";
 
 export async function importBook(file: File) {
   const store = libraryStore.getState();
+  const parser = new EpubParser();
 
   try {
     store.setLoading(true);
     store.setError(null);
 
-    const epubService = new EpubServiceImpl();
-    const opfParser = new OpfParser();
-
-    // 1. Extract OPF
-    const extraction = await epubService.extractOpf(file);
-
-    // 2. Parse OPF
-    const parsedBook = opfParser.parse(extraction.opfXml);
+    // 2. Parse metadata
+    const metadata = await parser.parseMetadata(file);
 
     // 3. Generate app ID
     const bookId = createBookId();
@@ -40,9 +34,9 @@ export async function importBook(file: File) {
 
     const book: StoredBook = {
       id: bookId,
-      title: parsedBook.metadata.title,
-      author: parsedBook.metadata.author,
-      language: parsedBook.metadata.language,
+      title: metadata.title,
+      author: metadata.author,
+      language: metadata.language,
       createdAt: Date.now(),
       fileHash,
     };
@@ -58,7 +52,7 @@ export async function importBook(file: File) {
 
     return {
       id: bookId,
-      metadata: parsedBook.metadata,
+      metadata: metadata,
     };
   } catch (error) {
     store.setError(

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { OpfParser } from "../opf-parser";
 import { loadFixture } from "@/tests/utils/load-fixtures";
-import { EpubServiceImpl } from "../epub.service";
+import { EpubServiceImpl } from "../../epub.service";
 
 describe("OpfParser", () => {
   const epubService = new EpubServiceImpl();

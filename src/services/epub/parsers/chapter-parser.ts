@@ -1,0 +1,166 @@
+import type JSZip from "jszip";
+import type { ManifestItem, ParsedChapter, ParsedEpub } from "../epub-types";
+
+export class ChapterParser {
+  async parseChapter(
+    zip: JSZip,
+    parsedEpub: ParsedEpub,
+    spineIndex: number,
+    opfDirectory: string,
+  ): Promise<ParsedChapter> {
+    const manifestItem = this.getSpineManifestItem(parsedEpub, spineIndex);
+
+    const chapterPath = this.resolvePath(opfDirectory, manifestItem.href);
+
+    const chapterContent = await this.loadChapterContent(zip, chapterPath);
+
+    const chapterDoc = new DOMParser().parseFromString(
+      chapterContent,
+      "application/xhtml+xml",
+    );
+
+    const chapterBasePath = this.getBasePath(chapterPath);
+
+    const { html, assetMap } = await this.resolveChapterAssets(
+      chapterDoc,
+      chapterBasePath,
+      zip,
+    );
+
+    const stylesheets = await this.loadChapterStylesheets(
+      zip,
+      chapterDoc,
+      chapterBasePath,
+    );
+
+    return {
+      id: parsedEpub.spine[spineIndex],
+      href: manifestItem.href,
+      content: html,
+      stylesheets,
+      assetMap,
+    };
+  }
+
+  async parseAllChapters(
+    zip: JSZip,
+    parsedEpub: ParsedEpub,
+    opfDirectory: string,
+  ): Promise<ParsedChapter[]> {
+    const chapters: ParsedChapter[] = [];
+
+    for (let i = 0; i < parsedEpub.spine.length; i++) {
+      chapters.push(await this.parseChapter(zip, parsedEpub, i, opfDirectory));
+    }
+
+    return chapters;
+  }
+
+  private getSpineManifestItem(
+    parsedEpub: ParsedEpub,
+    spineIndex: number,
+  ): ManifestItem {
+    const spineId = parsedEpub.spine[spineIndex];
+
+    if (!spineId) {
+      throw new Error(`Invalid spine index: ${spineIndex}`);
+    }
+
+    const manifestItem = parsedEpub.manifest[spineId];
+
+    if (!manifestItem) {
+      throw new Error(`Manifest item not found: ${spineId}`);
+    }
+
+    return manifestItem;
+  }
+
+  private async loadChapterContent(
+    zip: JSZip,
+    chapterPath: string,
+  ): Promise<string> {
+    const chapterFile = zip.file(chapterPath);
+
+    if (!chapterFile) {
+      throw new Error(`Chapter not found: ${chapterPath}`);
+    }
+
+    return chapterFile.async("string");
+  }
+
+  private async loadChapterStylesheets(
+    zip: JSZip,
+    chapterDoc: Document,
+    chapterBasePath: string,
+  ): Promise<string[]> {
+    const stylesheets: string[] = [];
+
+    const links = chapterDoc.querySelectorAll('link[rel="stylesheet"]');
+
+    for (const link of links) {
+      const href = link.getAttribute("href");
+
+      if (!href) continue;
+
+      const cssPath = this.resolvePath(chapterBasePath, href);
+
+      const cssFile = zip.file(cssPath);
+
+      if (!cssFile) continue;
+
+      stylesheets.push(await cssFile.async("string"));
+    }
+
+    return stylesheets;
+  }
+
+  private async resolveChapterAssets(
+    chapterDoc: Document,
+    chapterBasePath: string,
+    zip: JSZip,
+  ): Promise<{
+    html: string;
+    assetMap: Map<string, string>;
+  }> {
+    const assetMap = new Map<string, string>();
+
+    const images = chapterDoc.querySelectorAll("img");
+
+    for (const image of images) {
+      const src = image.getAttribute("src");
+
+      if (!src) continue;
+
+      const assetPath = this.resolvePath(chapterBasePath, src);
+
+      const assetFile = zip.file(assetPath);
+
+      if (!assetFile) continue;
+
+      const buffer = await assetFile.async("arraybuffer");
+
+      const blob = new Blob([buffer]);
+
+      const blobUrl = URL.createObjectURL(blob);
+
+      assetMap.set(src, blobUrl);
+
+      image.setAttribute("src", blobUrl);
+    }
+
+    return {
+      html: chapterDoc.body?.innerHTML ?? "",
+      assetMap,
+    };
+  }
+
+  private getBasePath(chapterPath: string): string {
+    const index = chapterPath.lastIndexOf("/");
+
+    return index === -1 ? "" : chapterPath.slice(0, index + 1);
+  }
+
+  private resolvePath(basePath: string, relativePath: string): string {
+    return new URL(relativePath, `http://epub/${basePath}`).pathname.slice(1);
+  }
+}

@@ -7,7 +7,7 @@ export interface EpubExtractionResult {
 }
 
 export interface EpubService {
-  extractOpf(file: File): Promise<EpubExtractionResult>;
+  extractOpf(file: Blob): Promise<EpubExtractionResult>;
 }
 
 export interface ParsedEpubMetadata {
@@ -25,4 +25,24 @@ export interface ParsedEpub {
   metadata: ParsedEpubMetadata;
   manifest: Record<string, ManifestItem>;
   spine: string[];
+}
+
+export interface ParsedChapter {
+  id: string;
+  href: string;
+  content: string;
+  stylesheets: string[];
+  assetMap: Map<string, string>;
+}
+
+export interface TocItem {
+  label: string;
+  href: string;
+  children: TocItem[];
+}
+
+export interface ParsedBook {
+  metadata: ParsedEpubMetadata;
+  chapters: ParsedChapter[];
+  toc: TocItem[];
 }
