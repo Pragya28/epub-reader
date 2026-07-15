@@ -38,11 +38,12 @@ export const ImportBookButton: FC = () => {
       } catch (err) {
         const error =
           err instanceof Error
-            ? err.message
-            : "Failed to import book. Please try again.";
+            ? `Couldn't import "${file.name}": ${err.message}`
+            : `Couldn't import "${file.name}". The file may not be a valid EPUB.`;
         toastStore.getState().showError(error);
       } finally {
         setIsLoading(false);
+        input.value = "";
       }
     });
 

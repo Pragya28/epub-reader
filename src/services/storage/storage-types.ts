@@ -11,3 +11,8 @@ export interface StoredBookFile {
   bookId: string;
   file: Blob;
 }
+
+export interface StoredBookCover {
+  bookId: string;
+  cover: Blob;
+}

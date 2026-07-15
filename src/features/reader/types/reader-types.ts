@@ -7,17 +7,17 @@ interface ReaderDocument {
 }
 
 export interface ReaderStore {
-  document: ReaderDocument | null;
+  readerDocument: ReaderDocument | null;
   parsedBook: ParsedBook | null;
   currentChapterIndex: number;
   isLoading: boolean;
   error: string | null;
 
-  setDocument: (document: ReaderDocument) => void;
-  setParsedBook: (book: ParsedBook) => void;
-  setCurrentChapterIndex: (index: number) => void;
-  setLoading: (value: boolean) => void;
-  setError: (value: string | null) => void;
+  setReaderDocument: (readerDocument: ReaderDocument | null) => void;
+  setParsedBook: (parsedBook: ParsedBook | null) => void;
+  setCurrentChapterIndex: (currentChapterIndex: number) => void;
+  setLoading: (isLoading: boolean) => void;
+  setError: (error: string | null) => void;
   reset: () => void;
 }
 

@@ -18,6 +18,11 @@ export function ReaderFrame({ chapterHtml }: Props) {
   }, [chapterHtml]);
 
   return (
-    <iframe ref={iframeRef} className="h-full w-full border-0" title="reader" />
+    <iframe
+      sandbox="allow-same-origin"
+      ref={iframeRef}
+      className="h-full w-full border-0"
+      title="reader"
+    />
   );
 }

@@ -25,6 +25,7 @@ export interface ParsedEpub {
   metadata: ParsedEpubMetadata;
   manifest: Record<string, ManifestItem>;
   spine: string[];
+  coverItem?: ManifestItem;
 }
 
 export interface ParsedChapter {
@@ -45,4 +46,9 @@ export interface ParsedBook {
   metadata: ParsedEpubMetadata;
   chapters: ParsedChapter[];
   toc: TocItem[];
+}
+
+export interface ParsedLibraryBook {
+  metadata: ParsedEpubMetadata;
+  cover?: Blob;
 }

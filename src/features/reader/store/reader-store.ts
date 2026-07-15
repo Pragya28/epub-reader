@@ -3,7 +3,7 @@ import { devtools } from "zustand/middleware";
 import type { ReaderStore } from "../types/reader-types";
 
 const initialState: Partial<ReaderStore> = {
-  document: null,
+  readerDocument: null,
   parsedBook: null,
   currentChapterIndex: 0,
   isLoading: false,
@@ -15,7 +15,8 @@ export const readerStore = create<ReaderStore>()(
     (set) => ({
       ...initialState,
 
-      setDocument: (document) => set({ document }, false, "reader/setDocument"),
+      setReaderDocument: (readerDocument) =>
+        set({ readerDocument }, false, "reader/setReaderDocument"),
 
       setParsedBook: (parsedBook) =>
         set({ parsedBook }, false, "reader/setParsedBook"),

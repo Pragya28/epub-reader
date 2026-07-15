@@ -1,5 +1,7 @@
+import DOMPurify from "dompurify";
 import type JSZip from "jszip";
 import type { ManifestItem, ParsedChapter, ParsedEpub } from "../epub-types";
+import { SANITIZE_CONFIG } from "@/constants/sanitize-config";
 
 export class ChapterParser {
   async parseChapter(
@@ -148,8 +150,11 @@ export class ChapterParser {
       image.setAttribute("src", blobUrl);
     }
 
+    const rawHtml = chapterDoc.body?.innerHTML ?? "";
+    const html = DOMPurify.sanitize(rawHtml, SANITIZE_CONFIG);
+
     return {
-      html: chapterDoc.body?.innerHTML ?? "",
+      html,
       assetMap,
     };
   }

@@ -77,6 +77,15 @@ const COVER_PALETTES: {
 export const BookCover: FC<BookCoverProps> = ({ book, index }) => {
   const palette = COVER_PALETTES[index % COVER_PALETTES.length];
 
+  if (book.coverBg) {
+    return (
+      <div
+        className="w-full h-full bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${book.coverBg})` }}
+      />
+    );
+  }
+
   return (
     <div
       className={`w-full h-full flex flex-col items-center justify-center gap-2 px-5 py-6 relative ${palette.gradient}`}

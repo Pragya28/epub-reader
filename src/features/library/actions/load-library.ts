@@ -1,4 +1,7 @@
-import { getAllBooks } from "@/services/storage/book-repository";
+import {
+  getAllBooks,
+  getBookCoverUrl,
+} from "@/services/storage/book-repository";
 
 import { libraryStore } from "../store/library-store";
 
@@ -6,9 +9,16 @@ export async function loadLibrary() {
   const store = libraryStore.getState();
 
   try {
-    store.setLoading(true);
     const books = await getAllBooks();
-    store.setBooks(books);
+
+    const booksWithProgress = await Promise.all(
+      books.map(async (book) => ({
+        ...book,
+        coverBg: await getBookCoverUrl(book.id),
+      })),
+    );
+
+    store.setBooks(booksWithProgress);
   } catch (error) {
     store.setError(`Failed to load library: ${error}`);
   } finally {

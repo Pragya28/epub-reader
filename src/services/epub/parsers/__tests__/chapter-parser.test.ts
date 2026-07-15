@@ -129,3 +129,89 @@ describe("ChapterParser", () => {
     });
   });
 });
+
+async function createTestZip(chapterContent: string) {
+  const zip = new JSZip();
+
+  zip.file(
+    "OPS/text/ch1.xhtml",
+    `
+      <html xmlns="http://www.w3.org/1999/xhtml">
+        <head></head>
+        <body>
+          ${chapterContent}
+        </body>
+      </html>
+    `,
+  );
+
+  return zip;
+}
+
+const parsedEpub: ParsedEpub = {
+  metadata: {
+    title: "Test",
+    author: "Author",
+    language: null,
+  },
+  manifest: {
+    ch1: {
+      href: "text/ch1.xhtml",
+      properties: "",
+    },
+  },
+  spine: ["ch1"],
+};
+
+describe("ChapterParser sanitization", () => {
+  const parser = new ChapterParser();
+
+  it("strips <script> tags from chapter content", async () => {
+    const zip = await createTestZip(`
+      <p>Hello</p>
+      <script>alert("xss")</script>
+    `);
+
+    const chapter = await parser.parseChapter(zip, parsedEpub, 0, "OPS/");
+
+    expect(chapter.content).not.toContain("<script");
+    expect(chapter.content).not.toContain("alert");
+    expect(chapter.content).toContain("<p>Hello</p>");
+  });
+
+  it("strips inline event-handler attributes", async () => {
+    const zip = await createTestZip(`
+      <img src="cover.jpg" onerror="alert('xss')" />
+    `);
+
+    const chapter = await parser.parseChapter(zip, parsedEpub, 0, "OPS/");
+
+    expect(chapter.content).not.toContain("onerror");
+  });
+
+  it("strips javascript: hrefs", async () => {
+    const zip = await createTestZip(`
+      <a href="javascript:alert('xss')">click</a>
+    `);
+
+    const chapter = await parser.parseChapter(zip, parsedEpub, 0, "OPS/");
+
+    expect(chapter.content).not.toContain("javascript:");
+  });
+
+  it("preserves ordinary formatting markup", async () => {
+    const zip = await createTestZip(`
+      <h1>Title</h1>
+      <p>
+        Some <em>text</em> and
+        <strong>bold</strong>.
+      </p>
+    `);
+
+    const chapter = await parser.parseChapter(zip, parsedEpub, 0, "OPS/");
+
+    expect(chapter.content).toContain("<h1>Title</h1>");
+    expect(chapter.content).toContain("<em>text</em>");
+    expect(chapter.content).toContain("<strong>bold</strong>");
+  });
+});

@@ -1,8 +1,5 @@
 import { EpubParser } from "@/services/epub/epub-parser";
-import {
-  saveBookFile,
-  saveBookMetadata,
-} from "@/services/storage/book-repository";
+import { saveImportedBook } from "@/services/storage/book-repository";
 import { createBookId } from "@/shared/utils/create-book-id";
 import { hashFile } from "@/shared/utils/hash-file";
 import { libraryStore } from "../store/library-store";
@@ -16,8 +13,10 @@ export async function importBook(file: File) {
     store.setLoading(true);
     store.setError(null);
 
-    // 2. Parse metadata
-    const metadata = await parser.parseMetadata(file);
+    // 2. Parse book
+    const parsed = await parser.parseLibraryBook(file);
+
+    const { metadata, cover } = parsed;
 
     // 3. Generate app ID
     const bookId = createBookId();
@@ -41,13 +40,14 @@ export async function importBook(file: File) {
       fileHash,
     };
 
-    // 6. Persist metadata
-    await saveBookMetadata(book);
+    // 6. Persist book
+    await saveImportedBook({
+      metadata: book,
+      file,
+      cover,
+    });
 
-    // 7. Persist original EPUB
-    await saveBookFile(bookId, file);
-
-    // 8. Update store reactively
+    // 7. Update store reactively
     store.addBook(book);
 
     return {

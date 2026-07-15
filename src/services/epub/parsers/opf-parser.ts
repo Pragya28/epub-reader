@@ -11,11 +11,13 @@ export class OpfParser {
     const spine = this.parseSpine(opfXml);
 
     this.validateSpine(spine, manifest);
+    const coverItem = this.findCover(opfXml, manifest);
 
     return {
       metadata,
       manifest,
       spine,
+      coverItem,
     };
   }
 
@@ -80,6 +82,36 @@ export class OpfParser {
         throw new Error(`Invalid spine reference: ${idref}`);
       }
     }
+  }
+
+  // ---- Cover ----
+  private findCover(
+    opfXml: Document,
+    manifest: Record<string, ManifestItem>,
+  ): ManifestItem | undefined {
+    // EPUB 3
+    for (const item of Object.values(manifest)) {
+      if (item.properties.includes("cover-image")) {
+        return item;
+      }
+    }
+
+    // EPUB 2
+    const metadata = this.getDocumentElement(opfXml, [
+      "metadata",
+      "opf:metadata",
+    ]);
+
+    const coverMeta = metadata?.querySelector('meta[name="cover"]');
+
+    const coverId = coverMeta?.getAttribute("content");
+
+    if (coverId && manifest[coverId]) {
+      return manifest[coverId];
+    }
+
+    // fallback
+    return Object.values(manifest).find((item) => /cover/i.test(item.href));
   }
 
   // ---- Utilities ----

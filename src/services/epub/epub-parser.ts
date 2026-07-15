@@ -3,7 +3,14 @@ import { EpubServiceImpl } from "./epub.service";
 import { ChapterParser } from "./parsers/chapter-parser";
 import { OpfParser } from "./parsers/opf-parser";
 
-import type { ParsedBook, ParsedEpub, ParsedEpubMetadata } from "./epub-types";
+import type {
+  ManifestItem,
+  ParsedBook,
+  ParsedEpub,
+  ParsedEpubMetadata,
+  ParsedLibraryBook,
+} from "./epub-types";
+import type JSZip from "jszip";
 
 export class EpubParser {
   private readonly epubService = new EpubServiceImpl();
@@ -42,8 +49,46 @@ export class EpubParser {
     };
   }
 
+  async parseLibraryBook(file: Blob): Promise<ParsedLibraryBook> {
+    const extraction = await this.epubService.extractOpf(file);
+
+    const parsed = this.opfParser.parse(extraction.opfXml);
+
+    const cover = await this.loadCover(
+      extraction.zip,
+      parsed.coverItem,
+      this.getOpfDirectory(extraction.opfPath),
+    );
+
+    return {
+      metadata: parsed.metadata,
+      cover,
+    };
+  }
+
   private getOpfDirectory(opfPath: string): string {
     const index = opfPath.lastIndexOf("/");
     return index === -1 ? "" : opfPath.slice(0, index + 1);
+  }
+
+  private async loadCover(
+    zip: JSZip,
+    coverItem: ManifestItem | undefined,
+    opfDirectory: string,
+  ): Promise<Blob | undefined> {
+    if (!coverItem) return undefined;
+
+    const path = new URL(
+      coverItem.href,
+      `http://epub/${opfDirectory}`,
+    ).pathname.slice(1);
+
+    const file = zip.file(path);
+
+    if (!file) return undefined;
+
+    const blob = new Blob([await file.async("arraybuffer")]);
+
+    return blob;
   }
 }

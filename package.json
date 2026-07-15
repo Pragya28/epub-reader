@@ -20,6 +20,7 @@
   "packageManager": "pnpm@11.1.2",
   "dependencies": {
     "dexie": "^4.4.2",
+    "dompurify": "^3.4.12",
     "jszip": "^3.10.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

@@ -11,12 +11,12 @@ export const ReaderScreen: FC = () => {
   const parser = new EpubParser();
 
   const {
-    document,
+    readerDocument,
     parsedBook,
     isLoading,
     error,
 
-    setDocument,
+    setReaderDocument,
     setParsedBook,
     setLoading,
     setError,
@@ -43,7 +43,7 @@ export const ReaderScreen: FC = () => {
           return;
         }
 
-        setDocument(readerDocument);
+        setReaderDocument(readerDocument);
 
         setParsedBook(parsedBook);
       } catch (err) {
@@ -64,7 +64,7 @@ export const ReaderScreen: FC = () => {
     return () => {
       mounted = false;
     };
-  }, [bookId, setDocument, setParsedBook, setLoading, setError]);
+  }, [bookId, setReaderDocument, setParsedBook, setLoading, setError]);
 
   if (isLoading) {
     return <div>Loading reader...</div>;
@@ -74,7 +74,7 @@ export const ReaderScreen: FC = () => {
     return <div>{error}</div>;
   }
 
-  if (!document || !parsedBook) {
+  if (!readerDocument || !parsedBook) {
     return <div>No book loaded</div>;
   }
 
@@ -83,9 +83,9 @@ export const ReaderScreen: FC = () => {
   return (
     <div className="flex h-screen flex-col surface text-primary">
       <header className="border-b border-stone-200 p-4">
-        <h1 className="text-xl font-semibold">{document.book.title}</h1>
+        <h1 className="text-xl font-semibold">{readerDocument.book.title}</h1>
 
-        <p className="text-sm text-stone-600">{document.book.author}</p>
+        <p className="text-sm text-stone-600">{readerDocument.book.author}</p>
       </header>
 
       <main className="flex-1 overflow-hidden">

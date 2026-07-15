@@ -1,9 +1,16 @@
-import { type FC } from "react";
+import { useEffect, type FC } from "react";
 import { BrowserRouter } from "react-router-dom";
 import { Router } from "./router";
 import { ToastContainer } from "@/components/toast/toast-container";
+import { revokeAllCoverUrls } from "@/services/storage/cover-cache";
 
 const App: FC = () => {
+  useEffect(() => {
+    return () => {
+      revokeAllCoverUrls();
+    };
+  }, []);
+
   return (
     <BrowserRouter>
       <Router />
