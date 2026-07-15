@@ -9,6 +9,9 @@ export async function loadLibrary() {
   const store = libraryStore.getState();
 
   try {
+    store.setLoading(true);
+    store.setError(null);
+
     const books = await getAllBooks();
 
     const booksWithProgress = await Promise.all(

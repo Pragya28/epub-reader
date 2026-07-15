@@ -2,20 +2,26 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/services/storage/book-repository", () => ({
   getAllBooks: vi.fn(),
+  getBookCoverUrl: vi.fn(),
 }));
 
-import { getAllBooks } from "@/services/storage/book-repository";
+import {
+  getAllBooks,
+  getBookCoverUrl,
+} from "@/services/storage/book-repository";
 import { loadLibrary } from "../load-library";
 import { libraryStore } from "../../store/library-store";
 import { resetLibraryStore } from "@/tests/utils/reset-store";
 import type { StoredBook } from "@/services/storage/storage-types";
 
 const mockedGetAllBooks = vi.mocked(getAllBooks);
+const mockedGetBookCoverUrl = vi.mocked(getBookCoverUrl);
 
 describe("loadLibrary", () => {
   beforeEach(() => {
     resetLibraryStore();
     vi.clearAllMocks();
+    mockedGetBookCoverUrl.mockResolvedValue(undefined);
   });
 
   it("loads books into the store", async () => {

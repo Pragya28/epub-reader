@@ -262,4 +262,147 @@ describe("OpfParser", () => {
       "Invalid spine reference: missing-chapter",
     );
   });
+
+  it("detects cover using cover-image property", () => {
+    const xml = `
+    <package>
+      <metadata />
+
+      <manifest>
+        <item
+          id="cover"
+          href="images/cover.jpg"
+          media-type="image/jpeg"
+          properties="cover-image"
+        />
+
+        <item
+          id="chapter-1"
+          href="chapter-1.xhtml"
+          media-type="application/xhtml+xml"
+        />
+      </manifest>
+
+      <spine>
+        <itemref idref="chapter-1" />
+      </spine>
+    </package>
+  `;
+
+    const doc = parseXml(xml);
+
+    const result = parser.parse(doc);
+
+    expect(result.coverItem).toEqual({
+      href: "images/cover.jpg",
+      properties: "cover-image",
+    });
+  });
+
+  it("detects cover using metadata cover reference", () => {
+    const xml = `
+    <package>
+      <metadata>
+        <meta
+          name="cover"
+          content="cover-image"
+        />
+      </metadata>
+
+      <manifest>
+        <item
+          id="cover-image"
+          href="cover.jpg"
+          media-type="image/jpeg"
+        />
+
+        <item
+          id="chapter-1"
+          href="chapter-1.xhtml"
+          media-type="application/xhtml+xml"
+        />
+      </manifest>
+
+      <spine>
+        <itemref idref="chapter-1" />
+      </spine>
+    </package>
+  `;
+
+    const doc = parseXml(xml);
+
+    const result = parser.parse(doc);
+
+    expect(result.coverItem).toEqual({
+      href: "cover.jpg",
+      properties: "",
+    });
+  });
+
+  it("falls back to manifest item containing cover in href", () => {
+    const xml = `
+    <package>
+      <metadata />
+
+      <manifest>
+        <item
+          id="image"
+          href="Images/Cover.jpeg"
+          media-type="image/jpeg"
+        />
+
+        <item
+          id="chapter-1"
+          href="chapter-1.xhtml"
+          media-type="application/xhtml+xml"
+        />
+      </manifest>
+
+      <spine>
+        <itemref idref="chapter-1" />
+      </spine>
+    </package>
+  `;
+
+    const doc = parseXml(xml);
+
+    const result = parser.parse(doc);
+
+    expect(result.coverItem).toEqual({
+      href: "Images/Cover.jpeg",
+      properties: "",
+    });
+  });
+
+  it("returns undefined when no cover exists", () => {
+    const xml = `
+    <package>
+      <metadata />
+
+      <manifest>
+        <item
+          id="chapter-1"
+          href="chapter-1.xhtml"
+          media-type="application/xhtml+xml"
+        />
+
+        <item
+          id="style"
+          href="style.css"
+          media-type="text/css"
+        />
+      </manifest>
+
+      <spine>
+        <itemref idref="chapter-1" />
+      </spine>
+    </package>
+  `;
+
+    const doc = parseXml(xml);
+
+    const result = parser.parse(doc);
+
+    expect(result.coverItem).toBeUndefined();
+  });
 });

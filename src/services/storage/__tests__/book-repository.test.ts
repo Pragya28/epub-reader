@@ -1,16 +1,27 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   getAllBooks,
+  getBookCover,
+  getBookCoverUrl,
   getBookFile,
+  saveBookCover,
   saveBookFile,
   saveBookMetadata,
+  saveImportedBook,
 } from "../book-repository";
 
 import { resetTestDb } from "@/tests/utils/reset-test-db";
+import { clearCoverCache } from "../cover-cache";
 
 describe("book repository", () => {
-  beforeEach(resetTestDb);
+  beforeEach(async () => {
+    await resetTestDb();
+    clearCoverCache();
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it("saves metadata", async () => {
     await saveBookMetadata({
@@ -103,5 +114,100 @@ describe("book repository", () => {
         fileHash: "duplicate-hash",
       }),
     ).rejects.toThrow();
+  });
+
+  it("stores cover blob", async () => {
+    const cover = new Blob(["cover"]);
+
+    await saveBookCover("1", cover);
+
+    const stored = await getBookCover("1");
+
+    expect(stored).toBeDefined();
+    expect(stored?.bookId).toBe("1");
+    expect(stored?.cover).toBeDefined();
+  });
+
+  it("stores metadata, epub and cover in a single transaction", async () => {
+    const file = new Blob(["epub"]);
+    const cover = new Blob(["cover"]);
+
+    await saveImportedBook({
+      metadata: {
+        id: "1",
+        title: "Test Book",
+        author: "Author",
+        language: "en",
+        createdAt: 1,
+        fileHash: "hash-1",
+      },
+      file,
+      cover,
+    });
+
+    const books = await getAllBooks();
+    const storedFile = await getBookFile("1");
+    const storedCover = await getBookCover("1");
+
+    expect(books).toHaveLength(1);
+
+    expect(storedFile).toBeDefined();
+    expect(storedFile?.bookId).toBe("1");
+    expect(storedFile?.file).toBeDefined();
+
+    expect(storedCover).toBeDefined();
+    expect(storedCover?.bookId).toBe("1");
+    expect(storedCover?.cover).toBeDefined();
+  });
+
+  it("stores imported book without cover", async () => {
+    const file = new Blob(["epub"]);
+
+    await saveImportedBook({
+      metadata: {
+        id: "1",
+        title: "Test Book",
+        createdAt: 1,
+        fileHash: "hash-1",
+      },
+      file,
+    });
+
+    expect(await getBookCover("1")).toBeUndefined();
+  });
+
+  it("returns blob url for stored cover", async () => {
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:test");
+
+    const cover = new Blob(["cover"]);
+
+    await saveBookCover("1", cover);
+
+    const url = await getBookCoverUrl("1");
+
+    expect(url).toBe("blob:test");
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
+
+    const arg = vi.mocked(URL.createObjectURL).mock.calls[0][0];
+
+    expect(arg).toBeDefined();
+  });
+
+  it("reuses cached blob url", async () => {
+    const createSpy = vi
+      .spyOn(URL, "createObjectURL")
+      .mockReturnValue("blob:test");
+
+    const cover = new Blob(["cover"]);
+
+    await saveBookCover("1", cover);
+
+    const first = await getBookCoverUrl("1");
+    const second = await getBookCoverUrl("1");
+
+    expect(first).toBe("blob:test");
+    expect(second).toBe("blob:test");
+
+    expect(createSpy).toHaveBeenCalledTimes(1);
   });
 });

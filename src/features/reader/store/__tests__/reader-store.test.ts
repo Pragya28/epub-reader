@@ -5,14 +5,14 @@ describe("reader store", () => {
   it("sets book correctly", () => {
     const store = readerStore.getState();
 
-    store.setDocument({
+    store.setReaderDocument({
       book: {
         id: "1",
         title: "Test Book",
       },
     } as any);
 
-    expect(readerStore.getState().document?.book?.id).toBe("1");
+    expect(readerStore.getState().readerDocument?.book?.id).toBe("1");
   });
 
   it("resets state", () => {

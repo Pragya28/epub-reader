@@ -28,7 +28,7 @@ export function revokeCoverUrl(bookId: string): void {
   cache.delete(bookId);
 }
 
-export function revokeAllCoverUrls(): void {
+export function clearCoverCache() {
   for (const url of cache.values()) {
     URL.revokeObjectURL(url);
   }
