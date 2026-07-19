@@ -1,0 +1,329 @@
+<!-- Reader - Navigation Overlay -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Librune - Table of Contents</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Inter:wght@400;500&amp;family=Cinzel:wght@400;700&amp;family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-tertiary-fixed-variant": "#763400",
+              "tertiary-container": "#ff9c5f",
+              "on-tertiary-container": "#753300",
+              "on-secondary-fixed": "#201b0b",
+              "secondary-container": "#ece2c8",
+              "on-secondary-container": "#6b644f",
+              tertiary: "#9a4600",
+              "tertiary-fixed-dim": "#ffb68c",
+              "on-primary-fixed-variant": "#564417",
+              "on-primary-container": "#564417",
+              "surface-container-high": "#DDCFA5",
+              "inverse-on-surface": "#eef0fa",
+              "primary-fixed-dim": "#dec48a",
+              "inverse-surface": "#2d3037",
+              surface: "#F0E6CC",
+              "inverse-primary": "#dec48a",
+              "surface-variant": "#E6D8B5",
+              background: "#F0E6CC",
+              "on-secondary-fixed-variant": "#4c4734",
+              "surface-container-lowest": "#ffffff",
+              "on-secondary": "#ffffff",
+              "tertiary-fixed": "#ffdbc9",
+              "surface-container-highest": "#e0e2eb",
+              "surface-container": "#E9DFC7",
+              "on-primary-fixed": "#251a00",
+              "primary-fixed": "#fbe0a4",
+              "outline-variant": "#cfc5b6",
+              "surface-dim": "#d7dae3",
+              error: "#ba1a1a",
+              "secondary-fixed": "#ece2c8",
+              "surface-bright": "#f9f9ff",
+              primary: "#705c2c",
+              "on-surface-variant": "#4c463a",
+              secondary: "#655e4a",
+              "on-tertiary-fixed": "#321200",
+              "surface-container-low": "#f1f3fc",
+              "error-container": "#ffdad6",
+              "on-tertiary": "#ffffff",
+              "on-background": "#2B2B2B",
+              outline: "#7e7669",
+              "on-error": "#ffffff",
+              gold: "#CBB27A",
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              "2xl": "1rem",
+              full: "9999px",
+            },
+            fontFamily: {
+              headline: ["Plus Jakarta Sans", "sans-serif"],
+              display: ["Cinzel", "serif"],
+              body: ["Inter", "sans-serif"],
+              reading: ["Literata", "serif"],
+              label: ["Plus Jakarta Sans", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 24;
+      }
+      .scrim-blur {
+        backdrop-filter: blur(4px);
+        background: rgba(20, 20, 20, 0.4);
+      }
+      .active-chapter {
+        background-color: rgba(203, 178, 122, 0.15);
+      }
+      body {
+        background-color: #f0e6cc;
+      }
+      ::-webkit-scrollbar {
+        width: 4px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #ddcfa5;
+        border-radius: 10px;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body class="font-body text-on-background selection:bg-gold/30">
+    <!-- Background Content (Simulating a Book Page) -->
+    <div class="relative min-h-screen p-8 max-w-2xl mx-auto overflow-hidden">
+      <div class="flex justify-between items-center mb-12">
+        <button
+          class="p-2 rounded-full hover:bg-surface-variant transition-colors"
+          onclick="window.history.back()"
+        >
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <span
+          class="font-display text-primary uppercase tracking-widest text-sm"
+          >Librune Archive</span
+        >
+        <div class="w-10"></div>
+      </div>
+      <article class="prose prose-sepia space-y-6">
+        <h1
+          class="font-reading text-4xl italic text-on-background leading-tight"
+        >
+          The Call to Adventure
+        </h1>
+        <p class="font-reading text-xl leading-relaxed text-on-background/80">
+          In the heart of the ancient library, where the scent of aged parchment
+          and cold stone lingered like a physical presence, the scrolls
+          whispered secrets of a time long forgotten by the sunlit world...
+        </p>
+        <p class="font-reading text-xl leading-relaxed text-on-background/80">
+          The dust motes danced in the single beam of amber light that managed
+          to pierce the thick clerestory windows. It was here that Silas found
+          the map, its edges singed by a fire that had died out a century ago.
+        </p>
+        <div class="mt-8 rounded-lg overflow-hidden h-64 w-full">
+          <img
+            class="w-full h-full object-cover grayscale-[0.3] sepia-[0.4]"
+            data-alt="A cinematic, high-angle shot of a sprawling, ancient library with towering wooden shelves filled with leather-bound books. Soft amber light streams through high windows, illuminating swirling dust motes in the air. The mood is scholarly and quiet, with a sepia-toned color palette reflecting a warm, archival atmosphere. The lighting is moody and focused on the center aisle of the library."
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZFXPfoO9QzeauVHIkow3HLsJN6i8epGSyn_8RonX2s3IKPfPcPscHTl63L9zQc8YNAKI75rus2elGQFG0pw060LpXLD9tN6vWzq6ySKgI80Yochf-voHo2ArXeMfsia6Ihaz5kJsMPb2KzjiSEaT3hSPTc0Ez8r8W2Nlh2hbk5nlqBWWIiISV4JluvwGJyzllSS0BRuTxmpIIKgNjiDzaQqrN6x8NHQhmc8eM9bRij2E-vbrtbRYSKnKvSRwlrM-9wXqN1q_ZCDE"
+          />
+        </div>
+      </article>
+    </div>
+    <!-- Scrim / Dimmed Background -->
+    <div
+      class="fixed inset-0 scrim-blur z-40 transition-opacity duration-300 opacity-100"
+      id="scrim"
+    ></div>
+    <!-- Table of Contents Bottom Sheet -->
+    <div
+      class="fixed bottom-0 left-0 right-0 z-50 transform transition-transform duration-300 translate-y-0 max-w-lg mx-auto"
+    >
+      <!-- Grab Handle Area -->
+      <div
+        class="flex flex-col items-center bg-surface-container rounded-t-2xl pt-3 pb-2"
+      >
+        <div class="h-1.5 w-12 rounded-full bg-outline/20 mb-4"></div>
+        <h2
+          class="font-display text-primary text-xl tracking-[0.2em] font-bold"
+        >
+          Table of Contents
+        </h2>
+      </div>
+      <!-- Sheet Content -->
+      <div
+        class="bg-surface-container h-[618px] overflow-y-auto px-6 pb-12 shadow-2xl"
+      >
+        <nav class="flex flex-col">
+          <!-- Active Chapter -->
+          <div
+            class="active-chapter px-4 py-6 rounded-lg flex flex-col items-center text-center transition-all duration-300 mt-6"
+          >
+            <span
+              class="font-label text-[#877a5e] text-xs font-bold tracking-[0.2em] mb-2"
+              >CHAPTER I</span
+            >
+            <h3 class="font-reading text-gold text-2xl italic leading-tight">
+              Frontispiece
+            </h3>
+            <p class="font-body text-[#877a5e] text-sm mt-2 opacity-70">
+              Current Location
+            </p>
+          </div>
+          <!-- Spacer -->
+          <div class="h-6"></div>
+          <!-- Chapter II -->
+          <a
+            class="group px-4 py-6 flex flex-col items-center text-center transition-colors hover:bg-surface-container-high rounded-lg"
+            href="#"
+          >
+            <span
+              class="font-label text-[#877a5e] text-xs font-bold tracking-[0.2em] mb-2 group-hover:text-primary"
+              >CHAPTER II</span
+            >
+            <h3
+              class="font-reading text-on-background text-2xl italic leading-tight"
+            >
+              The Call to Adventure
+            </h3>
+          </a>
+          <!-- Spacer -->
+          <div class="h-6"></div>
+          <!-- Chapter III -->
+          <a
+            class="group px-4 py-6 flex flex-col items-center text-center transition-colors hover:bg-surface-container-high rounded-lg"
+            href="#"
+          >
+            <span
+              class="font-label text-[#877a5e] text-xs font-bold tracking-[0.2em] mb-2 group-hover:text-primary"
+              >CHAPTER III</span
+            >
+            <h3
+              class="font-reading text-on-background text-2xl italic leading-tight"
+            >
+              Crossing the Threshold
+            </h3>
+          </a>
+          <!-- Spacer -->
+          <div class="h-6"></div>
+          <!-- Chapter IV -->
+          <a
+            class="group px-4 py-6 flex flex-col items-center text-center transition-colors hover:bg-surface-container-high rounded-lg"
+            href="#"
+          >
+            <span
+              class="font-label text-[#877a5e] text-xs font-bold tracking-[0.2em] mb-2 group-hover:text-primary"
+              >CHAPTER IV</span
+            >
+            <h3
+              class="font-reading text-on-background text-2xl italic leading-tight"
+            >
+              The Keeper of the Scrolls
+            </h3>
+          </a>
+          <!-- Spacer -->
+          <div class="h-6"></div>
+          <!-- Chapter V -->
+          <a
+            class="group px-4 py-6 flex flex-col items-center text-center transition-colors hover:bg-surface-container-high rounded-lg"
+            href="#"
+          >
+            <span
+              class="font-label text-[#877a5e] text-xs font-bold tracking-[0.2em] mb-2 group-hover:text-primary"
+              >CHAPTER V</span
+            >
+            <h3
+              class="font-reading text-on-background text-2xl italic leading-tight"
+            >
+              Visions of the Void
+            </h3>
+          </a>
+          <!-- Final Spacer for bottom safe area -->
+          <div class="h-12"></div>
+        </nav>
+      </div>
+    </div>
+    <!-- Script for interaction -->
+    <script>
+      const sheet = document.querySelector(".fixed.bottom-0");
+      const scrim = document.getElementById("scrim");
+      let isOpen = true;
+
+      scrim.addEventListener("click", () => {
+        if (isOpen) {
+          sheet.style.transform = "translateY(100%)";
+          scrim.style.opacity = "0";
+          setTimeout(() => {
+            scrim.style.pointerEvents = "none";
+          }, 300);
+          isOpen = false;
+        }
+      });
+
+      // Simple drag handle visual feedback
+      let startY = 0;
+      sheet.addEventListener(
+        "touchstart",
+        (e) => {
+          startY = e.touches[0].clientY;
+        },
+        { passive: true },
+      );
+
+      sheet.addEventListener(
+        "touchmove",
+        (e) => {
+          const currentY = e.touches[0].clientY;
+          const diff = currentY - startY;
+          if (diff > 0) {
+            sheet.style.transform = `translateY(${diff}px)`;
+            scrim.style.opacity = (1 - diff / window.innerHeight).toString();
+          }
+        },
+        { passive: true },
+      );
+
+      sheet.addEventListener("touchend", (e) => {
+        const currentY = e.changedTouches[0].clientY;
+        if (currentY - startY > 150) {
+          sheet.style.transform = "translateY(100%)";
+          scrim.style.opacity = "0";
+          scrim.style.pointerEvents = "none";
+          isOpen = false;
+        } else {
+          sheet.style.transform = "translateY(0)";
+          scrim.style.opacity = "1";
+          isOpen = true;
+        }
+      });
+    </script>
+  </body>
+</html>

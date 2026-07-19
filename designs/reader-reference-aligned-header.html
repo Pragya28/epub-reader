@@ -1,0 +1,180 @@
+<!-- Reader - Reference Aligned Header -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Librune Reader</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&amp;family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#8B7355",
+              "background-light": "#F9F6F0",
+              "background-dark": "#1A1917",
+              parchment: "#F2EFE9",
+              "accent-sepia": "#B08D57",
+            },
+            fontFamily: {
+              display: ["Cinzel", "serif"],
+              serif: ["Literata", "serif"],
+              sans: ["Plus Jakarta Sans", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "4px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 300,
+          "GRAD" 0,
+          "opsz" 24;
+        font-size: 22px;
+      }
+      .logo-text {
+        letter-spacing: 0.25em;
+        font-size: 14px;
+        text-transform: uppercase;
+      }
+      body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark text-stone-800 dark:text-stone-200 min-h-screen flex justify-center items-start pt-4 sm:pt-10"
+  >
+    <div
+      class="w-full max-w-[390px] h-[844px] bg-parchment dark:bg-zinc-900 border border-stone-200 dark:border-stone-800 shadow-2xl relative overflow-hidden rounded-[40px] flex flex-col"
+    >
+      <header
+        class="pt-12 pb-4 px-6 flex items-center justify-between border-b border-stone-200/50 dark:border-stone-800/50"
+      >
+        <button
+          class="text-stone-700 dark:text-stone-300 hover:opacity-70 transition-opacity"
+        >
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <div class="flex flex-col items-center gap-1">
+          <span
+            class="material-symbols-outlined text-stone-800 dark:text-stone-100 !text-3xl leading-none"
+            >menu_book</span
+          >
+          <h1
+            class="logo-text font-display font-medium text-stone-800 dark:text-stone-100"
+          >
+            Librune
+          </h1>
+        </div>
+        <div class="flex items-center gap-4">
+          <button
+            class="text-stone-700 dark:text-stone-300 hover:opacity-70 transition-opacity"
+          >
+            <span class="material-symbols-outlined">format_size</span>
+          </button>
+          <button
+            class="text-stone-700 dark:text-stone-300 hover:opacity-70 transition-opacity"
+          >
+            <span class="material-symbols-outlined">bookmark_border</span>
+          </button>
+        </div>
+      </header>
+      <main class="flex-1 overflow-y-auto px-8 py-10 font-serif">
+        <div class="text-center mb-10">
+          <h2
+            class="font-display text-2xl tracking-wider text-stone-900 dark:text-stone-100 uppercase mb-1"
+          >
+            The Odyssey
+          </h2>
+          <p class="text-primary italic text-lg">Homer</p>
+          <div class="flex justify-center items-center my-6">
+            <div class="h-[1px] w-12 bg-stone-300"></div>
+            <span class="mx-3 text-stone-400">◇</span>
+            <div class="h-[1px] w-12 bg-stone-300"></div>
+          </div>
+          <h3
+            class="font-display text-sm tracking-widest text-stone-600 dark:text-stone-400 uppercase"
+          >
+            Book I
+          </h3>
+        </div>
+        <article
+          class="prose prose-stone dark:prose-invert max-w-none leading-relaxed text-lg"
+        >
+          <p class="mb-6 indent-0">
+            <span
+              class="float-left text-6xl font-display text-accent-sepia mr-2 mt-2 leading-[0.8]"
+              >S</span
+            >ing to me of the man, Muse, the man of twists and turns driven time
+            and again off course, once he had plundered the hallowed heights of
+            Troy. Many cities of men he saw and learned their minds, many pains
+            he suffered, heartsick on the open sea, fighting to save his life
+            and bring his comrades home.
+          </p>
+          <p class="mb-6">
+            But he could not save them from disaster, hard as he strove—the
+            recklessness of their own ways destroyed them all, the blind fools,
+            they devoured the cattle of the Sun and the Sun-god blotted out the
+            day of their return...
+          </p>
+          <p>
+            From the beginning, Daughter of Zeus, tell us this story as you
+            will. Now all the rest, who had escaped the pit of destruction, were
+            safe at home, having survived both war and sea.
+          </p>
+        </article>
+      </main>
+      <footer
+        class="px-8 py-6 border-t border-stone-200/50 dark:border-stone-800/50 bg-parchment/80 backdrop-blur-sm dark:bg-zinc-900/80"
+      >
+        <div
+          class="relative w-full h-[2px] bg-stone-300 dark:bg-stone-700 mb-4 rounded-full"
+        >
+          <div
+            class="absolute top-1/2 left-[12%] -translate-y-1/2 w-3 h-3 bg-accent-sepia rounded-full shadow-sm"
+          ></div>
+          <div
+            class="absolute top-0 left-0 h-full bg-accent-sepia w-[12%]"
+          ></div>
+          <span
+            class="absolute right-0 -top-6 text-[10px] text-stone-500 font-sans"
+            >12%</span
+          >
+        </div>
+        <div
+          class="flex justify-between items-center text-[11px] font-display tracking-widest text-stone-500 dark:text-stone-400 uppercase"
+        >
+          <button class="material-symbols-outlined !text-lg">list</button>
+          <span>Book I • 2 of 18</span>
+          <div class="w-5"></div>
+        </div>
+      </footer>
+      <div
+        class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-stone-900 rounded-b-2xl z-50"
+      ></div>
+      <div
+        class="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-stone-400/30 rounded-full"
+      ></div>
+    </div>
+  </body>
+</html>

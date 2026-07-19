@@ -1,0 +1,285 @@
+<!-- Search - Streamlined Navigation Refined -->
+<!doctype html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Librune - Search</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&amp;family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&amp;family=Plus+Jakarta+Sans:wght@400;500;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#947646",
+              "background-light": "#F7F3EB",
+              "background-dark": "#1A1917",
+              "accent-sepia": "#BFA57D",
+              "border-light": "#E5E1D8",
+              "border-dark": "#33312E",
+            },
+            fontFamily: {
+              display: ["Cinzel", "serif"],
+              body: ["Literata", "serif"],
+              sans: ["Plus Jakarta Sans", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "4px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 300,
+          "GRAD" 0,
+          "opsz" 24;
+      }
+      body {
+        font-family: "Literata", serif;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 min-h-screen"
+  >
+    <div class="max-w-md mx-auto min-h-screen flex flex-col">
+      <header
+        class="sticky top-0 z-10 px-6 pt-10 pb-6 bg-background-light dark:bg-background-dark border-b border-border-light dark:border-border-dark flex items-center justify-between"
+      >
+        <button
+          class="p-1 -ml-1 text-slate-600 dark:text-slate-400 hover:text-primary transition-colors"
+        >
+          <span class="material-symbols-outlined text-2xl">arrow_back</span>
+        </button>
+        <div class="flex flex-col items-center">
+          <div class="mb-1">
+            <svg
+              class="text-slate-800 dark:text-slate-100"
+              fill="none"
+              height="28"
+              viewBox="0 0 24 24"
+              width="28"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M4 4V20M4 4H20M4 4L8 8M20 4V20M20 4L16 8M4 20H20M4 20L8 16M20 20L16 16M8 8V16M8 8H16M16 8V16M16 16H8"
+                stroke="currentColor"
+                stroke-width="1.5"
+              ></path>
+            </svg>
+          </div>
+          <h1
+            class="font-display text-sm tracking-[0.3em] uppercase text-slate-800 dark:text-slate-100"
+          >
+            Librune
+          </h1>
+        </div>
+        <button
+          class="p-1 -mr-1 text-slate-600 dark:text-slate-400 hover:text-primary transition-colors"
+        >
+          <span class="material-symbols-outlined text-2xl">filter_list</span>
+        </button>
+      </header>
+      <main class="flex-1 p-6">
+        <div class="text-center mb-8">
+          <h2
+            class="font-display text-2xl mb-2 text-slate-800 dark:text-slate-100"
+          >
+            “The Weight of Eternity”
+          </h2>
+          <p class="text-sm text-slate-500 dark:text-slate-400 italic">
+            12 matches across 4 books
+          </p>
+          <div class="flex justify-center mt-4">
+            <div class="w-1.5 h-1.5 rotate-45 border border-primary"></div>
+          </div>
+        </div>
+        <div
+          class="flex border border-border-light dark:border-border-dark rounded-md mb-8 overflow-hidden"
+        >
+          <button
+            class="flex-1 py-2 text-xs font-sans font-semibold bg-white dark:bg-slate-800 border-r border-border-light dark:border-border-dark"
+          >
+            Relevance
+          </button>
+          <button
+            class="flex-1 py-2 text-xs font-sans text-slate-500 dark:text-slate-400 border-r border-border-light dark:border-border-dark"
+          >
+            Book
+          </button>
+          <button
+            class="flex-1 py-2 text-xs font-sans text-slate-500 dark:text-slate-400"
+          >
+            Chapter
+          </button>
+        </div>
+        <div class="space-y-10">
+          <div class="flex gap-4">
+            <div class="w-20 shrink-0">
+              <img
+                alt="Meditations of the Gilded Age book cover"
+                class="w-full h-auto rounded shadow-sm opacity-90 dark:opacity-75"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCP7k3dc2JaGrmWsw9h7tnkzviUHY7J3856ok4om6952IPYE9_NXS-ukI5eZ9rouIFBCoaZqXiMrLEeYwqyZhIHg5QIf_RrX1pqo5loTYVT1DlT1aRuvoqzKlrHHF5hy_NQXT2EjrOr6EO23JszZ-Kn0jmCv0yBf5mJcm6Ql6_OhV8qwkVXIS1446s3I7VQ9DtPMY8vGKBBuclpC0RtsJB9B_gWByA10NmKNsYcVhJK4fAeb3XYiWT4H9t0mMcTM8mOJDe3dK3R2qE"
+              />
+            </div>
+            <div
+              class="flex-1 border-b border-border-light dark:border-border-dark pb-8"
+            >
+              <h3 class="font-display text-xs tracking-widest uppercase mb-1">
+                Meditations of The Gilded Age
+              </h3>
+              <p
+                class="text-[10px] uppercase tracking-tighter text-slate-500 dark:text-slate-400 mb-3"
+              >
+                Aurelius Thorne • 1884 Edition
+              </p>
+              <p
+                class="text-sm leading-relaxed italic text-slate-600 dark:text-slate-300"
+              >
+                ...nothing compares to the
+                <span
+                  class="bg-accent-sepia/20 dark:bg-primary/20 font-bold px-0.5"
+                  >weight of eternity</span
+                >
+                when one sits beneath the willow trees of the old academy...
+              </p>
+              <div
+                class="mt-3 flex justify-between text-[10px] text-slate-400 uppercase tracking-widest"
+              >
+                <span>Chapter IV: The Academy</span>
+                <span>p.142</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-4">
+            <div class="w-20 shrink-0">
+              <img
+                alt="Meditations of the Gilded Age book cover"
+                class="w-full h-auto rounded shadow-sm opacity-90 dark:opacity-75"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdFiN_SXW-fXh1ItIvSHofFs8OpgB4hp-u1Clq1hUsiehToxpn6BXIia-9Ob6b9ccmYWb_A1mgHUuPpsK3W8EIwRMRbnBzw4YMDtdHzZ_ipiyJJ608dNIzXWgMXZ4J63MfSUdzN02iIofHVUQiaTf33sEX_YoOHAq5cNIWQcn3CmaCoxCYDKTFGfaqzcjbnOo0Gfe52fyy-0xiS-7Y2jqIihVnlCmp39PDhONqDFvzPyOZty-0Twr72DJNG0Jrl_w5OQ9Er3xcr9U"
+              />
+            </div>
+            <div
+              class="flex-1 border-b border-border-light dark:border-border-dark pb-8"
+            >
+              <h3 class="font-display text-xs tracking-widest uppercase mb-1">
+                Meditations of The Gilded Age
+              </h3>
+              <p
+                class="text-[10px] uppercase tracking-tighter text-slate-500 dark:text-slate-400 mb-3"
+              >
+                Aurelius Thorne • 1884 Edition
+              </p>
+              <p
+                class="text-sm leading-relaxed italic text-slate-600 dark:text-slate-300"
+              >
+                The scholar found that the
+                <span
+                  class="bg-accent-sepia/20 dark:bg-primary/20 font-bold px-0.5"
+                  >weight of eternity</span
+                >
+                was not a burden of time, but a density of meaning hidden...
+              </p>
+              <div
+                class="mt-3 flex justify-between text-[10px] text-slate-400 uppercase tracking-widest"
+              >
+                <span>Chapter VII: Lexicons</span>
+                <span>p.208</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-4">
+            <div class="w-20 shrink-0">
+              <img
+                alt="Chronicles of Silence book cover"
+                class="w-full h-auto rounded shadow-sm opacity-90 dark:opacity-75"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCILRF_fMVFKHl8EwdCk3eaYpD4fECxHRitcpnz3I7p0r2y_wdyUxTfdiRWAMgpBo0wUr6ye6fstlCMQoz-dIgMN2wWLN4QDcL2QZ0vJPEZXIFP8dkigWqGl7_vtp2GD3fOHwNd81eoisxJIol45O8ZiNrRduNc3IdVtJF3ct13NmT2tygXTeNMSybZxvP45pipokB6fJxgfCZB4n3kjeYjgUcJbQdkKWGZe7Inia2gqasrTtuo-PiKNxqagwyZb82ePH_rIT7uCA0"
+              />
+            </div>
+            <div class="flex-1 pb-8">
+              <h3 class="font-display text-xs tracking-widest uppercase mb-1">
+                Chronicles of Silence
+              </h3>
+              <p
+                class="text-[10px] uppercase tracking-tighter text-slate-500 dark:text-slate-400 mb-3"
+              >
+                Sister Elena • Manuscript Fragment
+              </p>
+              <p
+                class="text-sm leading-relaxed italic text-slate-600 dark:text-slate-300"
+              >
+                In the stillness of the cell, the
+                <span
+                  class="bg-accent-sepia/20 dark:bg-primary/20 font-bold px-0.5"
+                  >weight of eternity</span
+                >
+                presses against the parchment like the hand of a silent creator.
+              </p>
+              <div
+                class="mt-3 flex justify-between text-[10px] text-slate-400 uppercase tracking-widest"
+              >
+                <span>Fragment 12: Vespers</span>
+                <span>Folio 4r</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="py-12 flex items-center gap-4 text-slate-400">
+          <div class="h-px flex-1 bg-border-light dark:bg-border-dark"></div>
+          <span class="text-[10px] uppercase tracking-[0.2em]"
+            >End of results</span
+          >
+          <div class="h-px flex-1 bg-border-light dark:bg-border-dark"></div>
+        </div>
+      </main>
+      <div class="fixed bottom-8 left-6 right-6 z-20">
+        <button
+          class="w-full bg-white dark:bg-slate-800 border border-border-light dark:border-border-dark p-4 shadow-xl flex items-center gap-4 group active:scale-[0.98] transition-all"
+        >
+          <div
+            class="w-10 h-10 bg-accent-sepia/10 dark:bg-primary/10 flex items-center justify-center shrink-0"
+          >
+            <span class="material-symbols-outlined text-primary text-xl"
+              >menu_book</span
+            >
+          </div>
+          <div class="flex-1 text-left">
+            <p
+              class="text-[10px] uppercase tracking-widest text-slate-400 mb-0.5"
+            >
+              CONTINUE READING
+            </p>
+            <h4
+              class="font-display text-xs uppercase tracking-tight text-slate-800 dark:text-slate-100"
+            >
+              MEDITATIONS OF THE GILDED AGE
+            </h4>
+          </div>
+          <div
+            class="text-primary group-hover:translate-x-1 transition-transform"
+          >
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </body>
+</html>

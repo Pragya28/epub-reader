@@ -1,0 +1,305 @@
+<!-- Library - Editorial Bookshelf with FAB -->
+<!doctype html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Librune - Library</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&amp;family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600&amp;family=Material+Icons+Outlined&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#A67C52", // Traditional gold/sepia tone from screenshot
+              "background-light": "#F9F6F0", // Parchment color
+              "background-dark": "#1A1917", // Dark theme background
+              "card-light": "#FFFFFF",
+              "card-dark": "#242321",
+              "accent-sepia": "#D4B483",
+            },
+            fontFamily: {
+              display: ["Cinzel", "serif"],
+              serif: ["Literata", "serif"],
+              sans: ["Plus Jakarta Sans", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-icons-outlined {
+        font-size: 20px;
+        vertical-align: middle;
+      }
+      body {
+        -webkit-tap-highlight-color: transparent;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark font-sans text-stone-900 dark:text-stone-100 min-h-screen"
+  >
+    <div class="max-w-md mx-auto min-h-screen flex flex-col">
+      <header
+        class="sticky top-0 z-50 px-6 py-4 flex items-center justify-between bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md"
+      >
+        <button
+          class="w-10 h-10 flex items-center justify-start text-stone-600 dark:text-stone-400 hover:text-primary transition-colors"
+        >
+          <span class="material-icons-outlined">arrow_back</span>
+        </button>
+        <div class="flex flex-col items-center">
+          <div class="w-8 h-8 mb-1">
+            <img
+              alt="Librune Icon"
+              class="w-full h-full object-contain filter dark:brightness-125"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPA2xNJXQGcQ-soivBOrUJed83hMxUWrjjBnIysfB0hOGV0eRajKqvlnsx085P_cbmIurSXCPQv4fk_rKUbHpFg-kJ1NEuhVB3btnVYFGk50XpGLu5fkdfI246txDFP5C_YVINZeX0dPPmKXTBK38T74QRH722KaJGFLHw7hFz-KOLrZ6f69vqsmRZWRmWPiq0jD5H5_I5qj4RLh_VWTku3S1ZkHopFlzJZ7v4HHUR8Z0nzAq6lTrC28QTHp-bzd39Py1QHVrTcts"
+            />
+          </div>
+          <h1
+            class="font-display text-xs tracking-[0.3em] uppercase font-bold text-stone-800 dark:text-stone-200"
+          >
+            Librune
+          </h1>
+        </div>
+        <button
+          class="w-10 h-10 flex items-center justify-end text-stone-600 dark:text-stone-400 hover:text-primary transition-colors"
+        >
+          <span class="material-icons-outlined">settings</span>
+        </button>
+      </header>
+      <main class="flex-1 px-6 pt-2 pb-24">
+        <div class="mb-6">
+          <h2 class="font-display text-3xl font-medium mb-1">Library</h2>
+          <p class="text-stone-500 dark:text-stone-400 text-sm">
+            Your personal collection.
+          </p>
+        </div>
+        <div class="relative mb-6">
+          <span
+            class="absolute inset-y-0 left-3 flex items-center text-stone-400"
+          >
+            <span class="material-icons-outlined">search</span>
+          </span>
+          <input
+            class="w-full pl-10 pr-4 py-3 bg-white dark:bg-card-dark border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-1 focus:ring-primary focus:border-primary text-sm transition-all"
+            placeholder="Search books, authors, or text..."
+            type="text"
+          />
+        </div>
+        <div class="flex gap-3 mb-8">
+          <button
+            class="flex-1 flex items-center justify-center gap-2 py-2 px-4 border border-stone-200 dark:border-stone-800 rounded-lg bg-white dark:bg-card-dark text-stone-600 dark:text-stone-300 text-sm"
+          >
+            <span class="material-icons-outlined">filter_list</span>
+            Filter
+          </button>
+          <button
+            class="flex-1 flex items-center justify-center gap-2 py-2 px-4 border border-stone-200 dark:border-stone-800 rounded-lg bg-white dark:bg-card-dark text-stone-600 dark:text-stone-300 text-sm"
+          >
+            <span class="material-icons-outlined">sort</span>
+            Sort
+            <span class="material-icons-outlined text-xs">expand_more</span>
+          </button>
+        </div>
+        <div class="grid grid-cols-2 gap-x-6 gap-y-8">
+          <div class="space-y-3">
+            <div
+              class="aspect-[2/3] bg-[#0E2E2A] rounded-md shadow-lg flex flex-col items-center justify-center p-4 text-center border-stone-800/20 border"
+            >
+              <span
+                class="text-[10px] uppercase tracking-widest text-[#D4B483]/60 mb-2"
+                >The</span
+              >
+              <h3 class="font-display text-[#D4B483] text-sm leading-tight">
+                ALCHEMIST'S SILENCE
+              </h3>
+              <div class="mt-4 opacity-40">
+                <img
+                  alt="ornament"
+                  class="w-8 h-8 mx-auto"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwu-_g_JxfSQorqHawX8m7jzTAmSQNzcqBg1rUAR1g7AlGZGVfVmXpSU6Vo2IP2YDQmYNE7QVGMfJy4WVTi9YggCqtOEZ_qQ5pz5r4VMJ54V__GL257vewLd-nYfuY5cNfrNSKBOGyhujZrsDp9yYR9c9HvKw7v6oFWhWq6W2bJjAAz3gUY0kgiXNNFSe8xSPg_hisp_hXJfP6RjCX76gPWwTNxLpvFHx8seD7qXRL_xCO0s1SmgCp2jBDOx62Ll4kr0d79-ki-kU"
+                />
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between items-start">
+                <div>
+                  <h4 class="font-bold text-xs line-clamp-1">
+                    The Alchemist's Silence
+                  </h4>
+                  <p class="text-[10px] text-stone-500">Elena Thorne</p>
+                </div>
+                <button class="text-stone-400">
+                  <span class="material-icons-outlined !text-sm"
+                    >more_vert</span
+                  >
+                </button>
+              </div>
+              <p class="text-[10px] text-stone-400 mt-1">64% read</p>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div
+              class="aspect-[2/3] bg-[#1A1815] rounded-md shadow-lg flex flex-col items-center justify-center p-4 text-center border-stone-800/20 border"
+            >
+              <span
+                class="text-[10px] uppercase tracking-widest text-[#A67C52]/60 mb-2"
+                >Meditations of</span
+              >
+              <h3 class="font-display text-[#A67C52] text-sm leading-tight">
+                THE GILDED AGE
+              </h3>
+              <div class="mt-4 opacity-50">
+                <img
+                  alt="ornament"
+                  class="w-8 h-8 mx-auto"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUN-UEdmDi__GQhi6MqMyC-94YyKRaqEnuAIti0MCYweDb349FLuiOOCOUrVzpbf8vht_-LamqGKPeX4N2xDumRVjWOrAcWBx4pZdzCsC_2THZbmCQ9cuatUJzm_sXFiz9TIdsvHT3M-794zLb1vM8dZ7nK0H_sT7CZNQYQWwIOvg4J-k6KpUjoXiJ8WsGuHAL9jPrxpq2XoRcdHTdiH0VKDJbBpJscCh1BNcc7kdaeoMNTL3qv8kUjnx6S7aIO8imcEAN08ES_HA"
+                />
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between items-start">
+                <div>
+                  <h4 class="font-bold text-xs line-clamp-1">
+                    Meditations of the Gilded Age
+                  </h4>
+                  <p class="text-[10px] text-stone-500">Aurelius Thorne</p>
+                </div>
+                <button class="text-stone-400">
+                  <span class="material-icons-outlined !text-sm"
+                    >more_vert</span
+                  >
+                </button>
+              </div>
+              <p class="text-[10px] text-stone-400 mt-1">38% read</p>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div
+              class="aspect-[2/3] bg-[#EBE4D5] rounded-md shadow-lg flex flex-col items-center justify-center p-4 text-center border-stone-300 border"
+            >
+              <h3
+                class="font-display text-stone-700 text-sm leading-tight uppercase tracking-tighter"
+              >
+                Echoes of Antiquity
+              </h3>
+              <div class="mt-4 opacity-40">
+                <img
+                  alt="ornament"
+                  class="w-8 h-8 mx-auto"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvMs0dtBKSwZkl8ut_keyVNhAnKEEn1PMc2omEa9vEPPCcKtlAprS-2A0APm-9Cba-VUMLtCF9eknEpoMOCAK8ysQCFjEoFzo41mC353d8jVr1udNUBPcafAgQYsjIFQADTR7J-PkjDnLbn2HH5iOQ9D205t3icjB-_NIRhupVYzcuysi3bZUcyfuNptPy1BvsaOaFFo6OirDrzdaAviujBbUgDs6mw0XZZbGi75JuBLHJl7cLo_YXbSDO58hPNUwQ_N0t3pFwP-A"
+                />
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between items-start">
+                <div>
+                  <h4 class="font-bold text-xs line-clamp-1">
+                    Echoes of Antiquity
+                  </h4>
+                  <p class="text-[10px] text-stone-500">Marcus Aurelius</p>
+                </div>
+                <button class="text-stone-400">
+                  <span class="material-icons-outlined !text-sm"
+                    >more_vert</span
+                  >
+                </button>
+              </div>
+              <p class="text-[10px] text-stone-400 mt-1">12% read</p>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div
+              class="aspect-[2/3] bg-[#14293D] rounded-md shadow-lg flex flex-col items-center justify-center p-4 text-center border-stone-800/20 border"
+            >
+              <span
+                class="text-[10px] uppercase tracking-widest text-primary/60 mb-2"
+                >Chronicles of</span
+              >
+              <h3 class="font-display text-primary text-sm leading-tight">
+                SILENCE
+              </h3>
+              <div class="mt-4 opacity-50">
+                <img
+                  alt="ornament"
+                  class="w-8 h-8 mx-auto"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUxDYj4m0FDvIL2e2oZStJcCnc2iYL5pvqjy9gxLMobp9Bpm6koqC1F2gpTzckqjOZDacc6N2JniP1M5aEbdnEVzPhnoo2IDAh3oil3USd_XVNp0Li6X-qLSwoT6NKEZ-JyUeJG1sp7fCPFl1UXK3XZcvsg8b9yUKiVmK4TuXbOYiEydcF-EJ7wFUXNt5QfNgnjk150Q_PA-orragfhp5DB4KgZyMpw1Rg-djGbwi9jZg-LXpBntNuagb04jR8WeCfwaUmDCXPSH4"
+                />
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between items-start">
+                <div>
+                  <h4 class="font-bold text-xs line-clamp-1">
+                    Chronicles of Silence
+                  </h4>
+                  <p class="text-[10px] text-stone-500">Sister Elena</p>
+                </div>
+                <button class="text-stone-400">
+                  <span class="material-icons-outlined !text-sm"
+                    >more_vert</span
+                  >
+                </button>
+              </div>
+              <p class="text-[10px] text-stone-400 mt-1">72% read</p>
+            </div>
+          </div>
+        </div>
+      </main>
+      <div
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[360px] flex flex-col gap-4 z-50 animate-in fade-in slide-in-from-bottom-4 duration-500"
+      >
+        <div class="flex justify-end">
+          <button
+            class="w-14 h-14 bg-stone-900 dark:bg-stone-100 text-stone-100 dark:text-stone-900 rounded-full shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
+          >
+            <span class="material-icons-outlined !text-3xl">add</span>
+          </button>
+        </div>
+        <div
+          class="bg-stone-900 dark:bg-stone-100 text-stone-100 dark:text-stone-900 rounded-2xl p-4 shadow-2xl flex items-center gap-4 border border-stone-700/30"
+        >
+          <div
+            class="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center"
+          >
+            <span class="material-icons-outlined text-primary"
+              >auto_stories</span
+            >
+          </div>
+          <div class="flex-1">
+            <p
+              class="text-[10px] uppercase tracking-widest opacity-60 font-medium mb-0.5"
+            >
+              Continue Reading
+            </p>
+            <h5 class="font-serif text-sm font-semibold truncate">
+              The Alchemist's Silence
+            </h5>
+          </div>
+          <button
+            class="p-2 hover:bg-stone-800 dark:hover:bg-stone-200 rounded-full transition-colors"
+          >
+            <span class="material-icons-outlined">play_arrow</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

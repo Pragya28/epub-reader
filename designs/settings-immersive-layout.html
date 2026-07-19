@@ -1,0 +1,288 @@
+<!-- Settings - Immersive Layout -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Librune - Settings</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&amp;family=Literata:opsz,wght@7..72,400;7..72,600&amp;family=Plus+Jakarta+Sans:wght@400;500;600&amp;family=Material+Icons+Outlined&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#8B7355", // Golden-brown from the logo/accent
+              "background-light": "#F9F6F0", // Parchment light
+              "background-dark": "#1A1A1A", // Dark mode background
+              "surface-light": "#FFFDF9",
+              "surface-dark": "#242424",
+              "accent-sepia": "#B89B72",
+            },
+            fontFamily: {
+              display: ["Cinzel", "serif"],
+              serif: ["Literata", "serif"],
+              sans: ["Plus Jakarta Sans", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        -webkit-tap-highlight-color: transparent;
+      }
+      .parchment-texture {
+        background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-serif parchment-texture"
+  >
+    <header
+      class="sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm px-4 pt-6 pb-4 border-b border-stone-200 dark:border-stone-800"
+    >
+      <div class="max-w-md mx-auto flex items-center justify-between">
+        <button
+          aria-label="Go back"
+          class="w-10 h-10 flex items-center justify-start text-stone-600 dark:text-stone-400 hover:text-primary transition-colors"
+        >
+          <span class="material-icons-outlined text-2xl">arrow_back</span>
+        </button>
+        <div class="flex flex-col items-center">
+          <div class="mb-1 text-primary">
+            <svg
+              class="w-8 h-8"
+              fill="none"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M4 4V20H20V4H4ZM18 18H6V6H18V18Z"
+                fill="currentColor"
+              ></path>
+              <path d="M8 8V16H10V8H8Z" fill="currentColor"></path>
+              <path d="M12 8V16H14V8H12Z" fill="currentColor"></path>
+              <path d="M16 8V16L17 16V8H16Z" fill="currentColor"></path>
+            </svg>
+          </div>
+          <h1
+            class="font-display text-sm tracking-[0.2em] font-bold text-stone-800 dark:text-stone-200"
+          >
+            LIBRUNE
+          </h1>
+        </div>
+        <div class="w-10"></div>
+      </div>
+    </header>
+    <main class="max-w-md mx-auto px-6 py-8">
+      <div class="text-center mb-10">
+        <h2
+          class="font-display text-3xl tracking-widest text-stone-800 dark:text-stone-100 uppercase mb-2"
+        >
+          Settings
+        </h2>
+        <p class="text-sm text-stone-500 dark:text-stone-400 font-sans italic">
+          Customize your reading environment.
+        </p>
+        <div class="mt-4 flex justify-center items-center gap-4">
+          <div class="h-[1px] w-12 bg-stone-300 dark:bg-stone-700"></div>
+          <div class="rotate-45 w-1.5 h-1.5 border border-primary"></div>
+          <div class="h-[1px] w-12 bg-stone-300 dark:bg-stone-700"></div>
+        </div>
+      </div>
+      <div class="space-y-6">
+        <section
+          class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm"
+        >
+          <div class="flex items-center gap-2 mb-6">
+            <span class="material-icons-outlined text-primary text-xl"
+              >light_mode</span
+            >
+            <h3
+              class="font-display text-xs tracking-widest font-bold uppercase text-stone-600 dark:text-stone-400"
+            >
+              Atmosphere
+            </h3>
+          </div>
+          <div class="space-y-6">
+            <div>
+              <label
+                class="block text-xs font-sans font-semibold text-stone-500 dark:text-stone-400 mb-3"
+                >Visual Theme</label
+              >
+              <div
+                class="grid grid-cols-3 gap-1 bg-stone-100 dark:bg-stone-900 p-1 rounded-lg"
+              >
+                <button
+                  class="py-2 text-sm font-sans rounded-md text-stone-600 dark:text-stone-400"
+                >
+                  Light
+                </button>
+                <button
+                  class="py-2 text-sm font-sans rounded-md bg-accent-sepia text-white shadow-sm"
+                >
+                  Sepia
+                </button>
+                <button
+                  class="py-2 text-sm font-sans rounded-md text-stone-600 dark:text-stone-400"
+                >
+                  Dark
+                </button>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <div>
+                <p
+                  class="text-sm font-sans font-semibold text-stone-800 dark:text-stone-200"
+                >
+                  Immersion Mode
+                </p>
+                <p class="text-xs font-sans text-stone-500 dark:text-stone-400">
+                  Focus on the narrative
+                </p>
+              </div>
+              <button
+                class="w-12 h-6 bg-accent-sepia rounded-full relative p-1 flex items-center justify-end"
+              >
+                <div class="w-4 h-4 bg-white rounded-full shadow-sm"></div>
+              </button>
+            </div>
+          </div>
+        </section>
+        <section
+          class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm"
+        >
+          <div class="flex items-center gap-2 mb-6">
+            <span class="material-icons-outlined text-primary text-xl"
+              >text_fields</span
+            >
+            <h3
+              class="font-display text-xs tracking-widest font-bold uppercase text-stone-600 dark:text-stone-400"
+            >
+              Typography
+            </h3>
+          </div>
+          <div class="space-y-6">
+            <div>
+              <label
+                class="block text-xs font-sans font-semibold text-stone-500 dark:text-stone-400 mb-3"
+                >Typeface</label
+              >
+              <div
+                class="grid grid-cols-3 gap-1 bg-stone-100 dark:bg-stone-900 p-1 rounded-lg"
+              >
+                <button
+                  class="py-2 text-sm font-serif rounded-md bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-sm text-stone-900 dark:text-white"
+                >
+                  Literata
+                </button>
+                <button
+                  class="py-2 text-sm font-display rounded-md text-stone-600 dark:text-stone-400"
+                >
+                  Cinzel
+                </button>
+                <button
+                  class="py-2 text-sm font-sans rounded-md text-stone-600 dark:text-stone-400"
+                >
+                  Jakarta
+                </button>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between items-end mb-2">
+                <span class="text-xs font-sans text-stone-500">A-</span>
+                <span class="text-xs font-sans text-stone-500">A+</span>
+              </div>
+              <div
+                class="relative w-full h-1 bg-stone-200 dark:bg-stone-800 rounded-full"
+              >
+                <div
+                  class="absolute top-1/2 left-[60%] -translate-y-1/2 w-4 h-4 bg-primary rounded-full border-2 border-white dark:border-stone-900 shadow-md"
+                ></div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <div>
+                <p
+                  class="text-sm font-sans font-semibold text-stone-800 dark:text-stone-200"
+                >
+                  Line Height
+                </p>
+                <p class="text-xs font-sans text-stone-500 dark:text-stone-400">
+                  Relaxed (1.6)
+                </p>
+              </div>
+              <span class="material-icons-outlined text-stone-400">tune</span>
+            </div>
+          </div>
+        </section>
+        <section
+          class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm"
+        >
+          <div class="flex items-center gap-2 mb-6">
+            <span class="material-icons-outlined text-primary text-xl"
+              >storage</span
+            >
+            <h3
+              class="font-display text-xs tracking-widest font-bold uppercase text-stone-600 dark:text-stone-400"
+            >
+              Storage
+            </h3>
+          </div>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p
+                  class="text-sm font-sans font-semibold text-stone-800 dark:text-stone-200"
+                >
+                  Library Sync
+                </p>
+                <p class="text-xs font-sans text-stone-500 dark:text-stone-400">
+                  Last synced 22 minutes ago
+                </p>
+              </div>
+              <span class="material-icons-outlined text-stone-400">sync</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <div>
+                <p
+                  class="text-sm font-sans font-semibold text-stone-800 dark:text-stone-200"
+                >
+                  Local Cache
+                </p>
+                <p class="text-xs font-sans text-stone-500 dark:text-stone-400">
+                  248 MB used
+                </p>
+              </div>
+              <span class="material-icons-outlined text-stone-400"
+                >more_horiz</span
+              >
+            </div>
+          </div>
+        </section>
+      </div>
+      <div
+        class="mt-12 flex justify-between items-center text-[10px] font-sans font-semibold tracking-widest uppercase text-stone-400 dark:text-stone-600 border-stone-200 dark:border-stone-800"
+      >
+        <span>App Version</span>
+        <span>v2.4.0</span>
+      </div>
+    </main>
+  </body>
+</html>
