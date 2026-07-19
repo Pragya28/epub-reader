@@ -1,9 +1,28 @@
 import type { ParsedChapter } from "@/services/epub/epub-types";
-import { renderIframe } from "./iframe-renderer";
+import {
+  initializeReaderDocument,
+  mountChapterSection,
+  unmountChapterSection,
+} from "./iframe-renderer";
 
-export function renderChapter(
+export function initializeChapterDocument(
   iframe: HTMLIFrameElement,
+  chapters: ParsedChapter[],
+): void {
+  const uniqueStylesheets = [
+    ...new Set(chapters.flatMap((chapter) => chapter.stylesheets)),
+  ];
+  initializeReaderDocument(iframe, uniqueStylesheets);
+}
+
+export function mountChapter(
+  iframeDoc: Document,
   chapter: ParsedChapter,
-) {
-  renderIframe(iframe, chapter.content, chapter.stylesheets);
+  index: number,
+): void {
+  mountChapterSection(iframeDoc, chapter.content, index);
+}
+
+export function unmountChapter(iframeDoc: Document, index: number): void {
+  unmountChapterSection(iframeDoc, index);
 }

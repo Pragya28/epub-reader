@@ -1,70 +1,32 @@
-import { useEffect, type FC } from "react";
+import { useEffect, useRef, type FC } from "react";
 import { useParams } from "react-router-dom";
 
 import { loadReaderBook } from "@/features/reader/actions/load-reader-book";
 import { ReaderFrame } from "@/features/reader/components/reader-frame";
+import { useReaderEngine } from "@/features/reader/hooks/use-reader-engine";
 import { readerStore } from "@/features/reader/store/reader-store";
-import { EpubParser } from "@/services/epub/epub-parser";
 
 export const ReaderScreen: FC = () => {
   const { bookId } = useParams();
-  const parser = new EpubParser();
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const {
-    readerDocument,
-    parsedBook,
-    isLoading,
-    error,
-
-    setReaderDocument,
-    setParsedBook,
-    setLoading,
-    setError,
-  } = readerStore();
+  const { readerDocument, parsedBook, isLoading, error } = readerStore();
 
   useEffect(() => {
     if (!bookId) {
       return;
     }
 
-    let mounted = true;
-
-    async function load() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        if (!bookId) return null;
-        const readerDocument = await loadReaderBook(bookId);
-
-        const parsedBook = await parser.parseBook(readerDocument.file);
-
-        if (!mounted) {
-          return;
-        }
-
-        setReaderDocument(readerDocument);
-
-        setParsedBook(parsedBook);
-      } catch (err) {
-        if (!mounted) {
-          return;
-        }
-
-        setError(err instanceof Error ? err.message : "Failed to load book");
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    void load();
+    void loadReaderBook(bookId).catch(() => {
+      // errors are already captured in store.error by loadReaderBook
+    });
 
     return () => {
-      mounted = false;
+      readerStore.getState().reset();
     };
-  }, [bookId, setReaderDocument, setParsedBook, setLoading, setError]);
+  }, [bookId]);
+
+  useReaderEngine({ iframeRef, parsedBook });
 
   if (isLoading) {
     return <div>Loading reader...</div>;
@@ -78,8 +40,6 @@ export const ReaderScreen: FC = () => {
     return <div>No book loaded</div>;
   }
 
-  const chapter = parsedBook.chapters[0];
-
   return (
     <div className="flex h-screen flex-col surface text-primary">
       <header className="border-b border-stone-200 p-4">
@@ -89,7 +49,7 @@ export const ReaderScreen: FC = () => {
       </header>
 
       <main className="flex-1 overflow-hidden">
-        <ReaderFrame chapterHtml={chapter} />
+        <ReaderFrame ref={iframeRef} />
       </main>
     </div>
   );

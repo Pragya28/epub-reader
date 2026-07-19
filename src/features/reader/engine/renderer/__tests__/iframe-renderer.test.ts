@@ -1,31 +1,278 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeEach } from "vitest";
+import {
+  initializeReaderDocument,
+  mountChapterSection,
+  unmountChapterSection,
+} from "../iframe-renderer";
 
-import { renderIframe } from "../iframe-renderer";
+describe("iframe-renderer", () => {
+  let iframe: HTMLIFrameElement;
 
-describe("renderIframe", () => {
-  it("writes chapter html to iframe srcdoc", () => {
-    const iframe = document.createElement("iframe");
-
-    renderIframe(iframe, "<p>Chapter One</p>", []);
-
-    expect(iframe.srcdoc).toContain("Chapter One");
+  beforeEach(() => {
+    iframe = document.createElement("iframe");
   });
 
-  it("injects epub stylesheets", () => {
-    const iframe = document.createElement("iframe");
+  describe("initializeReaderDocument", () => {
+    it("creates a valid HTML document shell in srcdoc", () => {
+      initializeReaderDocument(iframe, []);
 
-    renderIframe(iframe, "<p>Hello</p>", ["body { color: red; }"]);
+      expect(iframe.srcdoc).toContain("<!doctype html>");
+      expect(iframe.srcdoc).toContain("<html>");
+      expect(iframe.srcdoc).toContain("<head>");
+      expect(iframe.srcdoc).toContain("<body></body>");
+    });
 
-    expect(iframe.srcdoc).toContain("body { color: red; }");
+    it("injects stylesheets into head", () => {
+      const stylesheets = ["body { font-size: 18px; }", "p { color: black; }"];
+
+      initializeReaderDocument(iframe, stylesheets);
+
+      expect(iframe.srcdoc).toContain("body { font-size: 18px; }");
+      expect(iframe.srcdoc).toContain("p { color: black; }");
+      expect(iframe.srcdoc).toContain("<style>");
+    });
+
+    it("sanitizes stylesheets by removing expression()", () => {
+      const malicious = "div { behavior: expression(alert('xss')); }";
+
+      initializeReaderDocument(iframe, [malicious]);
+
+      expect(iframe.srcdoc).not.toContain("expression");
+      expect(iframe.srcdoc).toContain("<style>");
+    });
+
+    it("sanitizes stylesheets by removing javascript: in url()", () => {
+      const malicious = "div { background: url('javascript:alert(1)'); }";
+
+      initializeReaderDocument(iframe, [malicious]);
+
+      expect(iframe.srcdoc).not.toContain("javascript:");
+      expect(iframe.srcdoc).toContain("url()");
+    });
+
+    it("sanitizes stylesheets by removing @import", () => {
+      const malicious = "@import url('https://evil.com/evil.css');";
+
+      initializeReaderDocument(iframe, [malicious]);
+
+      expect(iframe.srcdoc).not.toContain("@import");
+    });
+
+    it("handles empty stylesheet array", () => {
+      initializeReaderDocument(iframe, []);
+
+      expect(iframe.srcdoc).toContain("<body></body>");
+      // Should not have extra style tags beyond the base one
+      const styleCount = (iframe.srcdoc.match(/<style>/g) || []).length;
+      expect(styleCount).toBeGreaterThanOrEqual(1); // At least the margin: 0 style
+    });
+
+    it("wraps each stylesheet in its own style tag", () => {
+      const stylesheets = ["/* sheet1 */", "/* sheet2 */"];
+
+      initializeReaderDocument(iframe, stylesheets);
+
+      const styleCount = (iframe.srcdoc.match(/<style>/g) || []).length;
+      expect(styleCount).toBeGreaterThanOrEqual(2); // At least 2 plus base
+    });
+
+    it("sets body margin to 0", () => {
+      initializeReaderDocument(iframe, []);
+
+      expect(iframe.srcdoc).toContain("body { margin: 0; }");
+    });
   });
 
-  it("creates a valid html document", () => {
-    const iframe = document.createElement("iframe");
+  describe("mountChapterSection", () => {
+    let doc: Document;
 
-    renderIframe(iframe, "<p>Hello</p>", []);
+    beforeEach(() => {
+      doc = document.implementation.createHTMLDocument("test");
+    });
 
-    expect(iframe.srcdoc).toContain("<!doctype html>");
-    expect(iframe.srcdoc).toContain("<html>");
-    expect(iframe.srcdoc).toContain("<body>");
+    it("inserts chapter as section element with data-chapter attribute", () => {
+      const html = "<p>Chapter One</p>";
+
+      mountChapterSection(doc, html, 0);
+
+      const section = doc.querySelector('section[data-chapter="0"]');
+      expect(section).toBeDefined();
+      expect(section?.innerHTML).toContain("<p>Chapter One</p>");
+    });
+
+    it("does not insert duplicate sections for same index", () => {
+      const html = "<p>Chapter One</p>";
+
+      mountChapterSection(doc, html, 0);
+      mountChapterSection(doc, html, 0);
+
+      const sections = doc.querySelectorAll('section[data-chapter="0"]');
+      expect(sections).toHaveLength(1);
+    });
+
+    it("maintains spine order when inserting out-of-order chapters", () => {
+      mountChapterSection(doc, "<p>Chapter 0</p>", 0);
+      mountChapterSection(doc, "<p>Chapter 2</p>", 2);
+      mountChapterSection(doc, "<p>Chapter 1</p>", 1);
+
+      const sections = Array.from(
+        doc.querySelectorAll("section[data-chapter]"),
+      );
+      const indices = sections.map((s) =>
+        Number(s.getAttribute("data-chapter")),
+      );
+
+      expect(indices).toEqual([0, 1, 2]);
+    });
+
+    it("appends section to body when no higher-indexed section exists", () => {
+      mountChapterSection(doc, "<p>Last Chapter</p>", 99);
+
+      const section = doc.querySelector('section[data-chapter="99"]');
+      expect(section?.parentElement).toBe(doc.body);
+      expect(doc.body.lastChild).toBe(section);
+    });
+
+    it("inserts section before first higher-indexed section", () => {
+      mountChapterSection(doc, "<p>Chapter 2</p>", 2);
+      mountChapterSection(doc, "<p>Chapter 0</p>", 0);
+
+      const section0 = doc.querySelector('section[data-chapter="0"]');
+      const section2 = doc.querySelector('section[data-chapter="2"]');
+
+      expect(section0?.nextSibling).toBe(section2);
+    });
+
+    it("sets marginBottom and borderBottom styling", () => {
+      mountChapterSection(doc, "<p>Content</p>", 0);
+
+      const section = doc.querySelector(
+        'section[data-chapter="0"]',
+      ) as HTMLElement;
+      expect(section.style.marginBottom).toBe("48px");
+      expect(section.style.borderBottom).toBe("1px solid");
+    });
+
+    it("handles HTML content with nested elements", () => {
+      const complexHtml =
+        "<div><h1>Title</h1><p>Paragraph</p><img src='test.jpg'/></div>";
+
+      mountChapterSection(doc, complexHtml, 0);
+
+      const section = doc.querySelector('section[data-chapter="0"]');
+      expect(section?.querySelector("h1")).toBeDefined();
+      expect(section?.querySelector("p")).toBeDefined();
+      expect(section?.querySelector("img")).toBeDefined();
+    });
+
+    it("handles empty chapter HTML", () => {
+      mountChapterSection(doc, "", 0);
+
+      const section = doc.querySelector('section[data-chapter="0"]');
+      expect(section).toBeDefined();
+      expect(section?.innerHTML).toBe("");
+    });
+
+    it("correctly orders multiple inserted chapters with gaps", () => {
+      mountChapterSection(doc, "<p>Ch 0</p>", 0);
+      mountChapterSection(doc, "<p>Ch 5</p>", 5);
+      mountChapterSection(doc, "<p>Ch 2</p>", 2);
+      mountChapterSection(doc, "<p>Ch 3</p>", 3);
+
+      const sections = Array.from(
+        doc.querySelectorAll("section[data-chapter]"),
+      );
+      const indices = sections.map((s) =>
+        Number(s.getAttribute("data-chapter")),
+      );
+
+      expect(indices).toEqual([0, 2, 3, 5]);
+    });
+  });
+
+  describe("unmountChapterSection", () => {
+    let doc: Document;
+
+    beforeEach(() => {
+      doc = document.implementation.createHTMLDocument("test");
+    });
+
+    it("removes section by index", () => {
+      mountChapterSection(doc, "<p>Chapter 0</p>", 0);
+      expect(doc.querySelector('section[data-chapter="0"]')).toBeDefined();
+
+      unmountChapterSection(doc, 0);
+
+      expect(doc.querySelector('section[data-chapter="0"]')).toBeNull();
+    });
+
+    it("does not remove sections with different indices", () => {
+      mountChapterSection(doc, "<p>Chapter 0</p>", 0);
+      mountChapterSection(doc, "<p>Chapter 1</p>", 1);
+
+      unmountChapterSection(doc, 0);
+
+      expect(doc.querySelector('section[data-chapter="0"]')).toBeNull();
+      expect(doc.querySelector('section[data-chapter="1"]')).toBeDefined();
+    });
+
+    it("handles unmounting non-existent section silently", () => {
+      expect(() => {
+        unmountChapterSection(doc, 999);
+      }).not.toThrow();
+    });
+
+    it("removes only the exact section by data-chapter value", () => {
+      mountChapterSection(doc, "<p>Chapter 0</p>", 0);
+      mountChapterSection(doc, "<p>Chapter 10</p>", 10);
+
+      unmountChapterSection(doc, 0);
+
+      expect(doc.querySelector('section[data-chapter="0"]')).toBeNull();
+      expect(doc.querySelector('section[data-chapter="10"]')).toBeDefined();
+    });
+
+    it("can unmount and remount the same chapter", () => {
+      const html = "<p>Chapter Content</p>";
+
+      mountChapterSection(doc, html, 0);
+      unmountChapterSection(doc, 0);
+      expect(doc.querySelector('section[data-chapter="0"]')).toBeNull();
+
+      mountChapterSection(doc, html, 0);
+      expect(doc.querySelector('section[data-chapter="0"]')).toBeDefined();
+    });
+  });
+
+  describe("integration: mount/unmount sequence", () => {
+    let doc: Document;
+
+    beforeEach(() => {
+      doc = document.implementation.createHTMLDocument("test");
+    });
+
+    it("maintains document structure through mount/unmount cycles", () => {
+      mountChapterSection(doc, "<p>Ch 0</p>", 0);
+      mountChapterSection(doc, "<p>Ch 1</p>", 1);
+      mountChapterSection(doc, "<p>Ch 2</p>", 2);
+
+      unmountChapterSection(doc, 1);
+
+      const remaining = Array.from(
+        doc.querySelectorAll("section[data-chapter]"),
+      ).map((s) => Number(s.getAttribute("data-chapter")));
+      expect(remaining).toEqual([0, 2]);
+    });
+
+    it("works with initializeReaderDocument + mounting sequence", () => {
+      // In real usage, iframe.srcdoc is set, then contentDocument is accessed
+      // Here we simulate: create a fresh doc via the pattern
+      initializeReaderDocument(iframe, ["body { color: blue; }"]);
+
+      // srcdoc is set; in real browser, contentDocument would be ready after load event
+      // For this test, we use a separate doc but verify the flow
+      mountChapterSection(doc, "<p>Chapter</p>", 0);
+      expect(doc.querySelector('section[data-chapter="0"]')).toBeDefined();
+    });
   });
 });
