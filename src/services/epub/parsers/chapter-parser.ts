@@ -33,6 +33,7 @@ export class ChapterParser {
       zip,
       chapterDoc,
       chapterBasePath,
+      assetMap,
     );
 
     return {
@@ -94,6 +95,7 @@ export class ChapterParser {
     zip: JSZip,
     chapterDoc: Document,
     chapterBasePath: string,
+    assetMap: Map<string, string>,
   ): Promise<string[]> {
     const stylesheets: string[] = [];
 
@@ -110,7 +112,17 @@ export class ChapterParser {
 
       if (!cssFile) continue;
 
-      stylesheets.push(await cssFile.async("string"));
+      const cssText = await cssFile.async("string");
+      const cssBasePath = this.getBasePath(cssPath);
+
+      const resolvedCss = await this.resolveCssAssets(
+        cssText,
+        cssBasePath,
+        zip,
+        assetMap,
+      );
+
+      stylesheets.push(resolvedCss);
     }
 
     return stylesheets;
@@ -157,6 +169,53 @@ export class ChapterParser {
       html,
       assetMap,
     };
+  }
+
+  /**
+   * Rewrites url(...) references inside a stylesheet (fonts, background
+   * images, etc.) to blob URLs so they resolve inside the sandboxed iframe,
+   * which has no access to the original zip contents. Paths are resolved
+   * relative to the CSS file's own location, not the chapter's — a
+   * stylesheet in styles/ referencing fonts/foo.woff must resolve against
+   * styles/, not the (possibly different) chapter directory.
+   */
+  private async resolveCssAssets(
+    cssText: string,
+    cssBasePath: string,
+    zip: JSZip,
+    assetMap: Map<string, string>,
+  ): Promise<string> {
+    const urlPattern = /url\(\s*(['"]?)([^'")]+)\1\s*\)/g;
+    const matches = [...cssText.matchAll(urlPattern)];
+
+    let resolvedCss = cssText;
+
+    for (const match of matches) {
+      const rawUrl = match[2]?.trim();
+
+      if (!rawUrl || rawUrl.startsWith("data:")) continue;
+      if (/^[a-z]+:\/\//i.test(rawUrl)) continue;
+
+      const assetPath = this.resolvePath(cssBasePath, rawUrl);
+
+      let blobUrl = assetMap.get(assetPath);
+
+      if (!blobUrl) {
+        const assetFile = zip.file(assetPath);
+
+        if (!assetFile) continue;
+
+        const buffer = await assetFile.async("arraybuffer");
+        const blob = new Blob([buffer]);
+
+        blobUrl = URL.createObjectURL(blob);
+        assetMap.set(assetPath, blobUrl);
+      }
+
+      resolvedCss = resolvedCss.split(match[0]).join(`url("${blobUrl}")`);
+    }
+
+    return resolvedCss;
   }
 
   private getBasePath(chapterPath: string): string {

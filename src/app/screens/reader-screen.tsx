@@ -12,7 +12,14 @@ export const ReaderScreen: FC = () => {
   const { bookId } = useParams();
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const { readerDocument, parsedBook, isLoading, error } = readerStore();
+  const { readerDocument, parsedBook, isLoading, error, currentChapterIndex } =
+    readerStore();
+
+  const totalChapters = parsedBook?.chapters.length ?? 0;
+  const progressPercent =
+    totalChapters > 0
+      ? Math.round(((currentChapterIndex + 1) / totalChapters) * 100)
+      : 0;
 
   useEffect(() => {
     if (!bookId) {
@@ -99,17 +106,19 @@ export const ReaderScreen: FC = () => {
       {/* Footer */}
       <footer className="folio-header border-t border-divider px-(--margin-mobile) py-4 flex flex-col gap-3">
         {/* Progress bar */}
-        <div className="relative w-full h-[2px] bg-border rounded-full">
+        <div className="relative w-full h-0.5 bg-border rounded-full">
           <div
-            className="absolute top-1/2 left-[12%] -translate-y-1/2 w-3 h-3 bg-accent rounded-full shadow-sm"
+            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-accent rounded-full shadow-sm"
+            style={{ left: `${progressPercent}%` }}
             aria-hidden="true"
           ></div>
           <div
-            className="absolute top-0 left-0 h-full bg-accent w-[12%]"
+            className="absolute top-0 left-0 h-full bg-accent"
+            style={{ width: `${progressPercent}%` }}
             aria-hidden="true"
           ></div>
           <span className="absolute right-0 -top-6 text-[10px] text-secondary font-ui">
-            12%
+            {progressPercent}%
           </span>
         </div>
 
@@ -118,11 +127,14 @@ export const ReaderScreen: FC = () => {
           <button
             className="text-primary hover:opacity-70 transition-opacity"
             aria-label="Table of contents"
+            disabled
           >
-            <span className="material-symbols-outlined">list</span>
+            {/* <span className="material-symbols-outlined">list</span> */}
           </button>
           <span className="metadata">
-            {readerDocument.book.title} • Chapter 1
+            {readerDocument.book.title} • Chapter{" "}
+            {totalChapters > 0 ? currentChapterIndex + 1 : "–"}
+            {totalChapters > 0 ? ` of ${totalChapters}` : ""}
           </span>
           <div className="w-5"></div>
         </div>

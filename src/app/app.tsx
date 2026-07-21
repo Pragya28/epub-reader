@@ -2,6 +2,7 @@ import { useEffect, type FC } from "react";
 import { BrowserRouter } from "react-router-dom";
 import { Router } from "./router";
 import { ToastContainer } from "@/components/toast/toast-container";
+import { ErrorBoundary } from "@/components/error-boundary/error-boundary";
 import { clearCoverCache } from "@/services/storage/cover-cache";
 
 const App: FC = () => {
@@ -13,7 +14,9 @@ const App: FC = () => {
 
   return (
     <BrowserRouter>
-      <Router />
+      <ErrorBoundary>
+        <Router />
+      </ErrorBoundary>
       <ToastContainer />
     </BrowserRouter>
   );
