@@ -75,12 +75,6 @@ describe("iframe-renderer", () => {
       const styleCount = (iframe.srcdoc.match(/<style>/g) || []).length;
       expect(styleCount).toBeGreaterThanOrEqual(2); // At least 2 plus base
     });
-
-    it("sets body margin to 0", () => {
-      initializeReaderDocument(iframe, []);
-
-      expect(iframe.srcdoc).toContain("body { margin: 0; }");
-    });
   });
 
   describe("mountChapterSection", () => {

@@ -5,7 +5,7 @@
    ========================= */
 
 @theme {
-  /* Colors */
+  /* Colors — light (default) */
   --color-bg: #fff9ee;
   --color-surface-low: #fbf3df;
   --color-surface: #f5edd9;
@@ -27,6 +27,10 @@
 
   --cover-dark: #2b241c;
   --cover-gold: #c9a84c;
+
+  /* Header — kept as its own token (not inlined in .folio-header) so it
+     can flip per-theme like everything else. */
+  --header-bg: rgb(255 249 238 / 85%);
 
   /* Spacing */
   --space-1: 4px;
@@ -78,10 +82,55 @@
 }
 
 /* =========================
+   SYSTEM DARK MODE
+   Overrides the same custom properties on :root — every utility/class
+   built on top of them (bg-bg, text-primary, .folio-header, etc.)
+   updates automatically, no dark: variants needed in components.
+   ========================= */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #141210;
+    --color-surface-low: #1a1713;
+    --color-surface: #211d16;
+    --color-surface-high: #292319;
+    --color-surface-highest: #322b1e;
+
+    --color-text-primary: #f2ead8;
+    --color-text-secondary: #b3ada0;
+
+    --color-primary: #f5f2ea;
+    --color-primary-container: #2c2a24;
+
+    --color-secondary: #cbb98e;
+    --color-secondary-container: #3a3220;
+
+    --color-border: #3d3a34;
+    --color-divider: #2c2820;
+    --color-accent: #cbb98e;
+
+    /* --cover-dark / --cover-gold are unchanged — that tile is designed
+       to look "dark" in both themes (e.g. continue-reading icon chip),
+       not a semantic surface that should flip. */
+
+    --header-bg: rgb(20 18 16 / 85%);
+
+    --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.35);
+    --shadow-floating: 0 8px 40px rgba(0, 0, 0, 0.65);
+  }
+}
+
+/* =========================
    BASE STYLES
    ========================= */
 
 @layer base {
+  html {
+    /* Lets the browser theme native UI (scrollbars, form controls,
+       the mobile status bar) to match automatically. */
+    color-scheme: light dark;
+  }
+
   html,
   body {
     margin: 0;
@@ -159,7 +208,7 @@
     top: 0;
     height: var(--header-height);
     backdrop-filter: blur(var(--header-blur));
-    background: rgb(255 249 238 / 85%);
+    background: var(--header-bg);
     border-bottom: 0.5px solid var(--color-divider);
   }
 
