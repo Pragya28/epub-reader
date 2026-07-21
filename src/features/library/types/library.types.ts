@@ -12,8 +12,11 @@ export interface LibraryStore {
 
 export type ReadingStatus = "reading" | "unread" | "finished";
 
-export interface BookWithProgress extends StoredBook {
-  progress?: number; // 0-100
+export interface BookWithProgress extends Omit<StoredBook, "progress"> {
+  progress?: number; // 0-100, mirrors StoredBook.progress.percent
+  progressUpdatedAt?: number; // mirrors StoredBook.progress.updatedAt
+  chapterIndex?: number; // mirrors StoredBook.progress.chapterIndex
+  totalChapters?: number; // mirrors StoredBook.progress.totalChapters
   status: ReadingStatus;
   isNew?: boolean;
   coverBg?: string;

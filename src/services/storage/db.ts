@@ -18,6 +18,16 @@ class LibruneDB extends Dexie {
       bookFiles: "bookId",
       bookCovers: "bookId",
     });
+
+    // v3: adds an index on the nested `progress.updatedAt` field so
+    // "most recently read" queries (continue-reading) don't require a
+    // full table scan. No data migration needed — `progress` is optional
+    // and existing rows simply won't be indexed until first updated.
+    this.version(3).stores({
+      books: "id, title, author, createdAt, &fileHash, progress.updatedAt",
+      bookFiles: "bookId",
+      bookCovers: "bookId",
+    });
   }
 }
 

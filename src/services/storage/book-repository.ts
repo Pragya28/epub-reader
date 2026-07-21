@@ -1,6 +1,6 @@
 import { cacheCoverUrl, getCachedCoverUrl } from "./cover-cache";
 import { db } from "./db";
-import type { StoredBook } from "./storage-types";
+import type { ReadingProgress, StoredBook } from "./storage-types";
 
 export async function saveBookMetadata(book: StoredBook) {
   await db.books.put(book);
@@ -84,6 +84,25 @@ export async function saveImportedBook({
       }
     },
   );
+}
+
+export async function updateBookProgress(
+  bookId: string,
+  progress: ReadingProgress,
+): Promise<void> {
+  await db.books.update(bookId, { progress });
+}
+
+/**
+ * Books that have reading progress, most-recently-read first. Used to
+ * pick the "continue reading" book without pulling the whole library.
+ */
+export async function getBooksSortedByLastRead(): Promise<StoredBook[]> {
+  return db.books
+    .orderBy("progress.updatedAt")
+    .reverse()
+    .filter((book) => !!book.progress)
+    .toArray();
 }
 
 export async function getBookCoverUrl(

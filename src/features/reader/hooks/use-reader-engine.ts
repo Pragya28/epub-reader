@@ -11,20 +11,32 @@ import {
   mountChapter,
 } from "../engine/renderer/chapter-renderer";
 import { logger as rootLogger } from "@/shared/logger/logger";
+import {
+  computeReaderProgress,
+  saveReaderProgress,
+} from "../actions/save-reader-progress";
+import type { ReadingProgress } from "@/services/storage/storage-types";
 
 const SCROLL_PREFETCH_THRESHOLD_PX = 300;
 const ENGINE_START_MAX_ATTEMPTS = 120;
+const PROGRESS_SAVE_DEBOUNCE_MS = 1500;
 
 const logger = rootLogger.child("reader-engine");
 
 interface UseReaderEngineProps {
   iframeRef: RefObject<HTMLIFrameElement | null>;
   parsedBook: ParsedBook | null;
+  /** Book id to persist reading progress against. No-op when omitted. */
+  bookId?: string;
+  /** Position to restore on mount (from previously saved progress). */
+  initialProgress?: ReadingProgress | null;
 }
 
 export function useReaderEngine({
   iframeRef,
   parsedBook,
+  bookId,
+  initialProgress,
 }: UseReaderEngineProps) {
   const chapterLoader = useMemo(() => new ChapterLoader(), []);
 
@@ -46,6 +58,21 @@ export function useReaderEngine({
 
     let scrollCleanup: (() => void) | undefined;
     let cancelled = false;
+    let restoredInitialPosition = false;
+    let saveTimeoutId: ReturnType<typeof setTimeout> | undefined;
+    let lastComputedProgress: ReadingProgress | undefined;
+
+    const scheduleProgressSave = (progress: ReadingProgress) => {
+      lastComputedProgress = progress;
+
+      if (!bookId) return;
+
+      if (saveTimeoutId) clearTimeout(saveTimeoutId);
+
+      saveTimeoutId = setTimeout(() => {
+        void saveReaderProgress(bookId, progress);
+      }, PROGRESS_SAVE_DEBOUNCE_MS);
+    };
 
     const startEngine = (iframeDoc: Document, win: Window) => {
       logger.info("startEngine — iframe document ready", {
@@ -95,6 +122,15 @@ export function useReaderEngine({
 
         maybeLoadNext(lastIndex, viewport);
         maybeLoadPrevious(firstIndex);
+
+        scheduleProgressSave(
+          computeReaderProgress({
+            iframeDoc,
+            win,
+            activeIndex,
+            totalChapters,
+          }),
+        );
 
         if (!store.isMountingChapter) {
           maintainChapterWindow({
@@ -227,6 +263,47 @@ export function useReaderEngine({
         });
       };
 
+      const restoreInitialPosition = (
+        iframeDoc: Document,
+        win: Window,
+        progress: ReadingProgress,
+      ) => {
+        const store = readerStore.getState();
+        const section = iframeDoc.querySelector(
+          `section[data-chapter="${progress.chapterIndex}"]`,
+        ) as HTMLElement | null;
+
+        if (!section) {
+          logger.debug(
+            "restoreInitialPosition — target section not mounted, skipping jump",
+            { chapterIndex: progress.chapterIndex },
+          );
+          handleScroll();
+          return;
+        }
+
+        const sectionHeight = section.scrollHeight || section.offsetHeight || 0;
+        const targetY =
+          section.offsetTop + progress.scrollFraction * sectionHeight;
+
+        logger.info("restoring saved reading position", {
+          chapterIndex: progress.chapterIndex,
+          scrollFraction: progress.scrollFraction,
+          targetY,
+        });
+
+        store.setIsJumping(true);
+        win.scrollTo(0, targetY);
+
+        // Let the jump-triggered scroll event (ignored via isJumping) settle,
+        // then release the guard and run one real handleScroll to sync
+        // windowing/loading state to the restored position.
+        requestAnimationFrame(() => {
+          store.setIsJumping(false);
+          handleScroll();
+        });
+      };
+
       let ticking = false;
 
       const onScroll = () => {
@@ -286,7 +363,13 @@ export function useReaderEngine({
         });
 
         win.addEventListener("scroll", onScroll, { passive: true });
-        handleScroll();
+
+        if (!restoredInitialPosition && initialProgress) {
+          restoredInitialPosition = true;
+          restoreInitialPosition(iframeDoc, win, initialProgress);
+        } else {
+          handleScroll();
+        }
       };
 
       waitForInitialSections();
@@ -331,6 +414,11 @@ export function useReaderEngine({
       cancelled = true;
       iframe.removeEventListener("load", handleIframeLoad);
       scrollCleanup?.();
+
+      if (saveTimeoutId) clearTimeout(saveTimeoutId);
+      if (bookId && lastComputedProgress) {
+        void saveReaderProgress(bookId, lastComputedProgress);
+      }
     };
-  }, [iframeRef, parsedBook, chapterLoader]);
+  }, [iframeRef, parsedBook, chapterLoader, bookId, initialProgress]);
 }

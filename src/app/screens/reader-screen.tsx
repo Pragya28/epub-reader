@@ -35,7 +35,12 @@ export const ReaderScreen: FC = () => {
     };
   }, [bookId]);
 
-  useReaderEngine({ iframeRef, parsedBook });
+  useReaderEngine({
+    iframeRef,
+    parsedBook,
+    bookId,
+    initialProgress: readerDocument?.book.progress ?? null,
+  });
 
   if (isLoading) {
     return (
@@ -111,13 +116,13 @@ export const ReaderScreen: FC = () => {
             className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-accent rounded-full shadow-sm"
             style={{ left: `${progressPercent}%` }}
             aria-hidden="true"
-          ></div>
+          />
           <div
             className="absolute top-0 left-0 h-full bg-accent"
             style={{ width: `${progressPercent}%` }}
             aria-hidden="true"
-          ></div>
-          <span className="absolute right-0 -top-6 text-[10px] text-secondary font-ui">
+          />
+          <span className="absolute right-0 top-0 text-[10px] text-secondary font-ui">
             {progressPercent}%
           </span>
         </div>

@@ -13,9 +13,10 @@ export const ContinueReadingBanner: FC<ContinueReadingBannerProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  const chapter = book.progress
-    ? `Chapter ${Math.ceil((book.progress / 100) * 12)}`
-    : "Chapter I";
+  const chapter =
+    book.chapterIndex !== undefined && book.totalChapters
+      ? `Chapter ${book.chapterIndex + 1} of ${book.totalChapters}`
+      : "Chapter I";
 
   return (
     <button

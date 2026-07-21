@@ -1,37 +1,15 @@
-import type { StoredBook } from "@/services/storage/storage-types";
 import { ROUTES } from "@/shared/utils/routes";
 import { useEffect, useState, type FC } from "react";
 import { Link } from "react-router-dom";
 import { libraryStore } from "@/features/library/store/library-store";
 import { loadLibrary } from "@/features/library/actions/load-library";
-import type {
-  BookWithProgress,
-  ReadingStatus,
-} from "@/features/library/types/library.types";
+import { enrichBookWithProgress } from "@/features/library/utils/derive-book-status";
 import WordIcon from "@/assets/images/word-icon.png";
 import { BookGrid } from "@/features/library/components/book-grid";
 import { ContinueReadingBanner } from "@/features/library/components/continue-reading-banner";
 import { ImportBookButton } from "@/features/library/components/import-book-button";
 import { FilterIcon, SearchIcon, SettingsIcon } from "@/assets/icons";
 import { toastStore } from "@/stores/toast-store";
-
-function enrichBooks(books: StoredBook[]): BookWithProgress[] {
-  return books.map((b, i) => {
-    const statusCycle: ReadingStatus[] = [
-      "reading",
-      "unread",
-      "finished",
-      "reading",
-    ];
-    const status = statusCycle[i % statusCycle.length];
-    return {
-      ...b,
-      status,
-      progress: status === "reading" ? [64, 38, 72, 55][i % 4] : undefined,
-      isNew: status === "unread" && i % 2 === 1,
-    };
-  });
-}
 
 export const LibraryScreen: FC = () => {
   const [search, setSearch] = useState("");
@@ -41,7 +19,7 @@ export const LibraryScreen: FC = () => {
     void loadLibrary();
   }, []);
 
-  const enriched = enrichBooks(books);
+  const enriched = books.map(enrichBookWithProgress);
   const filtered = search.trim()
     ? enriched.filter(
         (b) =>
@@ -50,7 +28,14 @@ export const LibraryScreen: FC = () => {
       )
     : enriched;
 
-  const currentBook = enriched.find((b) => b.status === "reading") ?? null;
+  // Most recently read book still in progress — real data from
+  // book.progress.updatedAt, not just "the first 'reading' book found".
+  const currentBook =
+    [...enriched]
+      .filter((b) => b.status === "reading")
+      .sort(
+        (a, b) => (b.progressUpdatedAt ?? 0) - (a.progressUpdatedAt ?? 0),
+      )[0] ?? null;
 
   useEffect(() => {
     if (error) {
