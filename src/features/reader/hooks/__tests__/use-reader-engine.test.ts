@@ -6,7 +6,9 @@ import * as getChapterSectionsModule from "../../engine/scroll/get-chapter-secti
 import * as detectVisibleChapterModule from "../../engine/scroll/detect-visible-chapter";
 import * as maintainChapterWindowModule from "../../engine/windowing/chapter-window";
 import * as chapterRendererModule from "../../engine/renderer/chapter-renderer";
+import * as saveProgressModule from "../../actions/save-reader-progress";
 import type { ParsedBook, ParsedChapter } from "@/services/epub/epub-types";
+import type { ReadingProgress } from "@/services/storage/storage-types";
 
 vi.mock("@/shared/logger/logger", () => ({
   logger: {
@@ -17,6 +19,17 @@ vi.mock("@/shared/logger/logger", () => ({
       error: vi.fn(),
     })),
   },
+}));
+
+vi.mock("../../actions/save-reader-progress", () => ({
+  computeReaderProgress: vi.fn(() => ({
+    chapterIndex: 0,
+    totalChapters: 5,
+    scrollFraction: 0.5,
+    percent: 10,
+    updatedAt: Date.now(),
+  })),
+  saveReaderProgress: vi.fn(() => Promise.resolve()),
 }));
 
 describe("useReaderEngine", () => {
@@ -503,6 +516,168 @@ describe("useReaderEngine", () => {
       rerender({ book: mockParsedBook });
 
       expect(initSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("progress persistence", () => {
+    const sectionsForChapters = (count: number) =>
+      Array.from({ length: count }, (_, i) => {
+        const section = mockIframeDoc.createElement("section");
+        section.setAttribute("data-chapter", String(i));
+        (section as HTMLElement).getBoundingClientRect = vi.fn(
+          () => ({ top: i * 100 }) as DOMRect,
+        );
+        return section as HTMLElement;
+      });
+
+    it("does not schedule a save when no bookId is provided", async () => {
+      vi.spyOn(getChapterSectionsModule, "getChapterSections").mockReturnValue(
+        sectionsForChapters(3),
+      );
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(saveProgressModule.saveReaderProgress).not.toHaveBeenCalled();
+    });
+
+    it("debounces saves so rapid scrolling only persists once, not once per scroll", async () => {
+      vi.useFakeTimers();
+
+      try {
+        vi.spyOn(
+          getChapterSectionsModule,
+          "getChapterSections",
+        ).mockReturnValue(sectionsForChapters(3));
+
+        renderHook(() =>
+          useReaderEngine({
+            iframeRef,
+            parsedBook: mockParsedBook,
+            bookId: "book-1",
+          }),
+        );
+
+        // Flush the mocked iframe "load" event's setTimeout(0) and the
+        // synchronous startEngine chain that follows it.
+        await vi.advanceTimersByTimeAsync(0);
+
+        const mockWin = iframeRef.current?.contentWindow as any;
+        const onScroll = mockWin.addEventListener.mock.calls.find(
+          ([event]: [string]) => event === "scroll",
+        )?.[1];
+        expect(onScroll).toBeDefined();
+
+        // Three scroll events in quick succession, each well inside the
+        // debounce window — every one should reset the pending timer
+        // rather than queuing an additional save.
+        onScroll();
+        await vi.advanceTimersByTimeAsync(400);
+        onScroll();
+        await vi.advanceTimersByTimeAsync(400);
+        onScroll();
+        await vi.advanceTimersByTimeAsync(400);
+
+        // Only 400ms has passed since the *last* scroll — still under the
+        // debounce window — so nothing should have saved yet.
+        expect(saveProgressModule.saveReaderProgress).not.toHaveBeenCalled();
+
+        // Let the debounce actually elapse from that last scroll.
+        await vi.advanceTimersByTimeAsync(1200);
+
+        expect(saveProgressModule.saveReaderProgress).toHaveBeenCalledTimes(1);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("flushes a pending save immediately on unmount instead of losing it", async () => {
+      vi.spyOn(getChapterSectionsModule, "getChapterSections").mockReturnValue(
+        sectionsForChapters(3),
+      );
+
+      const { unmount } = renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          bookId: "book-1",
+        }),
+      );
+
+      // Initial handleScroll (fired once automatically after sections are
+      // ready) already schedules a debounced save — well before its
+      // PROGRESS_SAVE_DEBOUNCE_MS timer would fire, unmount happens.
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(saveProgressModule.saveReaderProgress).not.toHaveBeenCalled();
+
+      unmount();
+
+      expect(saveProgressModule.saveReaderProgress).toHaveBeenCalledWith(
+        "book-1",
+        expect.objectContaining({ chapterIndex: expect.any(Number) }),
+      );
+    });
+
+    it("restores the saved chapter/scroll position instead of starting at chapter 0", async () => {
+      const sections = sectionsForChapters(3);
+      mockIframeDoc.body.append(...sections);
+
+      vi.spyOn(getChapterSectionsModule, "getChapterSections").mockReturnValue(
+        sections,
+      );
+
+      const initialProgress: ReadingProgress = {
+        chapterIndex: 1,
+        totalChapters: 5,
+        scrollFraction: 0.5,
+        percent: 30,
+        updatedAt: Date.now(),
+      };
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          bookId: "book-1",
+          initialProgress,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const mockWin = iframeRef.current?.contentWindow as any;
+      expect(mockWin.scrollTo).toHaveBeenCalled();
+
+      // isJumping must be released again after the restore settles, so
+      // the reader isn't permanently stuck ignoring real scroll events.
+      expect(readerStore.getState().isJumping).toBe(false);
+    });
+
+    it("does not restore scroll position when no initialProgress is given", async () => {
+      vi.spyOn(getChapterSectionsModule, "getChapterSections").mockReturnValue(
+        sectionsForChapters(3),
+      );
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          bookId: "book-1",
+          initialProgress: null,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const mockWin = iframeRef.current?.contentWindow as any;
+      expect(mockWin.scrollTo).not.toHaveBeenCalled();
+      expect(readerStore.getState().isJumping).toBe(false);
     });
   });
 });
