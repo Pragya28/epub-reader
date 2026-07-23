@@ -41,6 +41,7 @@ describe("enrichBookWithProgress", () => {
         scrollFraction: 0.4,
         percent: 34,
         updatedAt: Date.now(),
+        atDocumentEnd: false,
       },
     });
 
@@ -60,6 +61,7 @@ describe("enrichBookWithProgress", () => {
         scrollFraction: 0.5, // nowhere near the end yet
         percent: 95,
         updatedAt: Date.now(),
+        atDocumentEnd: false,
       },
     });
 
@@ -76,6 +78,7 @@ describe("enrichBookWithProgress", () => {
         scrollFraction: 0.99,
         percent: 100,
         updatedAt: Date.now(),
+        atDocumentEnd: true,
       },
     });
 
@@ -92,6 +95,7 @@ describe("enrichBookWithProgress", () => {
         scrollFraction: 0.99,
         percent: 45,
         updatedAt: Date.now(),
+        atDocumentEnd: false,
       },
     });
 
@@ -109,6 +113,7 @@ describe("enrichBookWithProgress", () => {
         scrollFraction: 0.1,
         percent: 11,
         updatedAt,
+        atDocumentEnd: false,
       },
     });
 
@@ -145,6 +150,7 @@ describe("enrichBookWithProgress", () => {
         scrollFraction: 0.1,
         percent: 1,
         updatedAt: justNow,
+        atDocumentEnd: false,
       },
     });
 
