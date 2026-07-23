@@ -11,12 +11,21 @@ function deriveReadingStatus(progress: StoredBook["progress"]): ReadingStatus {
   if (!progress) return "unread";
 
   const isLastChapter = progress.chapterIndex >= progress.totalChapters - 1;
-  const isNearEnd =
+  if (!isLastChapter) return "reading";
+
+  // atDocumentEnd is the reliable signal — it's a document-level check,
+  // not dependent on measuring the last chapter's own section height,
+  // so it doesn't undershoot on a short epilogue/acknowledgments
+  // chapter that's shorter than the viewport (scrollFraction alone
+  // could never reach the threshold in that case even at the book's
+  // literal last pixel). scrollFraction stays as a fallback for older
+  // saved progress written before atDocumentEnd existed, or any case
+  // where the document-height check behaves unexpectedly.
+  const reachedEnd =
+    progress.atDocumentEnd === true ||
     progress.scrollFraction >= FINISHED_SCROLL_FRACTION_THRESHOLD;
 
-  if (isLastChapter && isNearEnd) return "finished";
-
-  return "reading";
+  return reachedEnd ? "finished" : "reading";
 }
 
 export function enrichBookWithProgress(book: StoredBook): BookWithProgress {

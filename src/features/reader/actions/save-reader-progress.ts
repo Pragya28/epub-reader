@@ -29,10 +29,23 @@ interface ComputeProgressParams {
 }
 
 /**
+ * How close win.scrollY + viewport needs to be to the document's total
+ * scrollHeight to count as "reached the end." A few px of tolerance
+ * absorbs sub-pixel scroll rounding differences across browsers/DPI.
+ */
+const END_OF_DOCUMENT_TOLERANCE_PX = 4;
+
+/**
  * Derives a ReadingProgress snapshot from the current scroll state.
  * scrollFraction is measured relative to the active chapter's own
  * section height, so it degrades gracefully across reflows/font-size
- * changes rather than relying on an absolute pixel offset.
+ * changes rather than relying on an absolute pixel offset — but it can
+ * UNDERshoot 1 on a short last chapter/epilogue that's shorter than the
+ * viewport, since the browser may never let scrollY reach a point where
+ * the section-relative fraction crosses close to 1, even though the
+ * user is at the document's literal end. atDocumentEnd is a second,
+ * independent signal for exactly that case — see its doc comment in
+ * storage-types.ts for why it's only meaningful on the last chapter.
  */
 export function computeReaderProgress({
   iframeDoc,
@@ -55,18 +68,31 @@ export function computeReaderProgress({
     );
   }
 
+  const documentHeight = iframeDoc.documentElement?.scrollHeight ?? 0;
+  const viewportHeight = win.innerHeight ?? 0;
+  const atDocumentEnd =
+    documentHeight > 0 &&
+    win.scrollY + viewportHeight >=
+      documentHeight - END_OF_DOCUMENT_TOLERANCE_PX;
+
+  // If we've genuinely hit the bottom of the document, trust that over
+  // the section-relative math rather than potentially reporting <100%
+  // while the user is looking at the literal last pixel of the book.
+  const effectiveFraction = atDocumentEnd ? 1 : scrollFraction;
+
   const percent =
     totalChapters > 0
       ? Math.min(
           100,
-          Math.round(((activeIndex + scrollFraction) / totalChapters) * 100),
+          Math.round(((activeIndex + effectiveFraction) / totalChapters) * 100),
         )
       : 0;
 
   return {
     chapterIndex: activeIndex,
     totalChapters,
-    scrollFraction,
+    scrollFraction: effectiveFraction,
+    atDocumentEnd,
     percent,
     updatedAt: Date.now(),
   };

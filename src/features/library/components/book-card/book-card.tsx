@@ -21,7 +21,7 @@ export const BookCard: FC<BookCardProps> = ({ book, index }) => {
       className="flex flex-col gap-2.5"
       onClick={() => navigate(ROUTES.READER.replace(":bookId", book.id))}
     >
-      <div className="relative w-full rounded-xl overflow-hidden shadow-[0 4px 16px rgba(20,16,8,0.22)] aspect-2/3">
+      <div className="relative w-full rounded-xl overflow-hidden aspect-2/3 border border-border/40 shadow-[0_4px_16px_rgba(20,16,8,0.22)]">
         <BookCover book={book} index={index} />
 
         {book.isNew && (

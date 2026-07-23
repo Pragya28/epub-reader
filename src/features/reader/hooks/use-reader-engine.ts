@@ -62,6 +62,30 @@ export function useReaderEngine({
     let saveTimeoutId: ReturnType<typeof setTimeout> | undefined;
     let lastComputedProgress: ReadingProgress | undefined;
 
+    const flushPendingProgress = () => {
+      if (saveTimeoutId) clearTimeout(saveTimeoutId);
+      if (bookId && lastComputedProgress) {
+        void saveReaderProgress(bookId, lastComputedProgress);
+      }
+    };
+
+    // Backgrounding the app (home button, app switch, lock screen) never
+    // unmounts this component — it just freezes JS execution. If a
+    // debounced save was mid-flight at that moment, it would previously
+    // be silently lost, and the next launch would restore an earlier,
+    // stale position instead of wherever the user actually stopped
+    // (this is what was causing books to get stuck below the "finished"
+    // threshold despite actually being read to the end).
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        logger.info("page hidden — flushing pending progress save");
+        flushPendingProgress();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pagehide", flushPendingProgress);
+
     const scheduleProgressSave = (progress: ReadingProgress) => {
       lastComputedProgress = progress;
 
@@ -415,10 +439,10 @@ export function useReaderEngine({
       iframe.removeEventListener("load", handleIframeLoad);
       scrollCleanup?.();
 
-      if (saveTimeoutId) clearTimeout(saveTimeoutId);
-      if (bookId && lastComputedProgress) {
-        void saveReaderProgress(bookId, lastComputedProgress);
-      }
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pagehide", flushPendingProgress);
+
+      flushPendingProgress();
     };
   }, [iframeRef, parsedBook, chapterLoader, bookId, initialProgress]);
 }

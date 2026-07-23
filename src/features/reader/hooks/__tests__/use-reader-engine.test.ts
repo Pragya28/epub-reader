@@ -26,6 +26,7 @@ vi.mock("../../actions/save-reader-progress", () => ({
     chapterIndex: 0,
     totalChapters: 5,
     scrollFraction: 0.5,
+    atDocumentEnd: false,
     percent: 10,
     updatedAt: Date.now(),
   })),
@@ -520,8 +521,8 @@ describe("useReaderEngine", () => {
   });
 
   describe("progress persistence", () => {
-    const sectionsForChapters = (count: number) =>
-      Array.from({ length: count }, (_, i) => {
+    const sectionsForChapters = (count: number) => {
+      const sections = Array.from({ length: count }, (_, i) => {
         const section = mockIframeDoc.createElement("section");
         section.setAttribute("data-chapter", String(i));
         (section as HTMLElement).getBoundingClientRect = vi.fn(
@@ -529,6 +530,12 @@ describe("useReaderEngine", () => {
         );
         return section as HTMLElement;
       });
+      // restoreInitialPosition looks these up via iframeDoc.querySelector,
+      // not via the getChapterSections spy — so they need to actually be
+      // in the mock document, not just returned by the mock.
+      sections.forEach((section) => mockIframeDoc.body.appendChild(section));
+      return sections;
+    };
 
     it("does not schedule a save when no bookId is provided", async () => {
       vi.spyOn(getChapterSectionsModule, "getChapterSections").mockReturnValue(
@@ -625,17 +632,15 @@ describe("useReaderEngine", () => {
     });
 
     it("restores the saved chapter/scroll position instead of starting at chapter 0", async () => {
-      const sections = sectionsForChapters(3);
-      mockIframeDoc.body.append(...sections);
-
       vi.spyOn(getChapterSectionsModule, "getChapterSections").mockReturnValue(
-        sections,
+        sectionsForChapters(3),
       );
 
       const initialProgress: ReadingProgress = {
         chapterIndex: 1,
         totalChapters: 5,
         scrollFraction: 0.5,
+        atDocumentEnd: false,
         percent: 30,
         updatedAt: Date.now(),
       };
@@ -664,6 +669,11 @@ describe("useReaderEngine", () => {
         sectionsForChapters(3),
       );
 
+      const isJumpingCalls: boolean[] = [];
+      const unsubscribe = readerStore.subscribe((state) => {
+        isJumpingCalls.push(state.isJumping);
+      });
+
       renderHook(() =>
         useReaderEngine({
           iframeRef,
@@ -674,9 +684,14 @@ describe("useReaderEngine", () => {
       );
 
       await new Promise((resolve) => setTimeout(resolve, 50));
+      unsubscribe();
 
-      const mockWin = iframeRef.current?.contentWindow as any;
-      expect(mockWin.scrollTo).not.toHaveBeenCalled();
+      // The restore path is the only thing that ever sets isJumping to
+      // true — a scrollTo(0, 0) can legitimately still fire from
+      // unrelated windowing logic (e.g. preserving position when a
+      // previous chapter loads), so isJumping is the correct signal
+      // here, not "was scrollTo called at all".
+      expect(isJumpingCalls).not.toContain(true);
       expect(readerStore.getState().isJumping).toBe(false);
     });
   });

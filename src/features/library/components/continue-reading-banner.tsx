@@ -34,25 +34,25 @@ export const ContinueReadingBanner: FC<ContinueReadingBannerProps> = ({
         <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-(--cover-gold) leading-none mb-1 font-reading">
           Continue Reading
         </p>
-        <p className="text-[15px] font-semibold text-white leading-snug truncate">
+        <p className="text-[15px] font-semibold text-bg leading-snug truncate">
           {book.title}
         </p>
         {/* Sub-line: chapter + progress bar */}
         <div className="flex items-center gap-2 mt-1.5">
-          <div className="flex-1 h-0.5 rounded-full overflow-hidden bg-[#3d342a]">
+          <div className="flex-1 h-0.5 rounded-full overflow-hidden bg-bg/20">
             <div
               className="h-full rounded-full bg-(--cover-gold)"
               style={{ width: `${book.progress ?? 0}%` }}
             />
           </div>
-          <span className="text-[10px] text-[#6b5e4e] whitespace-nowrap shrink-0">
+          <span className="text-[10px] text-bg/60 whitespace-nowrap shrink-0">
             {chapter} · {book.progress ?? 0}%
           </span>
         </div>
       </div>
 
       {/* Chevron */}
-      <div className="shrink-0 text-[#6b5e4e]">
+      <div className="shrink-0 text-bg/60">
         <ChevronRightIcon />
       </div>
     </button>
