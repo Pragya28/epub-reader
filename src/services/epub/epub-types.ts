@@ -38,8 +38,19 @@ export interface ParsedChapter {
 
 export interface TocItem {
   label: string;
+  /** Raw href as it appears in the TOC source (relative to OPF directory). */
   href: string;
   children: TocItem[];
+  /**
+   * Spine index of the chapter this item points to, resolved at parse time.
+   * -1 if the href couldn't be matched to any spine item.
+   */
+  chapterIndex: number;
+  /**
+   * Fragment identifier from the href (the part after '#'), if any.
+   * Used to scroll to a specific element within the chapter.
+   */
+  fragmentId?: string;
 }
 
 export interface ParsedBook {

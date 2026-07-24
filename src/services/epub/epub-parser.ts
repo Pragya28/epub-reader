@@ -2,6 +2,7 @@ import { EpubServiceImpl } from "./epub.service";
 
 import { ChapterParser } from "./parsers/chapter-parser";
 import { OpfParser } from "./parsers/opf-parser";
+import { TocParser } from "./parsers/toc-parser";
 
 import type {
   ManifestItem,
@@ -14,10 +15,9 @@ import type JSZip from "jszip";
 
 export class EpubParser {
   private readonly epubService = new EpubServiceImpl();
-
   private readonly opfParser = new OpfParser();
-
   private readonly chapterParser = new ChapterParser();
+  private readonly tocParser = new TocParser();
 
   async parseMetadata(file: Blob): Promise<ParsedEpubMetadata> {
     const parsed = await this.parseOpf(file);
@@ -36,16 +36,21 @@ export class EpubParser {
 
     const parsedEpub = this.opfParser.parse(extraction.opfXml);
 
-    const chapters = await this.chapterParser.parseAllChapters(
-      extraction.zip,
-      parsedEpub,
-      this.getOpfDirectory(extraction.opfPath),
-    );
+    const opfDirectory = this.getOpfDirectory(extraction.opfPath);
+
+    const [chapters, toc] = await Promise.all([
+      this.chapterParser.parseAllChapters(
+        extraction.zip,
+        parsedEpub,
+        opfDirectory,
+      ),
+      this.tocParser.parse(extraction.zip, parsedEpub, opfDirectory),
+    ]);
 
     return {
       metadata: parsedEpub.metadata,
       chapters,
-      toc: [],
+      toc,
     };
   }
 

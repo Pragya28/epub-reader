@@ -1,16 +1,21 @@
-import { useEffect, useRef, type FC } from "react";
+import { useEffect, useRef, useState, useCallback, type FC } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { loadReaderBook } from "@/features/reader/actions/load-reader-book";
+import { jumpToTocItem } from "@/features/reader/actions/jump-to-toc-item";
 import { ReaderFrame } from "@/features/reader/components/reader-frame";
 import { useReaderEngine } from "@/features/reader/hooks/use-reader-engine";
 import { readerStore } from "@/features/reader/store/reader-store";
 import { BackIcon } from "@/assets/icons";
+import type { TocItem } from "@/services/epub/epub-types";
+import { TocIcon } from "@/assets/icons/toc-icon";
+import { TocDrawer } from "@/features/reader/components/toc-drawer";
 
 export const ReaderScreen: FC = () => {
   const navigate = useNavigate();
   const { bookId } = useParams();
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [tocOpen, setTocOpen] = useState(false);
 
   const { readerDocument, parsedBook, isLoading, error, currentChapterIndex } =
     readerStore();
@@ -21,10 +26,10 @@ export const ReaderScreen: FC = () => {
       ? Math.round(((currentChapterIndex + 1) / totalChapters) * 100)
       : 0;
 
+  const toc = parsedBook?.toc ?? [];
+
   useEffect(() => {
-    if (!bookId) {
-      return;
-    }
+    if (!bookId) return;
 
     void loadReaderBook(bookId).catch(() => {
       // errors are already captured in store.error by loadReaderBook
@@ -41,6 +46,23 @@ export const ReaderScreen: FC = () => {
     bookId,
     initialProgress: readerDocument?.book.progress ?? null,
   });
+
+  const handleTocItemClick = useCallback(
+    (item: TocItem) => {
+      const iframe = iframeRef.current;
+      if (!iframe?.contentDocument || !iframe.contentWindow || !parsedBook) {
+        return;
+      }
+      setTocOpen(false);
+      jumpToTocItem(
+        item,
+        iframe.contentDocument,
+        iframe.contentWindow,
+        parsedBook.chapters,
+      );
+    },
+    [parsedBook],
+  );
 
   if (isLoading) {
     return (
@@ -70,16 +92,15 @@ export const ReaderScreen: FC = () => {
   }
 
   return (
-    <div className="flex h-screen flex-col surface">
+    <div className="flex h-screen flex-col surface relative overflow-hidden">
       {/* Header */}
       <header className="folio-header flex items-center justify-between px-(--margin-mobile)">
         <button
           className="text-primary hover:opacity-70 transition-opacity"
           aria-label="Go back"
+          onClick={() => navigate(-1)}
         >
-          <span onClick={() => navigate(-1)} className="cursor-pointer">
-            <BackIcon />
-          </span>
+          <BackIcon />
         </button>
 
         <div className="flex flex-col items-center gap-1">
@@ -87,20 +108,7 @@ export const ReaderScreen: FC = () => {
           <p className="text-sm text-stone-600">{readerDocument.book.author}</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* <button
-            className="text-primary hover:opacity-70 transition-opacity"
-            aria-label="Adjust text size"
-          >
-            <span className="material-symbols-outlined">format_size</span>
-          </button>
-          <button
-            className="text-primary hover:opacity-70 transition-opacity"
-            aria-label="Bookmark"
-          >
-            <span className="material-symbols-outlined">bookmark_border</span>
-          </button> */}
-        </div>
+        <div className="w-5" />
       </header>
 
       {/* Reader Content */}
@@ -130,20 +138,31 @@ export const ReaderScreen: FC = () => {
         {/* Navigation */}
         <div className="flex justify-between items-center">
           <button
-            className="text-primary hover:opacity-70 transition-opacity"
+            className="text-primary hover:opacity-70 transition-opacity disabled:opacity-30"
             aria-label="Table of contents"
-            disabled
+            disabled={toc.length === 0}
+            onClick={() => setTocOpen(true)}
           >
-            {/* <span className="material-symbols-outlined">list</span> */}
+            <TocIcon />
           </button>
           <span className="metadata">
             {readerDocument.book.title} • Chapter{" "}
             {totalChapters > 0 ? currentChapterIndex + 1 : "–"}
             {totalChapters > 0 ? ` of ${totalChapters}` : ""}
           </span>
-          <div className="w-5"></div>
+          <div className="w-5" />
         </div>
       </footer>
+
+      {/* TOC Drawer */}
+      {tocOpen && (
+        <TocDrawer
+          toc={toc}
+          currentChapterIndex={currentChapterIndex}
+          onItemClick={handleTocItemClick}
+          onClose={() => setTocOpen(false)}
+        />
+      )}
     </div>
   );
 };
