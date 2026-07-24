@@ -16,6 +16,7 @@ import {
   saveReaderProgress,
 } from "../actions/save-reader-progress";
 import type { ReadingProgress } from "@/services/storage/storage-types";
+import { jumpToTocItem } from "../actions/jump-to-toc-item";
 
 const SCROLL_PREFETCH_THRESHOLD_PX = 300;
 const ENGINE_START_MAX_ATTEMPTS = 120;
@@ -30,6 +31,8 @@ interface UseReaderEngineProps {
   bookId?: string;
   /** Position to restore on mount (from previously saved progress). */
   initialProgress?: ReadingProgress | null;
+  /** Called when the reader taps an external link — caller handles confirmation UI. */
+  onExternalLink?: (href: string) => void;
 }
 
 export function useReaderEngine({
@@ -37,6 +40,7 @@ export function useReaderEngine({
   parsedBook,
   bookId,
   initialProgress,
+  onExternalLink,
 }: UseReaderEngineProps) {
   const chapterLoader = useMemo(() => new ChapterLoader(), []);
 
@@ -340,6 +344,71 @@ export function useReaderEngine({
         });
       };
 
+      const onLinkClick = (e: MouseEvent) => {
+        const anchor = (e.target as Element).closest("a");
+        if (!anchor) return;
+
+        const href = anchor.getAttribute("href");
+        if (!href) return;
+
+        // External link — open in parent window's new tab, never navigate iframe
+        if (/^[a-z][a-z\d+\-.]*:/i.test(href)) {
+          e.preventDefault();
+          onExternalLink?.(href);
+          return;
+        }
+
+        // Internal link — resolve relative to the active chapter's own href,
+        // since sibling-relative paths like "../notes/endnotes.xhtml" are
+        // relative to the chapter file, not the OPF directory.
+        const activeChapter =
+          chapters[readerStore.getState().currentChapterIndex];
+        if (!activeChapter) return;
+
+        const chapterBasePath = activeChapter.href.includes("/")
+          ? activeChapter.href.slice(0, activeChapter.href.lastIndexOf("/") + 1)
+          : "";
+
+        // Resolve the clicked href against the chapter's directory (same
+        // URL trick used elsewhere in the codebase for path resolution).
+        const [hrefPath, fragmentId] = href.split("#") as [
+          string,
+          string | undefined,
+        ];
+
+        const resolvedPath = new URL(
+          hrefPath,
+          `http://epub/${chapterBasePath}`,
+        ).pathname.slice(1);
+
+        // Find the spine index whose manifest href matches the resolved path
+        const spineIndex = chapters.findIndex((ch) => {
+          // ch.href is relative to OPF directory; resolvedPath is also relative
+          // to OPF directory after the URL resolution above, so direct compare works.
+          return ch.href === resolvedPath;
+        });
+
+        if (spineIndex === -1) {
+          // Not in spine — let the browser handle it (no-op in sandbox)
+          return;
+        }
+
+        e.preventDefault();
+
+        jumpToTocItem(
+          {
+            label: "",
+            href,
+            chapterIndex: spineIndex,
+            fragmentId,
+            children: [],
+          },
+          iframeDoc,
+          win,
+          chapters,
+        );
+      };
+
       let attempts = 0;
 
       const waitForInitialSections = () => {
@@ -387,6 +456,7 @@ export function useReaderEngine({
         });
 
         win.addEventListener("scroll", onScroll, { passive: true });
+        iframeDoc.addEventListener("click", onLinkClick);
 
         if (!restoredInitialPosition && initialProgress) {
           restoredInitialPosition = true;
@@ -401,6 +471,7 @@ export function useReaderEngine({
       scrollCleanup = () => {
         logger.debug("removing scroll listener");
         win.removeEventListener("scroll", onScroll);
+        iframeDoc.removeEventListener("click", onLinkClick);
       };
     };
 
@@ -444,5 +515,12 @@ export function useReaderEngine({
 
       flushPendingProgress();
     };
-  }, [iframeRef, parsedBook, chapterLoader, bookId, initialProgress]);
+  }, [
+    iframeRef,
+    parsedBook,
+    chapterLoader,
+    bookId,
+    initialProgress,
+    onExternalLink,
+  ]);
 }

@@ -10,12 +10,16 @@ import { BackIcon } from "@/assets/icons";
 import type { TocItem } from "@/services/epub/epub-types";
 import { TocIcon } from "@/assets/icons/toc-icon";
 import { TocDrawer } from "@/features/reader/components/toc-drawer";
+import { ExternalLinkDialog } from "@/features/reader/components/external-link-dialog";
 
 export const ReaderScreen: FC = () => {
   const navigate = useNavigate();
   const { bookId } = useParams();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [tocOpen, setTocOpen] = useState(false);
+  const [pendingExternalHref, setPendingExternalHref] = useState<string | null>(
+    null,
+  );
 
   const { readerDocument, parsedBook, isLoading, error, currentChapterIndex } =
     readerStore();
@@ -45,6 +49,7 @@ export const ReaderScreen: FC = () => {
     parsedBook,
     bookId,
     initialProgress: readerDocument?.book.progress ?? null,
+    onExternalLink: setPendingExternalHref,
   });
 
   const handleTocItemClick = useCallback(
@@ -161,6 +166,18 @@ export const ReaderScreen: FC = () => {
           currentChapterIndex={currentChapterIndex}
           onItemClick={handleTocItemClick}
           onClose={() => setTocOpen(false)}
+        />
+      )}
+
+      {/* External link confirmation */}
+      {pendingExternalHref && (
+        <ExternalLinkDialog
+          href={pendingExternalHref}
+          onConfirm={() => {
+            window.open(pendingExternalHref, "_blank", "noopener,noreferrer");
+            setPendingExternalHref(null);
+          }}
+          onCancel={() => setPendingExternalHref(null)}
         />
       )}
     </div>

@@ -9,6 +9,9 @@ import * as chapterRendererModule from "../../engine/renderer/chapter-renderer";
 import * as saveProgressModule from "../../actions/save-reader-progress";
 import type { ParsedBook, ParsedChapter } from "@/services/epub/epub-types";
 import type { ReadingProgress } from "@/services/storage/storage-types";
+import { jumpToTocItem } from "../../actions/jump-to-toc-item";
+
+const jumpSpy = vi.mocked(jumpToTocItem);
 
 vi.mock("@/shared/logger/logger", () => ({
   logger: {
@@ -31,6 +34,10 @@ vi.mock("../../actions/save-reader-progress", () => ({
     updatedAt: Date.now(),
   })),
   saveReaderProgress: vi.fn(() => Promise.resolve()),
+}));
+
+vi.mock("../../actions/jump-to-toc-item", () => ({
+  jumpToTocItem: vi.fn(),
 }));
 
 describe("useReaderEngine", () => {
@@ -693,6 +700,259 @@ describe("useReaderEngine", () => {
       // here, not "was scrollTo called at all".
       expect(isJumpingCalls).not.toContain(true);
       expect(readerStore.getState().isJumping).toBe(false);
+    });
+  });
+
+  describe("link click handling", () => {
+    // Helper: fire a synthetic click on the iframeDoc with a given href.
+    // Simulates clicking an <a> element (or a child of one).
+    const fireClick = (href: string, useChildElement = false) => {
+      const anchor = mockIframeDoc.createElement("a");
+      anchor.setAttribute("href", href);
+
+      const target = useChildElement
+        ? (() => {
+            const em = mockIframeDoc.createElement("em");
+            anchor.appendChild(em);
+            return em;
+          })()
+        : anchor;
+
+      mockIframeDoc.body.appendChild(anchor);
+
+      const event = new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+      });
+      Object.defineProperty(event, "target", {
+        value: target,
+        configurable: true,
+      });
+      // Use dispatchEvent on the anchor so .closest("a") works up the real DOM
+      anchor.dispatchEvent(event);
+
+      return event;
+    };
+
+    const setupWithSections = async () => {
+      const sections = Array.from({ length: 3 }, (_, i) => {
+        const section = mockIframeDoc.createElement("section");
+        section.setAttribute("data-chapter", String(i));
+        mockIframeDoc.body.appendChild(section);
+        return section as HTMLElement;
+      });
+
+      vi.spyOn(getChapterSectionsModule, "getChapterSections").mockReturnValue(
+        sections,
+      );
+    };
+
+    it("calls onExternalLink for https URLs and does not navigate", async () => {
+      await setupWithSections();
+      const onExternalLink = vi.fn();
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          onExternalLink,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      fireClick("https://example.com/page");
+
+      expect(onExternalLink).toHaveBeenCalledWith("https://example.com/page");
+    });
+
+    it("calls onExternalLink for mailto: links", async () => {
+      await setupWithSections();
+      const onExternalLink = vi.fn();
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          onExternalLink,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      fireClick("mailto:author@example.com");
+
+      expect(onExternalLink).toHaveBeenCalledWith("mailto:author@example.com");
+    });
+
+    it("does not call onExternalLink for internal links", async () => {
+      await setupWithSections();
+      const onExternalLink = vi.fn();
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          onExternalLink,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      fireClick("ch1.xhtml");
+
+      expect(onExternalLink).not.toHaveBeenCalled();
+    });
+
+    it("jumps to correct chapter for an internal link matching a spine item", async () => {
+      await setupWithSections();
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      fireClick("ch1.xhtml");
+
+      expect(jumpSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ chapterIndex: 1 }),
+        mockIframeDoc,
+        expect.any(Object),
+        mockParsedBook.chapters,
+      );
+    });
+
+    it("passes fragmentId when internal link contains a hash", async () => {
+      await setupWithSections();
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      fireClick("ch2.xhtml#section-1");
+
+      expect(jumpSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ chapterIndex: 2, fragmentId: "section-1" }),
+        mockIframeDoc,
+        expect.any(Object),
+        mockParsedBook.chapters,
+      );
+    });
+
+    it("does not navigate for internal links not in the spine", async () => {
+      await setupWithSections();
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      fireClick("not-in-spine.xhtml");
+
+      expect(jumpSpy).not.toHaveBeenCalled();
+    });
+
+    it("finds anchor when click target is a child element of <a>", async () => {
+      await setupWithSections();
+      const onExternalLink = vi.fn();
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          onExternalLink,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Click fires on <em> inside <a href="https://...">
+      fireClick("https://example.com", true);
+
+      expect(onExternalLink).toHaveBeenCalledWith("https://example.com");
+    });
+
+    it("ignores clicks on elements with no anchor ancestor", async () => {
+      await setupWithSections();
+      const onExternalLink = vi.fn();
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          onExternalLink,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const p = mockIframeDoc.createElement("p");
+      p.textContent = "plain text";
+      mockIframeDoc.body.appendChild(p);
+      p.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+
+      expect(onExternalLink).not.toHaveBeenCalled();
+      expect(jumpSpy).not.toHaveBeenCalled();
+    });
+
+    it("ignores anchor elements with no href", async () => {
+      await setupWithSections();
+      const onExternalLink = vi.fn();
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          onExternalLink,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const anchor = mockIframeDoc.createElement("a");
+      // no href attribute
+      mockIframeDoc.body.appendChild(anchor);
+      anchor.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+
+      expect(onExternalLink).not.toHaveBeenCalled();
+    });
+
+    it("removes click listener on cleanup", async () => {
+      await setupWithSections();
+      const removeListenerSpy = vi.spyOn(mockIframeDoc, "removeEventListener");
+
+      const { unmount } = renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      unmount();
+
+      expect(removeListenerSpy).toHaveBeenCalledWith(
+        "click",
+        expect.any(Function),
+      );
     });
   });
 });
