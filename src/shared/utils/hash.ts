@@ -6,13 +6,23 @@ export async function hashFile(file: File): Promise<string> {
     .join("");
 }
 
-export function hashString(str: string): number {
-  let hash = 0x811c9dc5; // offset basis
+/**
+ * Deterministic, non-cryptographic string hash (djb2 variant). Same
+ * input always produces the same non-negative integer output, in any
+ * order, across renders/sessions/browsers.
+ *
+ * Use this instead of array index for anything that should stay stable
+ * per-item (e.g. a book's cover color) regardless of sort order,
+ * filtering, or additions/removals elsewhere in the list.
+ */
+export function hashString(value: string): number {
+  let hash = 5381;
 
-  for (let i = 0; i < str.length; i++) {
-    hash ^= str.charCodeAt(i); // XOR in next byte/character
-    hash = Math.imul(hash, 0x01000193); // Multiply by FNV prime
+  for (let i = 0; i < value.length; i++) {
+    hash = (hash * 33) ^ value.charCodeAt(i);
   }
 
-  return hash >>> 0; // Convert to unsigned 32-bit integer
+  // >>> 0 coerces to an unsigned 32-bit int, guaranteeing a
+  // non-negative result regardless of sign overflow above.
+  return hash >>> 0;
 }
