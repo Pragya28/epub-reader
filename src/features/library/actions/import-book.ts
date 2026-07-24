@@ -1,7 +1,7 @@
 import { EpubParser } from "@/services/epub/epub-parser";
 import { saveImportedBook } from "@/services/storage/book-repository";
 import { createBookId } from "@/shared/utils/create-book-id";
-import { hashFile } from "@/shared/utils/hash-file";
+import { hashFile } from "@/shared/utils/hash";
 import { libraryStore } from "../store/library-store";
 import type { StoredBook } from "@/services/storage/storage-types";
 

@@ -5,26 +5,22 @@ import { ThreeVerticalDots } from "@/assets/icons";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/shared/utils/routes";
 
-interface BookCardProps {
-  book: BookWithProgress;
-  index: number;
-}
-
-export const BookCard: FC<BookCardProps> = ({ book, index }) => {
+export const BookCard: FC<BookWithProgress> = (book) => {
+  const { status, id, isNew, author, title, progress } = book;
   const navigate = useNavigate();
 
-  const isFinished = book.status === "finished";
-  const isReading = book.status === "reading";
+  const isFinished = status === "finished";
+  const isReading = status === "reading";
 
   return (
     <div
       className="flex flex-col gap-2.5"
-      onClick={() => navigate(ROUTES.READER.replace(":bookId", book.id))}
+      onClick={() => navigate(ROUTES.READER.replace(":bookId", id))}
     >
       <div className="relative w-full rounded-xl overflow-hidden aspect-2/3 border border-border/40 shadow-[0_4px_16px_rgba(20,16,8,0.22)]">
-        <BookCover book={book} index={index} />
+        <BookCover {...book} />
 
-        {book.isNew && (
+        {isNew && (
           <div className="absolute top-0 right-0 bg-white/95 text-[#1a1610] text-[10px] font-bold uppercase tracking-[0.8px] px-2.5 py-1 rounded-bl-xl">
             NEW
           </div>
@@ -41,7 +37,7 @@ export const BookCard: FC<BookCardProps> = ({ book, index }) => {
               isFinished ? "line-through opacity-50" : "",
             ].join(" ")}
           >
-            {book.title}
+            {title}
           </div>
           <button
             aria-label="More options"
@@ -52,17 +48,13 @@ export const BookCard: FC<BookCardProps> = ({ book, index }) => {
         </div>
 
         {/* Author */}
-        {book.author && (
-          <p className="text-ui-sm text-secondary leading-snug">
-            {book.author}
-          </p>
+        {author && (
+          <p className="text-ui-sm text-secondary leading-snug">{author}</p>
         )}
 
         {/* Reading progress text */}
-        {isReading && book.progress !== undefined && (
-          <p className="text-meta text-secondary mt-0.5">
-            {book.progress}% read
-          </p>
+        {isReading && progress !== undefined && (
+          <p className="text-meta text-secondary mt-0.5">{progress}% read</p>
         )}
 
         {isFinished && (

@@ -38,8 +38,8 @@ export const BookGrid: FC<BookGridProps> = ({ isLoading, isSearch, books }) => {
       className="grid gap-x-4 gap-y-7"
       style={{ gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))" }}
     >
-      {books.map((book, i) => (
-        <BookCard key={book.id} book={book} index={i} />
+      {books.map((book) => (
+        <BookCard key={book.id} {...book} />
       ))}
     </div>
   );

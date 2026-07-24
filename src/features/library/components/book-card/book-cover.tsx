@@ -1,11 +1,7 @@
 import type { FC } from "react";
 
 import type { BookWithProgress } from "../../types/library.types";
-
-interface BookCoverProps {
-  book: BookWithProgress;
-  index: number;
-}
+import { hashString } from "@/shared/utils/hash";
 
 const COVER_PALETTES: {
   gradient: string;
@@ -74,14 +70,19 @@ const COVER_PALETTES: {
   },
 ];
 
-export const BookCover: FC<BookCoverProps> = ({ book, index }) => {
-  const palette = COVER_PALETTES[index % COVER_PALETTES.length];
+export const BookCover: FC<BookWithProgress> = ({
+  id,
+  coverBg,
+  author,
+  title,
+}) => {
+  const palette = COVER_PALETTES[hashString(id) % COVER_PALETTES.length];
 
-  if (book.coverBg) {
+  if (coverBg) {
     return (
       <div
         className="w-full h-full bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${book.coverBg})` }}
+        style={{ backgroundImage: `url(${coverBg})` }}
       />
     );
   }
@@ -91,18 +92,18 @@ export const BookCover: FC<BookCoverProps> = ({ book, index }) => {
       className={`w-full h-full flex flex-col items-center justify-center gap-2 px-5 py-6 relative ${palette.gradient}`}
     >
       {/* Author */}
-      {book.author && (
+      {author && (
         <p
           className={`text-center tracking-[0.16em] leading-none z-10 text-[9px] ${palette.subColor}`}
         >
-          {book.author}
+          {author}
         </p>
       )}
       {/* Title */}
       <p
         className={`text-center wrap-break-word leading-[1.2] tracking-[0.06em] text-[15px] z-10 body-display ${palette.accent}`}
       >
-        {book.title}
+        {title}
       </p>
     </div>
   );
