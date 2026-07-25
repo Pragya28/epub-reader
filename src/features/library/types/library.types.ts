@@ -19,5 +19,7 @@ export interface BookWithProgress extends Omit<StoredBook, "progress"> {
   totalChapters?: number; // mirrors StoredBook.progress.totalChapters
   status: ReadingStatus;
   isNew?: boolean;
+  isFinished?: boolean;
+  isReading?: boolean;
   coverBg?: string;
 }

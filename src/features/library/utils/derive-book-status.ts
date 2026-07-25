@@ -34,6 +34,8 @@ export function enrichBookWithProgress(book: StoredBook): BookWithProgress {
   return {
     ...book,
     status,
+    isFinished: status === "finished",
+    isReading: status === "reading",
     progress: book.progress?.percent,
     progressUpdatedAt: book.progress?.updatedAt,
     chapterIndex: book.progress?.chapterIndex,

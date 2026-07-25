@@ -6,11 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/utils/routes";
 
 export const BookCard: FC<BookWithProgress> = (book) => {
-  const { status, id, isNew, author, title, progress } = book;
+  const { id, isNew, isFinished, isReading, author, title, progress } = book;
   const navigate = useNavigate();
-
-  const isFinished = status === "finished";
-  const isReading = status === "reading";
 
   return (
     <div

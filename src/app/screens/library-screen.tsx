@@ -4,12 +4,12 @@ import { Link } from "react-router-dom";
 import { libraryStore } from "@/features/library/store/library-store";
 import { loadLibrary } from "@/features/library/actions/load-library";
 import { enrichBookWithProgress } from "@/features/library/utils/derive-book-status";
-import WordIcon from "@/assets/images/word-icon.png";
 import { BookGrid } from "@/features/library/components/book-grid";
 import { ContinueReadingBanner } from "@/features/library/components/continue-reading-banner";
 import { ImportBookButton } from "@/features/library/components/import-book-button";
 import { FilterIcon, SearchIcon, SettingsIcon } from "@/assets/icons";
 import { toastStore } from "@/stores/toast-store";
+import { WordMark } from "@/assets/icons/word-mark";
 
 export const LibraryScreen: FC = () => {
   const [search, setSearch] = useState("");
@@ -20,19 +20,25 @@ export const LibraryScreen: FC = () => {
   }, []);
 
   const enriched = books.map(enrichBookWithProgress);
+
+  const ordered = [
+    ...enriched.filter((book) => !book.isFinished),
+    ...enriched.filter((book) => book.isFinished),
+  ];
+
   const filtered = search.trim()
-    ? enriched.filter(
+    ? ordered.filter(
         (b) =>
           b.title.toLowerCase().includes(search.toLowerCase()) ||
           (b.author ?? "").toLowerCase().includes(search.toLowerCase()),
       )
-    : enriched;
+    : ordered;
 
   // Most recently read book still in progress — real data from
   // book.progress.updatedAt, not just "the first 'reading' book found".
   const currentBook =
-    [...enriched]
-      .filter((b) => b.status === "reading")
+    [...ordered]
+      .filter((b) => b.isReading)
       .sort(
         (a, b) => (b.progressUpdatedAt ?? 0) - (a.progressUpdatedAt ?? 0),
       )[0] ?? null;
@@ -48,11 +54,7 @@ export const LibraryScreen: FC = () => {
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <header className="folio-header sticky top-0 z-50 px-5 flex items-center">
         <div className="flex-1">
-          <img
-            src={WordIcon}
-            alt="Librune"
-            className="h-8 sm:h-10 md:h-12 w-auto"
-          />
+          <WordMark className="h-16 w-auto" />
         </div>
         <nav className="flex items-center gap-1 text-primary">
           <button
