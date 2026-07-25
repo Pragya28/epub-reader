@@ -8,13 +8,14 @@ import { readerStore } from "@/features/reader/store/reader-store";
 import type { TocItem } from "@/services/epub/epub-types";
 import { TocDrawer } from "@/features/reader/components/toc-drawer";
 import { ExternalLinkDialog } from "@/features/reader/components/external-link-dialog";
-import { ChevronLeft, TableOfContents } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
+import { Progress, ProgressValue } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 
 export const ReaderScreen: FC = () => {
   const navigate = useNavigate();
   const { bookId } = useParams();
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [tocOpen, setTocOpen] = useState(false);
   const [pendingExternalHref, setPendingExternalHref] = useState<string | null>(
     null,
   );
@@ -58,7 +59,6 @@ export const ReaderScreen: FC = () => {
       if (!iframe?.contentDocument || !iframe.contentWindow || !parsedBook) {
         return;
       }
-      setTocOpen(false);
       jumpToTocItem(
         item,
         iframe.contentDocument,
@@ -71,7 +71,7 @@ export const ReaderScreen: FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center surface text-primary">
+      <div className="flex h-screen items-center justify-center bg-background text-foreground">
         <p>Loading reader...</p>
       </div>
     );
@@ -79,10 +79,10 @@ export const ReaderScreen: FC = () => {
 
   if (error) {
     return (
-      <div className="flex h-screen items-center justify-center surface text-primary">
+      <div className="flex h-screen items-center justify-center bg-background text-foreground">
         <div className="text-center">
           <p className="mb-2 font-semibold">Error loading book</p>
-          <p className="text-secondary text-sm">{error}</p>
+          <p className="text-muted-foreground text-sm">{error}</p>
         </div>
       </div>
     );
@@ -90,96 +90,85 @@ export const ReaderScreen: FC = () => {
 
   if (!readerDocument || !parsedBook) {
     return (
-      <div className="flex h-screen items-center justify-center surface text-primary">
+      <div className="flex h-screen items-center justify-center bg-background text-foreground">
         <p>No book loaded</p>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen flex-col surface relative overflow-hidden">
+    <div className="relative flex h-screen flex-col overflow-hidden bg-background">
       {/* Header */}
-      <header className="folio-header flex items-center justify-between px-(--margin-mobile)">
-        <button
-          className="text-primary hover:opacity-70 transition-opacity"
+      <header className="folio-header flex items-center justify-between">
+        <Button
+          variant="ghost"
+          size="icon"
           aria-label="Go back"
           onClick={() => navigate(-1)}
         >
           <ChevronLeft size={36} strokeWidth={1} />
-        </button>
+        </Button>
 
         <div className="flex flex-col items-center gap-1">
-          <h1 className="text-xl font-semibold">{readerDocument.book.title}</h1>
-          <p className="text-sm text-stone-600">{readerDocument.book.author}</p>
+          <h1 className="font-heading text-lg tracking-wide">
+            {readerDocument.book.title}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {readerDocument.book.author}
+          </p>
         </div>
 
-        <div className="w-5" />
+        <Button variant="ghost" size="icon" className="invisible" />
       </header>
 
       {/* Reader Content */}
-      <main className="flex-1 overflow-hidden flex flex-col px-2">
+      <main className="flex flex-1 overflow-hidden px-2">
         <ReaderFrame ref={iframeRef} />
       </main>
 
       {/* Footer */}
-      <footer className="folio-header border-t border-divider px-(--margin-mobile) py-4 flex flex-col gap-3">
+      <footer className="folio-header flex flex-col gap-2">
         {/* Progress bar */}
-        <div className="relative w-full h-0.5 bg-border rounded-full">
-          <div
-            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-accent rounded-full shadow-sm"
-            style={{ left: `${progressPercent}%` }}
-            aria-hidden="true"
-          />
-          <div
-            className="absolute top-0 left-0 h-full bg-accent"
-            style={{ width: `${progressPercent}%` }}
-            aria-hidden="true"
-          />
-          <span className="absolute right-0 top-0 text-[10px] text-secondary font-ui">
-            {progressPercent}%
-          </span>
-        </div>
+        <Progress
+          value={progressPercent}
+          className="w-full max-w-sm px-2 gap-1"
+        >
+          <ProgressValue />
+        </Progress>
 
         {/* Navigation */}
         <div className="flex justify-between items-center px-2">
-          <button
-            className="text-primary hover:opacity-70 transition-opacity disabled:opacity-30"
-            aria-label="Table of contents"
-            disabled={toc.length === 0}
-            onClick={() => setTocOpen(true)}
-          >
-            <TableOfContents size={24} strokeWidth={1} />
-          </button>
-          <span className="metadata">
+          {/* TOC Drawer */}
+          <TocDrawer
+            toc={toc}
+            currentChapterIndex={currentChapterIndex}
+            onItemClick={handleTocItemClick}
+          />
+          <p className="metadata normal-case">
             {readerDocument.book.title} •{" "}
             {totalChapters > 0 ? currentChapterIndex + 1 : "–"}
             {totalChapters > 0 ? ` of ${totalChapters}` : ""}
-          </span>
+          </p>
           <div className="w-5" />
         </div>
       </footer>
 
-      {/* TOC Drawer */}
-      {tocOpen && (
-        <TocDrawer
-          toc={toc}
-          currentChapterIndex={currentChapterIndex}
-          onItemClick={handleTocItemClick}
-          onClose={() => setTocOpen(false)}
-        />
-      )}
-
       {/* External link confirmation */}
-      {pendingExternalHref && (
-        <ExternalLinkDialog
-          href={pendingExternalHref}
-          onConfirm={() => {
-            window.open(pendingExternalHref, "_blank", "noopener,noreferrer");
+      <ExternalLinkDialog
+        open={pendingExternalHref !== null}
+        href={pendingExternalHref ?? ""}
+        onConfirm={() => {
+          if (!pendingExternalHref) return;
+
+          window.open(pendingExternalHref, "_blank", "noopener,noreferrer");
+          setPendingExternalHref(null);
+        }}
+        onOpenChange={(open) => {
+          if (!open) {
             setPendingExternalHref(null);
-          }}
-          onCancel={() => setPendingExternalHref(null)}
-        />
-      )}
+          }
+        }}
+      />
     </div>
   );
 };

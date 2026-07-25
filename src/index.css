@@ -281,11 +281,11 @@
   /* Header */
   .folio-header {
     position: sticky;
-    top: 0;
-    height: var(--header-height);
     backdrop-filter: blur(var(--header-blur));
     background: var(--header-bg);
     border-bottom: 0.5px solid var(--divider);
+    border-top: 0.5px solid var(--divider);
+    padding: 8px 16px;
   }
 
   .metadata {

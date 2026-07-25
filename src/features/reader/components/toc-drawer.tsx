@@ -1,81 +1,90 @@
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { TocItem } from "@/services/epub/epub-types";
 import { flattenToc } from "../utils/flatten-toc";
+import { TableOfContents } from "lucide-react";
+import { useState } from "react";
 
 interface TocDrawerProps {
   toc: TocItem[];
   currentChapterIndex: number;
   onItemClick: (item: TocItem) => void;
-  onClose: () => void;
 }
 
 export function TocDrawer({
   toc,
   currentChapterIndex,
   onItemClick,
-  onClose,
 }: TocDrawerProps) {
   const flatItems = flattenToc(toc, 0);
+  const [open, setOpen] = useState(false);
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 z-10 bg-black/40 backdrop-blur-sm"
-        aria-hidden="true"
-        onClick={onClose}
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Table of contents"
+            disabled={toc.length === 0}
+          >
+            <TableOfContents className="size-5" strokeWidth={1.5} />
+          </Button>
+        }
       />
+      <SheetContent
+        side="bottom"
+        className="flex max-h-[85dvh] flex-col rounded-t-3xl border-t bg-card p-0"
+        showCloseButton={false}
+      >
+        <SheetHeader className="border-b border-border px-6 pt-3 pb-5">
+          <div className="mx-auto mb-4 h-1 w-16 rounded-full bg-border" />
 
-      {/* Bottom sheet */}
-      <div className="absolute inset-x-0 bottom-0 z-20 flex max-h-[85%] flex-col rounded-t-3xl surface shadow-floating">
-        {/* Handle */}
-        <div className="flex flex-col items-center border-b border-divider px-6 pt-3 pb-5">
-          <div className="mb-4 h-1.5 w-12 rounded-full bg-divider" />
-
-          <h2 className="font-display text-base font-semibold tracking-[0.18em] text-primary">
+          <SheetTitle className="font-heading text-base font-semibold tracking-[0.18em] text-center">
             Contents
-          </h2>
-        </div>
+          </SheetTitle>
+        </SheetHeader>
 
-        {/* List */}
-        <nav
-          aria-label="Book chapters"
-          className="flex-1 overflow-y-auto px-2 py-2"
-        >
-          <div className="flex flex-col gap-2">
-            {flatItems.map(({ item }, idx) => {
+        <ScrollArea className="flex-1 overflow-auto">
+          <div className="flex flex-col gap-2 px-2 py-2">
+            {flatItems.map(({ item }) => {
               const isActive = item.chapterIndex === currentChapterIndex;
               const isNavigable = item.chapterIndex >= 0;
 
               return (
-                <button
-                  key={idx}
+                <Button
+                  key={item.href}
+                  variant={isActive ? "secondary" : "ghost"}
                   disabled={!isNavigable}
-                  onClick={() => isNavigable && onItemClick(item)}
-                  className={[
-                    "w-full text-left px-5 py-2.5 text-sm transition-colors",
-                    "hover:bg-surface-high disabled:opacity-40 disabled:cursor-default",
-                    isActive
-                      ? "text-accent font-semibold bg-surface"
-                      : "text-primary",
-                  ].join(" ")}
+                  className="h-auto justify-center px-5 py-3 text-center"
+                  onClick={() => {
+                    if (!isNavigable) return;
+                    onItemClick(item);
+                    setOpen(false);
+                  }}
                   aria-current={isActive ? "true" : undefined}
                 >
-                  <div className="flex flex-col items-center text-center">
-                    <span
-                      className={[
-                        "font-reading text-m italic leading-tight",
-                        isActive ? "font-semibold" : "",
-                      ].join(" ")}
-                    >
-                      {item.label}
-                    </span>
-                  </div>
-                </button>
+                  <span
+                    className={`font-reading leading-tight italic ${
+                      isActive ? "font-semibold" : ""
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                </Button>
               );
             })}
           </div>
-        </nav>
-      </div>
-    </>
+        </ScrollArea>
+      </SheetContent>
+    </Sheet>
   );
 }
