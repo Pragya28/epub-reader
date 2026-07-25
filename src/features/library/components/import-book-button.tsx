@@ -2,9 +2,10 @@ import type { FC } from "react";
 import { useState } from "react";
 import { importBook } from "../actions/import-book";
 import { loadLibrary } from "../actions/load-library";
-import { PlusIcon, SpinnerIcon } from "@/assets/icons";
 import { toastStore } from "@/stores/toast-store";
 
+import { Button } from "@/components/ui/button";
+import { Loader2, Plus } from "lucide-react";
 export const ImportBookButton: FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -65,7 +66,7 @@ export const ImportBookButton: FC = () => {
         isLoading ? "opacity-60 pointer-events-none" : "hover:opacity-90",
       ].join(" ")}
     >
-      {isLoading ? <SpinnerIcon /> : <PlusIcon />}
+      {isLoading ? <Loader2 className="animate-spin" /> : <Plus />}
     </button>
   );
 };

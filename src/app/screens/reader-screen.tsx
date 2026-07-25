@@ -1,16 +1,14 @@
 import { useEffect, useRef, useState, useCallback, type FC } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
 import { loadReaderBook } from "@/features/reader/actions/load-reader-book";
 import { jumpToTocItem } from "@/features/reader/actions/jump-to-toc-item";
 import { ReaderFrame } from "@/features/reader/components/reader-frame";
 import { useReaderEngine } from "@/features/reader/hooks/use-reader-engine";
 import { readerStore } from "@/features/reader/store/reader-store";
-import { BackIcon } from "@/assets/icons";
 import type { TocItem } from "@/services/epub/epub-types";
-import { TocIcon } from "@/assets/icons/toc-icon";
 import { TocDrawer } from "@/features/reader/components/toc-drawer";
 import { ExternalLinkDialog } from "@/features/reader/components/external-link-dialog";
+import { ChevronLeft, TableOfContents } from "lucide-react";
 
 export const ReaderScreen: FC = () => {
   const navigate = useNavigate();
@@ -105,7 +103,7 @@ export const ReaderScreen: FC = () => {
           aria-label="Go back"
           onClick={() => navigate(-1)}
         >
-          <BackIcon />
+          <ChevronLeft size={36} strokeWidth={1} />
         </button>
 
         <div className="flex flex-col items-center gap-1">
@@ -148,7 +146,7 @@ export const ReaderScreen: FC = () => {
             disabled={toc.length === 0}
             onClick={() => setTocOpen(true)}
           >
-            <TocIcon />
+            <TableOfContents size={48} strokeWidth={1} />
           </button>
           <span className="metadata">
             {readerDocument.book.title} •{" "}
