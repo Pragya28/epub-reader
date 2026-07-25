@@ -19,14 +19,16 @@ export const ReaderScreen: FC = () => {
     null,
   );
 
-  const { readerDocument, parsedBook, isLoading, error, currentChapterIndex } =
-    readerStore();
+  const {
+    readerDocument,
+    parsedBook,
+    isLoading,
+    error,
+    currentChapterIndex,
+    progressPercent,
+  } = readerStore();
 
   const totalChapters = parsedBook?.chapters.length ?? 0;
-  const progressPercent =
-    totalChapters > 0
-      ? Math.round(((currentChapterIndex + 1) / totalChapters) * 100)
-      : 0;
 
   const toc = parsedBook?.toc ?? [];
 
@@ -146,7 +148,7 @@ export const ReaderScreen: FC = () => {
             disabled={toc.length === 0}
             onClick={() => setTocOpen(true)}
           >
-            <TableOfContents size={48} strokeWidth={1} />
+            <TableOfContents size={24} strokeWidth={1} />
           </button>
           <span className="metadata">
             {readerDocument.book.title} •{" "}

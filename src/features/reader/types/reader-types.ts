@@ -19,12 +19,20 @@ export interface ReaderStore {
   isMountingChapter: boolean;
   /** True during a TOC/anchor jump — scroll engine ignores scroll events. */
   isJumping: boolean;
+  /**
+   * Reading progress as a 0–100 integer, derived from
+   * (chapterIndex + scrollFraction) / totalChapters on every scroll tick.
+   * More accurate than chapter-boundary snapping because it reflects the
+   * user's actual position within the current chapter.
+   */
+  progressPercent: number;
 
   setReaderDocument: (readerDocument: ReaderDocument | null) => void;
   setParsedBook: (parsedBook: ParsedBook | null) => void;
   setCurrentChapterIndex: (currentChapterIndex: number) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
+  setProgressPercent: (progressPercent: number) => void;
 
   addLoadedChapterIndex: (index: number) => void;
   removeLoadedChapterIndex: (index: number) => void;

@@ -11,6 +11,7 @@ const initialState: Partial<ReaderStore> = {
   loadedChapterIndices: new Set<number>(),
   isMountingChapter: false,
   isJumping: false,
+  progressPercent: 0,
 };
 
 export const readerStore = create<ReaderStore>()(
@@ -30,6 +31,9 @@ export const readerStore = create<ReaderStore>()(
       setLoading: (isLoading) => set({ isLoading }, false, "reader/setLoading"),
 
       setError: (error) => set({ error }, false, "reader/setError"),
+
+      setProgressPercent: (progressPercent) =>
+        set({ progressPercent }, false, "reader/setProgressPercent"),
 
       addLoadedChapterIndex: (index) =>
         set(

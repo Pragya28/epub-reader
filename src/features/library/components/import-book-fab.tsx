@@ -68,7 +68,11 @@ export const ImportBookFab: FC = () => {
         disabled:opacity-60
       "
     >
-      {isLoading ? <Loader2 className="animate-spin" /> : <Plus />}
+      {isLoading ? (
+        <Loader2 className="animate-spin size-8" />
+      ) : (
+        <Plus className="size-8" />
+      )}
     </Button>
   );
 };

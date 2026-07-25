@@ -1,5 +1,5 @@
 import { ROUTES } from "@/utils/routes";
-import { useEffect, type FC } from "react";
+import { useEffect, useState, type FC } from "react";
 import { Link } from "react-router-dom";
 import { libraryStore } from "@/features/library/store/library-store";
 import { loadLibrary } from "@/features/library/actions/load-library";
@@ -17,6 +17,22 @@ export const LibraryScreen: FC = () => {
 
   useEffect(() => {
     void loadLibrary();
+
+    // When the user navigates back from the reader, the reader's cleanup
+    // flushes the final progress save to the DB. We listen for the page
+    // becoming visible again so we re-fetch after that write has settled,
+    // ensuring the progress bar and continue-reading banner reflect the
+    // session that just ended.
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void loadLibrary();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   const enriched = books.map(enrichBookWithProgress);
@@ -48,14 +64,14 @@ export const LibraryScreen: FC = () => {
         <WordMark className="mr-auto h-16 w-auto" />
         <nav className="flex items-center gap-1 text-foreground">
           <Button variant="ghost" size="icon" aria-label="Search">
-            <Search strokeWidth={1.5} />
+            <Search strokeWidth={1.5} className="size-5" />
           </Button>
           <Button variant="ghost" size="icon" aria-label="Filter">
-            <SlidersHorizontal strokeWidth={1.5} />
+            <SlidersHorizontal strokeWidth={1.5} className="size-5" />
           </Button>
           <Button variant="ghost" size="icon" aria-label="Settings">
             <Link to={ROUTES.SETTINGS}>
-              <Settings strokeWidth={1.5} />
+              <Settings strokeWidth={1.5} className="size-5" />
             </Link>
           </Button>
         </nav>

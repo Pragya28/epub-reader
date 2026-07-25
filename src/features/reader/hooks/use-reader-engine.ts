@@ -151,14 +151,15 @@ export function useReaderEngine({
         maybeLoadNext(lastIndex, viewport);
         maybeLoadPrevious(firstIndex);
 
-        scheduleProgressSave(
-          computeReaderProgress({
-            iframeDoc,
-            win,
-            activeIndex,
-            totalChapters,
-          }),
-        );
+        const progress = computeReaderProgress({
+          iframeDoc,
+          win,
+          activeIndex,
+          totalChapters,
+        });
+
+        store.setProgressPercent(progress.percent);
+        scheduleProgressSave(progress);
 
         if (!store.isMountingChapter) {
           maintainChapterWindow({

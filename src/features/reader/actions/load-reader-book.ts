@@ -34,6 +34,9 @@ export async function loadReaderBook(bookId: string) {
       // of chapter 0. The exact in-chapter scroll offset is restored
       // separately by useReaderEngine once that chapter's section exists.
       store.setCurrentChapterIndex(savedProgress.chapterIndex);
+      // Seed the progress bar with the persisted percent so it shows the
+      // correct value immediately on open, before the first scroll event.
+      store.setProgressPercent(savedProgress.percent);
     }
   } catch (error) {
     store.setError(
