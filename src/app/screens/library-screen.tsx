@@ -1,4 +1,4 @@
-import { ROUTES } from "@/shared/utils/routes";
+import { ROUTES } from "@/utils/routes";
 import { useEffect, useState, type FC } from "react";
 import { Link } from "react-router-dom";
 import { libraryStore } from "@/features/library/store/library-store";

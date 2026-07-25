@@ -1,7 +1,7 @@
 import type { FC } from "react";
 import type { BookWithProgress } from "../types/library.types";
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/shared/utils/routes";
+import { ROUTES } from "@/utils/routes";
 import { ChevronRightIcon, OpenBookIcon } from "@/assets/icons";
 
 interface ContinueReadingBannerProps {

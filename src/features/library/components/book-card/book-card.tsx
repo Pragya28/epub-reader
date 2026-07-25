@@ -3,7 +3,7 @@ import type { BookWithProgress } from "../../types/library.types";
 import { BookCover } from "./book-cover";
 import { ThreeVerticalDots } from "@/assets/icons";
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/shared/utils/routes";
+import { ROUTES } from "@/utils/routes";
 
 export const BookCard: FC<BookWithProgress> = (book) => {
   const { status, id, isNew, author, title, progress } = book;

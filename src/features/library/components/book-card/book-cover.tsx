@@ -1,7 +1,7 @@
 import type { FC } from "react";
 
 import type { BookWithProgress } from "../../types/library.types";
-import { hashString } from "@/shared/utils/hash";
+import { hashString } from "@/utils/hash";
 
 const COVER_PALETTES: {
   gradient: string;
