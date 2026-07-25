@@ -3,10 +3,10 @@ import { useState } from "react";
 import { importBook } from "../actions/import-book";
 import { loadLibrary } from "../actions/load-library";
 import { toastStore } from "@/stores/toast-store";
-
 import { Button } from "@/components/ui/button";
 import { Loader2, Plus } from "lucide-react";
-export const ImportBookButton: FC = () => {
+
+export const ImportBookFab: FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleImport = () => {
@@ -53,20 +53,22 @@ export const ImportBookButton: FC = () => {
   };
 
   return (
-    <button
+    <Button
+      size="icon-lg"
       onClick={handleImport}
       disabled={isLoading}
       aria-label="Import book"
-      className={[
-        "fixed bottom-5 right-2 w-12 h-12 rounded-2xl",
-        "flex items-center justify-center z-40",
-        "border-none cursor-pointer",
-        "transition-transform duration-100 active:scale-95",
-        "bg-(--cover-dark) text-(--cover-gold) shadow-(--shadow-floating)",
-        isLoading ? "opacity-60 pointer-events-none" : "hover:opacity-90",
-      ].join(" ")}
+      className="
+        fixed bottom-5 right-2
+        p-6
+        rounded-2xl
+        bg-cover-dark
+        text-cover-gold
+        shadow-floating
+        disabled:opacity-60
+      "
     >
       {isLoading ? <Loader2 className="animate-spin" /> : <Plus />}
-    </button>
+    </Button>
   );
 };

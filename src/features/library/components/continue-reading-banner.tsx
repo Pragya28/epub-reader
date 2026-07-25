@@ -2,6 +2,7 @@ import type { FC } from "react";
 import type { BookWithProgress } from "../types/library.types";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/utils/routes";
+import { Progress } from "@/components/ui/progress";
 import { BookOpen, ChevronRight } from "lucide-react";
 
 interface ContinueReadingBannerProps {
@@ -38,14 +39,9 @@ export const ContinueReadingBanner: FC<ContinueReadingBannerProps> = ({
           {book.title}
         </p>
         {/* Sub-line: chapter + progress bar */}
-        <div className="flex items-center gap-2 mt-1.5">
-          <div className="flex-1 h-0.5 rounded-full overflow-hidden bg-bg/20">
-            <div
-              className="h-full rounded-full bg-(--cover-gold)"
-              style={{ width: `${book.progress ?? 0}%` }}
-            />
-          </div>
-          <span className="text-[10px] text-bg/60 whitespace-nowrap shrink-0">
+        <div className="mt-1.5 flex items-center gap-2">
+          <Progress value={book.progress ?? 0} className="flex-1" />
+          <span className="shrink-0 whitespace-nowrap text-[10px] text-background/60">
             {chapter} · {book.progress ?? 0}%
           </span>
         </div>

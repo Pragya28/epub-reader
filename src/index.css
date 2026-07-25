@@ -274,6 +274,10 @@
     box-shadow: var(--shadow-soft);
   }
 
+  .shadow-floating {
+    box-shadow: var(--shadow-floating);
+  }
+
   /* Header */
   .folio-header {
     position: sticky;

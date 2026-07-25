@@ -6,10 +6,11 @@ import { loadLibrary } from "@/features/library/actions/load-library";
 import { enrichBookWithProgress } from "@/features/library/utils/derive-book-status";
 import { BookGrid } from "@/features/library/components/book-grid";
 import { ContinueReadingBanner } from "@/features/library/components/continue-reading-banner";
-import { ImportBookButton } from "@/features/library/components/import-book-button";
+import { ImportBookFab } from "@/features/library/components/import-book-fab";
 import { Search, Settings, SlidersHorizontal } from "lucide-react";
 import { toastStore } from "@/stores/toast-store";
 import { WordMark } from "@/assets/word-mark";
+import { Button } from "@/components/ui/button";
 
 export const LibraryScreen: FC = () => {
   const { books, isLoading, error } = libraryStore();
@@ -46,25 +47,17 @@ export const LibraryScreen: FC = () => {
       <header className="folio-header sticky top-0 z-50 px-5 flex items-center">
         <WordMark className="mr-auto h-16 w-auto" />
         <nav className="flex items-center gap-1 text-foreground">
-          <button
-            aria-label="Search"
-            className="w-11 h-11 flex items-center justify-center rounded-lg hover:surface-container transition-colors border-none bg-transparent cursor-pointer"
-          >
+          <Button variant="ghost" size="icon" aria-label="Search">
             <Search strokeWidth={1.5} />
-          </button>
-          <button
-            aria-label="Filter"
-            className="w-11 h-11 flex items-center justify-center rounded-lg hover:surface-container transition-colors border-none bg-transparent cursor-pointer"
-          >
+          </Button>
+          <Button variant="ghost" size="icon" aria-label="Filter">
             <SlidersHorizontal strokeWidth={1.5} />
-          </button>
-          <Link
-            to={ROUTES.SETTINGS}
-            aria-label="Settings"
-            className="w-11 h-11 flex items-center justify-center rounded-lg hover:surface-container transition-colors text-primary"
-          >
-            <Settings strokeWidth={1.5} />
-          </Link>
+          </Button>
+          <Button variant="ghost" size="icon" aria-label="Settings">
+            <Link to={ROUTES.SETTINGS}>
+              <Settings strokeWidth={1.5} />
+            </Link>
+          </Button>
         </nav>
       </header>
 
@@ -81,7 +74,7 @@ export const LibraryScreen: FC = () => {
       {currentBook && <ContinueReadingBanner book={currentBook} />}
 
       {/* ── FAB — fixed bottom-right ─────────────────────────────────────── */}
-      <ImportBookButton />
+      <ImportBookFab />
     </div>
   );
 };
