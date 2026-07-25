@@ -141,7 +141,7 @@ export const ReaderScreen: FC = () => {
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center px-2">
           <button
             className="text-primary hover:opacity-70 transition-opacity disabled:opacity-30"
             aria-label="Table of contents"
@@ -151,7 +151,7 @@ export const ReaderScreen: FC = () => {
             <TocIcon />
           </button>
           <span className="metadata">
-            {readerDocument.book.title} • Chapter{" "}
+            {readerDocument.book.title} •{" "}
             {totalChapters > 0 ? currentChapterIndex + 1 : "–"}
             {totalChapters > 0 ? ` of ${totalChapters}` : ""}
           </span>
