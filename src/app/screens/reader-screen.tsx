@@ -129,10 +129,7 @@ export const ReaderScreen: FC = () => {
       {/* Footer */}
       <footer className="folio-header flex flex-col gap-2">
         {/* Progress bar */}
-        <Progress
-          value={progressPercent}
-          className="w-full max-w-sm px-2 gap-1"
-        >
+        <Progress value={progressPercent} className="px-2 gap-1">
           <ProgressValue />
         </Progress>
 

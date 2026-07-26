@@ -3,70 +3,78 @@ import type { FC } from "react";
 import type { BookWithProgress } from "../../types/library.types";
 import { hashString } from "@/utils/hash";
 
-const COVER_PALETTES: {
-  gradient: string;
-  accent: string;
-  subColor: string;
-}[] = [
+const COVER_PALETTES = [
   {
-    gradient: "bg-linear-150 from-[#0E2E2A] to-[#071a12]",
-    accent: "text-[#D4B483]",
-    subColor: "text-[rgba(212,180,131,0.55)]",
+    // Forest
+    gradient: "bg-linear-150 from-[#27443F] to-[#142623]",
+    accent: "text-[#E8D7B5]",
+    subColor: "text-[rgba(232,215,181,0.6)]",
   },
   {
-    gradient: "bg-linear-160 from-[#1A1815] to-[#0a0906]",
-    accent: "text-[#A67C52]",
-    subColor: "text-[rgba(166,124,82,0.55)]",
+    // Walnut
+    gradient: "bg-linear-150 from-[#5A4637] to-[#2E221A]",
+    accent: "text-[#F2E3C5]",
+    subColor: "text-[rgba(242,227,197,0.55)]",
   },
   {
-    gradient: "bg-linear-145 from-[#EBE4D5] to-[#d8cdb8]",
-    accent: "text-[#3a2a14]",
-    subColor: "text-[rgba(58,42,20,0.5)]",
+    // Parchment
+    gradient: "bg-linear-150 from-[#EFE7D5] to-[#DCCFB5]",
+    accent: "text-[#443423]",
+    subColor: "text-[rgba(68,52,35,0.55)]",
   },
   {
-    gradient: "bg-linear-155 from-[#14293D] to-[#0a1824]",
-    accent: "text-[#A67C52]",
-    subColor: "text-[rgba(166,124,82,0.55)]",
+    // Slate Blue
+    gradient: "bg-linear-150 from-[#405978] to-[#1E3045]",
+    accent: "text-[#E7D5B0]",
+    subColor: "text-[rgba(231,213,176,0.55)]",
   },
   {
-    gradient: "bg-linear-160 from-[#3a0d2b] to-[#1a0a1f]",
-    accent: "text-[#e8b4a0]",
-    subColor: "text-[rgba(232,180,160,0.5)]",
+    // Burgundy
+    gradient: "bg-linear-150 from-[#6B3642] to-[#33171E]",
+    accent: "text-[#F1D6C7]",
+    subColor: "text-[rgba(241,214,199,0.55)]",
   },
   {
-    gradient: "bg-linear-140 from-[#c47a4a] to-[#7a3a1a]",
-    accent: "text-[#f5e6c8]",
-    subColor: "text-[rgba(245,230,200,0.6)]",
+    // Terracotta
+    gradient: "bg-linear-150 from-[#B76E43] to-[#6A3920]",
+    accent: "text-[#FFF1DA]",
+    subColor: "text-[rgba(255,241,218,0.55)]",
   },
   {
-    gradient: "bg-linear-155 from-[#1e2a5e] to-[#0d1230]",
-    accent: "text-[#7eb8f7]",
-    subColor: "text-[rgba(126,184,247,0.5)]",
+    // Indigo
+    gradient: "bg-linear-150 from-[#485A8E] to-[#222C52]",
+    accent: "text-[#DCE9FF]",
+    subColor: "text-[rgba(220,233,255,0.55)]",
   },
   {
-    gradient: "bg-linear-145 from-[#3a5a2a] to-[#1a2a0d]",
-    accent: "text-[#d4e8a0]",
-    subColor: "text-[rgba(212,232,160,0.5)]",
+    // Olive
+    gradient: "bg-linear-150 from-[#617347] to-[#2D3820]",
+    accent: "text-[#EDF2C8]",
+    subColor: "text-[rgba(237,242,200,0.55)]",
   },
   {
-    gradient: "bg-linear-160 from-[#2e2a24] to-[#131210]",
-    accent: "text-[#cbb27a]",
-    subColor: "text-[rgba(203,178,122,0.55)]",
+    // Graphite
+    gradient: "bg-linear-150 from-[#59544D] to-[#292622]",
+    accent: "text-[#E6D5AE]",
+    subColor: "text-[rgba(230,213,174,0.55)]",
   },
   {
-    gradient: "bg-linear-140 from-[#1a3a7a] to-[#0a1a3a]",
-    accent: "text-[#f0d070]",
-    subColor: "text-[rgba(240,208,112,0.5)]",
+    // Teal
+    gradient: "bg-linear-150 from-[#2E6D71] to-[#16373A]",
+    accent: "text-[#D9F2F2]",
+    subColor: "text-[rgba(217,242,242,0.55)]",
   },
   {
-    gradient: "bg-linear-145 from-[#1a5a3a] to-[#0a2a1a]",
-    accent: "text-[#a0f0c0]",
-    subColor: "text-[rgba(160,240,192,0.45)]",
+    // Dusty Purple
+    gradient: "bg-linear-150 from-[#6A597F] to-[#342B42]",
+    accent: "text-[#EADCF9]",
+    subColor: "text-[rgba(234,220,249,0.55)]",
   },
   {
-    gradient: "bg-linear-155 from-[#4a1a6a] to-[#1a0a2a]",
-    accent: "text-[#d8b0f8]",
-    subColor: "text-[rgba(216,176,248,0.5)]",
+    // Sandstone
+    gradient: "bg-linear-150 from-[#C8A56B] to-[#7B5A2D]",
+    accent: "text-[#FFF7E8]",
+    subColor: "text-[rgba(255,247,232,0.55)]",
   },
 ];
 
@@ -76,7 +84,8 @@ export const BookCover: FC<BookWithProgress> = ({
   author,
   title,
 }) => {
-  const palette = COVER_PALETTES[hashString(id) % COVER_PALETTES.length];
+  const seed = `${id}|${title}|${author}`;
+  const palette = COVER_PALETTES[hashString(seed) % COVER_PALETTES.length];
 
   if (coverBg) {
     return (

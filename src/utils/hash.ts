@@ -7,22 +7,17 @@ export async function hashFile(file: File): Promise<string> {
 }
 
 /**
- * Deterministic, non-cryptographic string hash (djb2 variant). Same
- * input always produces the same non-negative integer output, in any
- * order, across renders/sessions/browsers.
- *
- * Use this instead of array index for anything that should stay stable
- * per-item (e.g. a book's cover color) regardless of sort order,
- * filtering, or additions/removals elsewhere in the list.
+ * Deterministic, non-cryptographic hash (FNV-1a 32-bit).
+ * Produces a stable unsigned integer with better distribution
+ * than djb2 for short strings like book titles and IDs.
  */
 export function hashString(value: string): number {
-  let hash = 5381;
+  let hash = 0x811c9dc5;
 
   for (let i = 0; i < value.length; i++) {
-    hash = (hash * 33) ^ value.charCodeAt(i);
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
   }
 
-  // >>> 0 coerces to an unsigned 32-bit int, guaranteeing a
-  // non-negative result regardless of sign overflow above.
   return hash >>> 0;
 }
