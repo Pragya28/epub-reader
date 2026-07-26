@@ -137,16 +137,6 @@ describe("iframe-renderer", () => {
       expect(section0?.nextSibling).toBe(section2);
     });
 
-    it("sets marginBottom and borderBottom styling", () => {
-      mountChapterSection(doc, "<p>Content</p>", 0);
-
-      const section = doc.querySelector(
-        'section[data-chapter="0"]',
-      ) as HTMLElement;
-      expect(section.style.marginBottom).toBe("48px");
-      expect(section.style.borderBottom).toBe("1px solid");
-    });
-
     it("handles HTML content with nested elements", () => {
       const complexHtml =
         "<div><h1>Title</h1><p>Paragraph</p><img src='test.jpg'/></div>";

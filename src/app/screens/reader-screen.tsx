@@ -106,14 +106,14 @@ export const ReaderScreen: FC = () => {
           aria-label="Go back"
           onClick={() => navigate(-1)}
         >
-          <ChevronLeft size={36} strokeWidth={1} />
+          <ChevronLeft className="size-8" strokeWidth={1} />
         </Button>
 
         <div className="flex flex-col items-center gap-1">
-          <h1 className="font-heading text-lg tracking-wide">
+          <h1 className="font-heading font-semibold text-center text-m tracking-wide">
             {readerDocument.book.title}
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {readerDocument.book.author}
           </p>
         </div>
@@ -145,7 +145,6 @@ export const ReaderScreen: FC = () => {
             onItemClick={handleTocItemClick}
           />
           <p className="metadata normal-case">
-            {readerDocument.book.title} •{" "}
             {totalChapters > 0 ? currentChapterIndex + 1 : "–"}
             {totalChapters > 0 ? ` of ${totalChapters}` : ""}
           </p>

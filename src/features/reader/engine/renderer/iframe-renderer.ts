@@ -24,13 +24,23 @@ const READER_FONTS_LINK =
 const READER_BASE_STYLE = `
   :root {
     color-scheme: light dark;
+
+    --sep-ink:  #695d4a;
+    --sep-fade: #fff9ee;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --sep-ink:  #cbb98e;
+      --sep-fade: #141210;
+    }
   }
 
   body {
     margin: 0;
     font-family: "Literata", serif !important;
     line-height: 1.6;
-    background: #fff9ee;
+    background: var(--sep-fade);
     color: #1f1c0f;
   }
 
@@ -40,8 +50,59 @@ const READER_BASE_STYLE = `
 
   @media (prefers-color-scheme: dark) {
     body {
-      background: #141210;
       color: #f2ead8;
+    }
+  }
+
+  /* ── Chapter separator ─────────────────────────────────────────────
+     A single ::before pseudo-element on every section[data-chapter]
+     except the first, using three composited background layers:
+
+       1. A centred SVG fleuron (❧ U+2767) rendered in Cinzel —
+          Librune's own display face — so the ornament is unmistakably
+          part of this app's typographic identity.
+       2. Left ruled arm: 1 px gradient, fades to transparent at the
+          left margin so the line dissolves into the page.
+       3. Right ruled arm: mirror of the left.
+
+     Both arms are sized to stop 28 px short of centre, ensuring they
+     never overdraw the glyph. Colour is driven by --sep-ink, so dark
+     mode is handled purely in CSS. The SVG fill is hard-coded per theme
+     because data-URI backgrounds cannot read CSS custom properties —
+     only the gradient layers use var(--sep-ink).
+
+     No border, no box, no shadow — ink on parchment.
+  ─────────────────────────────────────────────────────────────────── */
+
+  section[data-chapter] + section[data-chapter]::before {
+    content: "";
+    display: block;
+    height: 4.5rem;
+    margin-block: 3.5rem;
+    pointer-events: none;
+
+    /* Layer order: topmost first (glyph above rule arms). */
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='36'%3E%3Ctext x='50%25' y='72%25' text-anchor='middle' font-family='Cinzel%2C serif' font-size='22' fill='%23695d4a'%3E%E2%9D%A7%3C/text%3E%3C/svg%3E"),
+      linear-gradient(to right, transparent 0%, var(--sep-ink) 40%, var(--sep-ink) 100%),
+      linear-gradient(to left,  transparent 0%, var(--sep-ink) 40%, var(--sep-ink) 100%);
+
+    background-repeat:   no-repeat, no-repeat, no-repeat;
+    background-position: center center, left center, right center;
+    background-size:
+      48px 36px,
+      calc(50% - 28px) 1px,
+      calc(50% - 28px) 1px;
+  }
+
+  /* Dark mode: swap the SVG fill colour only.
+     Gradient arms already use var(--sep-ink), updated above in :root. */
+  @media (prefers-color-scheme: dark) {
+    section[data-chapter] + section[data-chapter]::before {
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='36'%3E%3Ctext x='50%25' y='72%25' text-anchor='middle' font-family='Cinzel%2C serif' font-size='22' fill='%23cbb98e'%3E%E2%9D%A7%3C/text%3E%3C/svg%3E"),
+        linear-gradient(to right, transparent 0%, var(--sep-ink) 40%, var(--sep-ink) 100%),
+        linear-gradient(to left,  transparent 0%, var(--sep-ink) 40%, var(--sep-ink) 100%);
     }
   }
 `;
@@ -96,8 +157,6 @@ export function mountChapterSection(
 
   const section = iframeDoc.createElement("section");
   section.setAttribute("data-chapter", String(index));
-  section.style.marginBottom = "48px";
-  section.style.borderBottom = "1px solid";
   section.innerHTML = chapterHtml;
 
   let inserted = false;
