@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Button } from "@/components/ui/button";
 import { logger as rootLogger } from "@/shared/logger/logger";
 
 const logger = rootLogger.child("error-boundary");
@@ -47,15 +48,16 @@ export class ErrorBoundary extends Component<
     }
 
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-4 surface text-primary px-6 text-center">
+      <div className="flex h-screen flex-col items-center justify-center gap-4 bg-background px-6 text-center text-foreground">
         <p className="font-semibold">Something went wrong</p>
-        <p className="text-secondary text-sm max-w-sm">{error.message}</p>
-        <button
-          onClick={this.reset}
-          className="rounded-md border border-divider px-4 py-2 text-sm hover:opacity-70 transition-opacity"
-        >
+
+        <p className="max-w-sm text-sm text-muted-foreground">
+          {error.message}
+        </p>
+
+        <Button variant="outline" onClick={this.reset}>
           Try again
-        </button>
+        </Button>
       </div>
     );
   }
