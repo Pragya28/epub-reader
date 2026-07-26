@@ -1,5 +1,5 @@
 import { ROUTES } from "@/utils/routes";
-import { useEffect, useState, type FC } from "react";
+import { useEffect, type FC } from "react";
 import { Link } from "react-router-dom";
 import { libraryStore } from "@/features/library/store/library-store";
 import { loadLibrary } from "@/features/library/actions/load-library";
@@ -8,12 +8,11 @@ import { BookGrid } from "@/features/library/components/book-grid";
 import { ContinueReadingBanner } from "@/features/library/components/continue-reading-banner";
 import { ImportBookFab } from "@/features/library/components/import-book-fab";
 import { Search, Settings, SlidersHorizontal } from "lucide-react";
-import { toastStore } from "@/stores/toast-store";
 import { WordMark } from "@/assets/word-mark";
 import { Button } from "@/components/ui/button";
 
 export const LibraryScreen: FC = () => {
-  const { books, isLoading, error } = libraryStore();
+  const { books, isLoading } = libraryStore();
 
   useEffect(() => {
     void loadLibrary();
@@ -50,12 +49,6 @@ export const LibraryScreen: FC = () => {
       .sort(
         (a, b) => (b.progressUpdatedAt ?? 0) - (a.progressUpdatedAt ?? 0),
       )[0] ?? null;
-
-  useEffect(() => {
-    if (error) {
-      toastStore.getState().showError(error);
-    }
-  }, [error]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
