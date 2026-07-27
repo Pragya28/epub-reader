@@ -1,3 +1,4 @@
+import { libraryStore } from "@/features/library/store/library-store";
 import { updateBookProgress } from "@/services/storage/book-repository";
 import type { ReadingProgress } from "@/services/storage/storage-types";
 import { logger as rootLogger } from "@/shared/logger/logger";
@@ -15,6 +16,15 @@ export async function saveReaderProgress(
 ): Promise<void> {
   try {
     await updateBookProgress(bookId, progress);
+    libraryStore
+      .getState()
+      .setBooks(
+        libraryStore
+          .getState()
+          .books.map((b) =>
+            b.id === bookId ? { ...b, progress, manualStatus: undefined } : b,
+          ),
+      );
     logger.trace("progress saved", { bookId, progress });
   } catch (error) {
     logger.error("failed to save reading progress", error);

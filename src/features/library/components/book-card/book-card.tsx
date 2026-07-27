@@ -11,6 +11,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVertical } from "lucide-react";
+import {
+  markBookFinished,
+  markBookUnread,
+  startBookAtBeginning,
+} from "../../actions/mark-book-status";
 
 export const BookCard: FC<BookWithProgress> = (book) => {
   const { id, isNew, isFinished, isReading, author, title, progress } = book;
@@ -75,8 +80,26 @@ export const BookCard: FC<BookWithProgress> = (book) => {
               >
                 Open
               </DropdownMenuItem>
+
               <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+
+              {!isFinished && (
+                <DropdownMenuItem onClick={() => void markBookFinished(id)}>
+                  Mark as Finished
+                </DropdownMenuItem>
+              )}
+
+              {(isFinished || isReading) && (
+                <DropdownMenuItem onClick={() => void markBookUnread(id)}>
+                  Mark as Unread
+                </DropdownMenuItem>
+              )}
+
+              {(isReading || isFinished) && (
+                <DropdownMenuItem onClick={() => void startBookAtBeginning(id)}>
+                  Start at Beginning
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

@@ -7,7 +7,12 @@ const NEW_BOOK_WINDOW_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
 /** Consider a book finished once it's on the last chapter and near its end. */
 const FINISHED_SCROLL_FRACTION_THRESHOLD = 0.98;
 
-function deriveReadingStatus(progress: StoredBook["progress"]): ReadingStatus {
+function deriveReadingStatus(
+  progress: StoredBook["progress"],
+  manualStatus?: StoredBook["manualStatus"],
+): ReadingStatus {
+  if (manualStatus) return manualStatus;
+
   if (!progress) return "unread";
 
   const isLastChapter = progress.chapterIndex >= progress.totalChapters - 1;
@@ -29,7 +34,7 @@ function deriveReadingStatus(progress: StoredBook["progress"]): ReadingStatus {
 }
 
 export function enrichBookWithProgress(book: StoredBook): BookWithProgress {
-  const status = deriveReadingStatus(book.progress);
+  const status = deriveReadingStatus(book.progress, book.manualStatus);
 
   return {
     ...book,

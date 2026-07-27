@@ -29,6 +29,7 @@ export interface StoredBook {
   fileHash: string;
   coverBg?: string;
   progress?: ReadingProgress;
+  manualStatus?: "finished" | "unread";
 }
 
 export interface StoredBookFile {

@@ -90,7 +90,7 @@ export async function updateBookProgress(
   bookId: string,
   progress: ReadingProgress,
 ): Promise<void> {
-  await db.books.update(bookId, { progress });
+  await db.books.update(bookId, { progress, manualStatus: undefined });
 }
 
 /**
@@ -121,4 +121,18 @@ export async function getBookCoverUrl(
   }
 
   return cacheCoverUrl(bookId, stored.cover);
+}
+
+export async function updateBookManualStatus(
+  bookId: string,
+  manualStatus: StoredBook["manualStatus"] | null,
+): Promise<void> {
+  await db.books.update(bookId, { manualStatus: manualStatus ?? undefined });
+}
+
+export async function resetBookProgress(bookId: string): Promise<void> {
+  await db.books.update(bookId, {
+    progress: undefined,
+    manualStatus: undefined,
+  });
 }

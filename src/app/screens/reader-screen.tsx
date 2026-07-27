@@ -41,6 +41,17 @@ export const ReaderScreen: FC = () => {
     });
 
     return () => {
+      // Revoke all chapter asset blob URLs (images, fonts) before clearing
+      // the store. Without this, every asset in the full book accumulates as
+      // leaked object URLs for the lifetime of the browser tab.
+      const { parsedBook } = readerStore.getState();
+      if (parsedBook) {
+        for (const chapter of parsedBook.chapters) {
+          for (const blobUrl of chapter.assetMap.values()) {
+            URL.revokeObjectURL(blobUrl);
+          }
+        }
+      }
       readerStore.getState().reset();
     };
   }, [bookId]);
