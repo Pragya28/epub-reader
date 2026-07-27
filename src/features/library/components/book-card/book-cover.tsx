@@ -10,8 +10,7 @@ export const BookCover: FC<BookWithProgress> = ({
   author,
   title,
 }) => {
-  const seed = `${id}|${title}|${author}`;
-  const palette = COVER_PALETTES[hashString(seed) % COVER_PALETTES.length];
+  const palette = COVER_PALETTES[hashString(id) % COVER_PALETTES.length];
 
   if (coverBg) {
     return (
