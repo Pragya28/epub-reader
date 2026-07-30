@@ -168,6 +168,7 @@ describe("useReaderEngine", () => {
       expect(initSpy).toHaveBeenCalledWith(
         iframeRef.current,
         mockParsedBook.chapters,
+        undefined,
       );
     });
 

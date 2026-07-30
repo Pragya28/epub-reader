@@ -3,6 +3,7 @@ import type { FC } from "react";
 import type { BookWithProgress } from "../../types/library.types";
 import { hashString } from "@/utils/hash";
 import { COVER_PALETTES } from "@/constants/cover-palettes";
+import { ORNAMENT_COMPONENTS, deriveOrnamentId } from "@/shared/ornaments";
 
 export const BookCover: FC<BookWithProgress> = ({
   id,
@@ -11,6 +12,8 @@ export const BookCover: FC<BookWithProgress> = ({
   title,
 }) => {
   const palette = COVER_PALETTES[hashString(id) % COVER_PALETTES.length];
+  const ornamentId = deriveOrnamentId(id);
+  const OrnamentComponent = ORNAMENT_COMPONENTS[ornamentId];
 
   if (coverBg) {
     return (
@@ -33,6 +36,10 @@ export const BookCover: FC<BookWithProgress> = ({
           {author}
         </p>
       )}
+      {/* Ornament */}
+      <OrnamentComponent
+        className={`w-30 h-auto mx-auto my-2 ${palette.accent}`}
+      />
       {/* Title */}
       <p
         className={`text-center wrap-break-word leading-[1.2] tracking-[0.06em] text-[15px] z-10 body-display ${palette.accent}`}

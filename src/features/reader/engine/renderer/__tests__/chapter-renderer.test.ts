@@ -105,7 +105,11 @@ describe("chapter-renderer", () => {
 
       initializeChapterDocument(iframe, chapters);
 
-      expect(spy).toHaveBeenCalledWith(iframe, ["body { font-size: 18px; }"]);
+      expect(spy).toHaveBeenCalledWith(
+        iframe,
+        ["body { font-size: 18px; }"],
+        undefined,
+      );
     });
 
     it("handles empty stylesheets array per chapter", () => {
@@ -149,7 +153,7 @@ describe("chapter-renderer", () => {
 
       initializeChapterDocument(iframe, chapters);
 
-      expect(spy).toHaveBeenCalledWith(iframe, expect.any(Array));
+      expect(spy).toHaveBeenCalledWith(iframe, expect.any(Array), undefined);
     });
 
     it("preserves stylesheet order while deduplicating", () => {

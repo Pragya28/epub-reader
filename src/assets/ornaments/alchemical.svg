@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 120" width="200" height="86" aria-hidden="true">
+  <!-- Three interlocking circles -->
+  <circle cx="90"  cy="60" r="46" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.4"/>
+  <circle cx="140" cy="60" r="46" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.4"/>
+  <circle cx="190" cy="60" r="46" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.4"/>
+  <!-- Upward triangle (fire) -->
+  <polygon points="140,28 162,68 118,68"
+    fill="none" stroke="currentColor" stroke-width="0.9" opacity="0.6"/>
+  <!-- Downward triangle (water) -->
+  <polygon points="140,92 162,52 118,52"
+    fill="none" stroke="currentColor" stroke-width="0.9" opacity="0.4"/>
+  <!-- Hexagram centre fill hint -->
+  <polygon points="140,28 162,68 118,68"
+    fill="currentColor" opacity="0.04"/>
+  <polygon points="140,92 162,52 118,52"
+    fill="currentColor" opacity="0.04"/>
+  <!-- Intersection dots -->
+  <circle cx="118" cy="44" r="2" fill="currentColor" opacity="0.4"/>
+  <circle cx="162" cy="44" r="2" fill="currentColor" opacity="0.4"/>
+  <circle cx="118" cy="76" r="2" fill="currentColor" opacity="0.4"/>
+  <circle cx="162" cy="76" r="2" fill="currentColor" opacity="0.4"/>
+  <!-- Left circle glyph (sulphur △) -->
+  <text x="72"  y="65" text-anchor="middle" font-size="14" fill="currentColor" opacity="0.55" font-family="serif">🜂</text>
+  <!-- Right circle glyph (water ▽) -->
+  <text x="208" y="65" text-anchor="middle" font-size="14" fill="currentColor" opacity="0.55" font-family="serif">🜄</text>
+  <!-- Centre glyph (mercury ☿) -->
+  <text x="140" y="65" text-anchor="middle" font-size="14" fill="currentColor" opacity="0.8" font-family="serif">☿</text>
+  <!-- Outer bounding hairline -->
+  <rect x="2" y="2" width="276" height="116" rx="2"
+    fill="none" stroke="currentColor" stroke-width="0.4" opacity="0.2"
+    stroke-dasharray="4 8"/>
+</svg>

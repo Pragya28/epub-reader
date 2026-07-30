@@ -8,11 +8,12 @@ import {
 export function initializeChapterDocument(
   iframe: HTMLIFrameElement,
   chapters: ParsedChapter[],
+  bookId?: string,
 ): void {
   const uniqueStylesheets = [
     ...new Set(chapters.flatMap((chapter) => chapter.stylesheets)),
   ];
-  initializeReaderDocument(iframe, uniqueStylesheets);
+  initializeReaderDocument(iframe, uniqueStylesheets, bookId);
 }
 
 export function mountChapter(

@@ -1,3 +1,5 @@
+import { deriveOrnamentId, ORNAMENT_SVG_STRINGS } from "@/shared/ornaments";
+
 function sanitizeStylesheet(css: string): string {
   return css
     .replace(/expression\s*\([^)]*\)/gi, "")
@@ -21,7 +23,8 @@ const READER_FONTS_LINK =
   '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
   '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,300..900&display=swap">';
 
-const READER_BASE_STYLE = `
+function buildReaderBaseStyle(bookId?: string): string {
+  const baseStyle = `
   :root {
     color-scheme: light dark;
 
@@ -41,71 +44,62 @@ const READER_BASE_STYLE = `
     font-family: "Literata", serif !important;
     line-height: 1.6;
     background: var(--sep-fade);
-    color: #1f1c0f;
+    color: #1f1c0f !important;
   }
 
   body * {
     font-family: "Literata", serif !important;
+    color: #1f1c0f !important;
   }
 
   @media (prefers-color-scheme: dark) {
-    body {
-      color: #f2ead8;
-    }
-  }
-
-  /* ── Chapter separator ─────────────────────────────────────────────
-     A single ::before pseudo-element on every section[data-chapter]
-     except the first, using three composited background layers:
-
-       1. A centred SVG fleuron (❧ U+2767) rendered in Cinzel —
-          Librune's own display face — so the ornament is unmistakably
-          part of this app's typographic identity.
-       2. Left ruled arm: 1 px gradient, fades to transparent at the
-          left margin so the line dissolves into the page.
-       3. Right ruled arm: mirror of the left.
-
-     Both arms are sized to stop 28 px short of centre, ensuring they
-     never overdraw the glyph. Colour is driven by --sep-ink, so dark
-     mode is handled purely in CSS. The SVG fill is hard-coded per theme
-     because data-URI backgrounds cannot read CSS custom properties —
-     only the gradient layers use var(--sep-ink).
-
-     No border, no box, no shadow — ink on parchment.
-  ─────────────────────────────────────────────────────────────────── */
-
-  section[data-chapter] + section[data-chapter]::before {
-    content: "";
-    display: block;
-    height: 4.5rem;
-    margin-block: 3.5rem;
-    pointer-events: none;
-
-    /* Layer order: topmost first (glyph above rule arms). */
-    background-image:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='36'%3E%3Ctext x='50%25' y='72%25' text-anchor='middle' font-family='Cinzel%2C serif' font-size='22' fill='%23695d4a'%3E%E2%9D%A7%3C/text%3E%3C/svg%3E"),
-      linear-gradient(to right, transparent 0%, var(--sep-ink) 40%, var(--sep-ink) 100%),
-      linear-gradient(to left,  transparent 0%, var(--sep-ink) 40%, var(--sep-ink) 100%);
-
-    background-repeat:   no-repeat, no-repeat, no-repeat;
-    background-position: center center, left center, right center;
-    background-size:
-      48px 36px,
-      calc(50% - 28px) 1px,
-      calc(50% - 28px) 1px;
-  }
-
-  /* Dark mode: swap the SVG fill colour only.
-     Gradient arms already use var(--sep-ink), updated above in :root. */
-  @media (prefers-color-scheme: dark) {
-    section[data-chapter] + section[data-chapter]::before {
-      background-image:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='36'%3E%3Ctext x='50%25' y='72%25' text-anchor='middle' font-family='Cinzel%2C serif' font-size='22' fill='%23cbb98e'%3E%E2%9D%A7%3C/text%3E%3C/svg%3E"),
-        linear-gradient(to right, transparent 0%, var(--sep-ink) 40%, var(--sep-ink) 100%),
-        linear-gradient(to left,  transparent 0%, var(--sep-ink) 40%, var(--sep-ink) 100%);
+    body,
+    body * {
+      color: #f2ead8 !important;
     }
   }
 `;
+
+  if (!bookId) {
+    return baseStyle;
+  }
+
+  // Derive ornament SVG from bookId
+  const ornamentId = deriveOrnamentId(bookId);
+  const chapterSeparatorSvg = ORNAMENT_SVG_STRINGS[ornamentId];
+
+  // Create light and dark versions of the SVG by replacing currentColor with theme-specific colors
+  const lightSvg = chapterSeparatorSvg.replace(/currentColor/g, "#695d4a");
+  const darkSvg = chapterSeparatorSvg.replace(/currentColor/g, "#cbb98e");
+
+  // Encode both versions as data URIs
+  const encodedLightSvg = encodeURIComponent(lightSvg);
+  const encodedDarkSvg = encodeURIComponent(darkSvg);
+
+  const separatorStyle = `
+  /* ── Chapter separator using book's ornament ──────────────────────── */
+  section[data-chapter] + section[data-chapter]::before {
+    content: "";
+    display: block;
+    height: 2rem;
+    margin-block: 2rem;
+    pointer-events: none;
+
+    background-image: url("data:image/svg+xml,${encodedLightSvg}");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    section[data-chapter] + section[data-chapter]::before {
+      background-image: url("data:image/svg+xml,${encodedDarkSvg}");
+    }
+  }
+`;
+
+  return baseStyle + separatorStyle;
+}
 
 /**
  * Writes the initial (empty-body) document shell into the iframe, with
@@ -121,17 +115,20 @@ const READER_BASE_STYLE = `
 export function initializeReaderDocument(
   iframe: HTMLIFrameElement,
   stylesheets: string[],
+  bookId?: string,
 ): void {
   const bookCss = stylesheets
     .map((sheet) => `<style>${sanitizeStylesheet(sheet)}</style>`)
     .join("");
+
+  const readerBaseStyle = buildReaderBaseStyle(bookId);
 
   iframe.srcdoc = `
   <!doctype html>
   <html>
     <head>
       ${READER_FONTS_LINK}
-      <style>${READER_BASE_STYLE}</style>
+      <style>${readerBaseStyle}</style>
       ${bookCss}
     </head>
     <body></body>

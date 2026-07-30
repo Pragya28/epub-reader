@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="120" height="120" aria-hidden="true">
+  <!-- Outer degree ring -->
+  <circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" stroke-width="0.6" opacity="0.4"/>
+  <!-- Inner ring -->
+  <circle cx="100" cy="100" r="78" fill="none" stroke="currentColor" stroke-width="0.4" opacity="0.25"/>
+  <!-- 16 major tick marks -->
+  <g stroke="currentColor" opacity="0.45">
+    <line x1="100" y1="7"  x2="100" y2="20" stroke-width="1.4" transform="rotate(0 100 100)"/>
+    <line x1="100" y1="7"  x2="100" y2="20" stroke-width="1.4" transform="rotate(90 100 100)"/>
+    <line x1="100" y1="7"  x2="100" y2="20" stroke-width="1.4" transform="rotate(180 100 100)"/>
+    <line x1="100" y1="7"  x2="100" y2="20" stroke-width="1.4" transform="rotate(270 100 100)"/>
+    <line x1="100" y1="7"  x2="100" y2="16" stroke-width="1"   transform="rotate(45 100 100)"/>
+    <line x1="100" y1="7"  x2="100" y2="16" stroke-width="1"   transform="rotate(135 100 100)"/>
+    <line x1="100" y1="7"  x2="100" y2="16" stroke-width="1"   transform="rotate(225 100 100)"/>
+    <line x1="100" y1="7"  x2="100" y2="16" stroke-width="1"   transform="rotate(315 100 100)"/>
+    <line x1="100" y1="7"  x2="100" y2="13" stroke-width="0.6" transform="rotate(22.5 100 100)"/>
+    <line x1="100" y1="7"  x2="100" y2="13" stroke-width="0.6" transform="rotate(67.5 100 100)"/>
+    <line x1="100" y1="7"  x2="100" y2="13" stroke-width="0.6" transform="rotate(112.5 100 100)"/>
+    <line x1="100" y1="7"  x2="100" y2="13" stroke-width="0.6" transform="rotate(157.5 100 100)"/>
+    <line x1="100" y1="7"  x2="100" y2="13" stroke-width="0.6" transform="rotate(202.5 100 100)"/>
+    <line x1="100" y1="7"  x2="100" y2="13" stroke-width="0.6" transform="rotate(247.5 100 100)"/>
+    <line x1="100" y1="7"  x2="100" y2="13" stroke-width="0.6" transform="rotate(292.5 100 100)"/>
+    <line x1="100" y1="7"  x2="100" y2="13" stroke-width="0.6" transform="rotate(337.5 100 100)"/>
+  </g>
+  <!-- Cardinal labels -->
+  <text x="100" y="30" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.65" font-family="serif" letter-spacing="1">N</text>
+  <text x="100" y="178" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.4" font-family="serif">S</text>
+  <text x="174" y="104" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.4" font-family="serif">E</text>
+  <text x="26" y="104" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.4" font-family="serif">W</text>
+  <!-- Rose — N/S needles -->
+  <polygon points="100,34 96,100 100,88 104,100" fill="currentColor" opacity="0.8"/>
+  <polygon points="100,166 96,100 100,112 104,100" fill="currentColor" opacity="0.35"/>
+  <!-- Rose — E/W needles -->
+  <polygon points="166,100 100,96 112,100 100,104" fill="currentColor" opacity="0.35"/>
+  <polygon points="34,100 100,96 88,100 100,104" fill="currentColor" opacity="0.35"/>
+  <!-- Intercardinal short needles -->
+  <polygon points="163,37 102,98 107,107 96,103" fill="currentColor" opacity="0.2"/>
+  <polygon points="37,37 98,98 93,107 104,103" fill="currentColor" opacity="0.2"/>
+  <polygon points="163,163 102,102 107,93 96,97" fill="currentColor" opacity="0.2"/>
+  <polygon points="37,163 98,102 93,93 104,97" fill="currentColor" opacity="0.2"/>
+  <!-- Hub rings -->
+  <circle cx="100" cy="100" r="10" fill="none" stroke="currentColor" stroke-width="1" opacity="0.55"/>
+  <circle cx="100" cy="100" r="4" fill="currentColor" opacity="0.8"/>
+</svg>

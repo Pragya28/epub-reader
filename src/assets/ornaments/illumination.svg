@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 80" width="100%" aria-hidden="true">
+  <defs>
+    <linearGradient id="il-fadeL" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="currentColor" stop-opacity="0"/>
+      <stop offset="100%" stop-color="currentColor" stop-opacity="0.55"/>
+    </linearGradient>
+    <linearGradient id="il-fadeR" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="currentColor" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- Fading lines -->
+  <line x1="0" y1="40" x2="248" y2="40" stroke="url(#il-fadeL)" stroke-width="0.7"/>
+  <line x1="352" y1="40" x2="600" y2="40" stroke="url(#il-fadeR)" stroke-width="0.7"/>
+  <!-- Left vine -->
+  <path d="M 20 40 Q 70 18 130 40 Q 170 55 210 36 Q 235 22 255 40"
+    fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+  <!-- Left tendrils -->
+  <path d="M 90 35 Q 96 52 108 46" fill="none" stroke="currentColor" stroke-width="0.7" opacity="0.4"/>
+  <path d="M 160 38 Q 164 56 178 50" fill="none" stroke="currentColor" stroke-width="0.7" opacity="0.4"/>
+  <!-- Left leaf dots -->
+  <circle cx="108" cy="46" r="2.5" fill="currentColor" opacity="0.45"/>
+  <circle cx="178" cy="50" r="2.5" fill="currentColor" opacity="0.45"/>
+  <!-- Right vine (mirror) -->
+  <path d="M 580 40 Q 530 18 470 40 Q 430 55 390 36 Q 365 22 345 40"
+    fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+  <!-- Right tendrils -->
+  <path d="M 510 35 Q 504 52 492 46" fill="none" stroke="currentColor" stroke-width="0.7" opacity="0.4"/>
+  <path d="M 440 38 Q 436 56 422 50" fill="none" stroke="currentColor" stroke-width="0.7" opacity="0.4"/>
+  <!-- Right leaf dots -->
+  <circle cx="492" cy="46" r="2.5" fill="currentColor" opacity="0.45"/>
+  <circle cx="422" cy="50" r="2.5" fill="currentColor" opacity="0.45"/>
+  <!-- Central medallion outer -->
+  <circle cx="300" cy="40" r="24" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.7"/>
+  <!-- Central medallion inner -->
+  <circle cx="300" cy="40" r="16" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.4"/>
+  <!-- Medallion cross hair -->
+  <line x1="300" y1="16" x2="300" y2="64" stroke="currentColor" stroke-width="0.4" opacity="0.25"/>
+  <line x1="276" y1="40" x2="324" y2="40" stroke="currentColor" stroke-width="0.4" opacity="0.25"/>
+  <!-- Medallion diamond ticks -->
+  <polygon points="300,17 302,22 300,27 298,22" fill="currentColor" opacity="0.35"/>
+  <polygon points="300,63 302,58 300,53 298,58" fill="currentColor" opacity="0.35"/>
+  <polygon points="277,40 282,38 287,40 282,42" fill="currentColor" opacity="0.35"/>
+  <polygon points="323,40 318,38 313,40 318,42" fill="currentColor" opacity="0.35"/>
+  <!-- Centre dot -->
+  <circle cx="300" cy="40" r="3.5" fill="currentColor" opacity="0.75"/>
+  <!-- Corner flourishes -->
+  <path d="M 0 36 Q 10 28 18 36 Q 10 44 0 44 Z" fill="currentColor" opacity="0.3"/>
+  <path d="M 600 36 Q 590 28 582 36 Q 590 44 600 44 Z" fill="currentColor" opacity="0.3"/>
+</svg>

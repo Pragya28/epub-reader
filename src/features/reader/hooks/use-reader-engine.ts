@@ -476,7 +476,7 @@ export function useReaderEngine({
       };
     };
 
-    initializeChapterDocument(iframe, chapters);
+    initializeChapterDocument(iframe, chapters, bookId);
     logger.debug("initializeChapterDocument called, waiting for load event");
 
     const handleIframeLoad = () => {

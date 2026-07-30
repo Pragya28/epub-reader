@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 44" width="100%" aria-hidden="true">
+  <defs>
+    <linearGradient id="rl-fadeL" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="currentColor" stop-opacity="0"/>
+      <stop offset="100%" stop-color="currentColor" stop-opacity="0.5"/>
+    </linearGradient>
+    <linearGradient id="rl-fadeR" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="currentColor" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- Fading rules -->
+  <line x1="0" y1="22" x2="168" y2="22" stroke="url(#rl-fadeL)" stroke-width="0.7"/>
+  <line x1="332" y1="22" x2="500" y2="22" stroke="url(#rl-fadeR)" stroke-width="0.7"/>
+  <!-- Secondary thin rules offset -->
+  <line x1="0" y1="19" x2="140" y2="19" stroke="url(#rl-fadeL)" stroke-width="0.3" opacity="0.5"/>
+  <line x1="360" y1="19" x2="500" y2="19" stroke="url(#rl-fadeR)" stroke-width="0.3" opacity="0.5"/>
+  <!-- Left diamond -->
+  <polygon points="170,22 178,16 186,22 178,28"
+    fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.55"/>
+  <!-- Right diamond -->
+  <polygon points="314,22 322,16 330,22 322,28"
+    fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.55"/>
+  <!-- Left inner diamond dot -->
+  <circle cx="178" cy="22" r="1.5" fill="currentColor" opacity="0.5"/>
+  <!-- Right inner diamond dot -->
+  <circle cx="322" cy="22" r="1.5" fill="currentColor" opacity="0.5"/>
+  <!-- Central text -->
+  <text x="250" y="27"
+    text-anchor="middle"
+    font-family="'Cinzel', 'Palatino Linotype', 'Book Antiqua', Palatino, serif"
+    font-size="14"
+    fill="currentColor"
+    letter-spacing="6"
+    opacity="0.8">✦ ✦ ✦</text>
+</svg>

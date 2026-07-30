@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="120" height="120" aria-hidden="true">
+  <!-- Outer orbit -->
+  <circle cx="100" cy="100" r="88"
+    fill="none" stroke="currentColor" stroke-width="0.5"
+    stroke-dasharray="3 9" opacity="0.35"/>
+  <!-- Middle orbit -->
+  <circle cx="100" cy="100" r="58"
+    fill="none" stroke="currentColor" stroke-width="0.5"
+    stroke-dasharray="2 7" opacity="0.5"/>
+  <!-- Inner orbit -->
+  <circle cx="100" cy="100" r="30"
+    fill="none" stroke="currentColor" stroke-width="0.7"
+    opacity="0.6"/>
+  <!-- Outer tick marks at cardinal points -->
+  <line x1="100" y1="10" x2="100" y2="18" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+  <line x1="100" y1="182" x2="100" y2="190" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+  <line x1="10" y1="100" x2="18" y2="100" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+  <line x1="182" y1="100" x2="190" y2="100" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+  <!-- Outer tick marks at 45° -->
+  <line x1="137.7" y1="25.1" x2="131.7" y2="35.5" stroke="currentColor" stroke-width="0.6" opacity="0.3"/>
+  <line x1="62.3" y1="25.1" x2="68.3" y2="35.5" stroke="currentColor" stroke-width="0.6" opacity="0.3"/>
+  <line x1="137.7" y1="174.9" x2="131.7" y2="164.5" stroke="currentColor" stroke-width="0.6" opacity="0.3"/>
+  <line x1="62.3" y1="174.9" x2="68.3" y2="164.5" stroke="currentColor" stroke-width="0.6" opacity="0.3"/>
+  <!-- Planet on outer orbit at 30° -->
+  <circle cx="144" cy="56" r="4" fill="currentColor" opacity="0.5"/>
+  <!-- Planet on middle orbit at 150° -->
+  <circle cx="71" cy="150" r="3" fill="currentColor" opacity="0.4"/>
+  <!-- Planet on inner orbit at 270° -->
+  <circle cx="100" cy="70" r="2.5" fill="none" stroke="currentColor" stroke-width="1" opacity="0.6"/>
+  <!-- Sun -->
+  <circle cx="100" cy="100" r="7" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.8"/>
+  <circle cx="100" cy="100" r="3" fill="currentColor" opacity="0.9"/>
+  <!-- Sun rays -->
+  <line x1="100" y1="88" x2="100" y2="84" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+  <line x1="100" y1="112" x2="100" y2="116" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+  <line x1="88" y1="100" x2="84" y2="100" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+  <line x1="112" y1="100" x2="116" y2="100" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+</svg>
