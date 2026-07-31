@@ -12,6 +12,7 @@ import { ChevronLeft } from "lucide-react";
 import { Progress, ProgressValue } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/utils/routes";
+import { getBookCoverUrl } from "@/services/storage/book-repository";
 
 export const ReaderScreen: FC = () => {
   const navigate = useNavigate();
@@ -33,6 +34,13 @@ export const ReaderScreen: FC = () => {
   const totalChapters = parsedBook?.chapters.length ?? 0;
 
   const toc = parsedBook?.toc ?? [];
+
+  const [coverUrl, setCoverUrl] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!bookId) return;
+    void getBookCoverUrl(bookId).then(setCoverUrl);
+  }, [bookId]);
 
   useEffect(() => {
     if (!bookId) return;
@@ -83,8 +91,34 @@ export const ReaderScreen: FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background text-foreground">
-        <p>Loading reader...</p>
+      <div className="flex h-screen flex-col items-center justify-center gap-4 bg-background text-foreground">
+        {coverUrl ? (
+          <img
+            src={coverUrl}
+            alt=""
+            className="h-40 w-28 rounded-sm object-cover shadow-md"
+          />
+        ) : (
+          <div className="h-40 w-28 animate-pulse rounded-sm bg-muted" />
+        )}
+
+        {readerDocument ? (
+          <div className="flex flex-col items-center gap-1">
+            <p className="font-heading font-semibold text-center text-m tracking-wide">
+              {readerDocument.book.title}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {readerDocument.book.author}
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-2">
+            <div className="h-4 w-32 animate-pulse rounded-sm bg-muted" />
+            <div className="h-3 w-20 animate-pulse rounded-sm bg-muted" />
+          </div>
+        )}
+
+        <p className="text-xs text-muted-foreground">Loading reader...</p>
       </div>
     );
   }

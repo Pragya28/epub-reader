@@ -138,7 +138,7 @@ describe("loadReaderBook", () => {
     expect(readerStore.getState().error).toBe("Failed to load book");
   });
 
-  it("does not update reader state when parsing fails", async () => {
+  it("sets readerDocument (for the loading skeleton) but not parsedBook when parsing fails", async () => {
     vi.mocked(getBookWithFile).mockResolvedValue(readerDocument);
     parseBook.mockRejectedValue(new Error("Parse failed"));
 
@@ -146,7 +146,7 @@ describe("loadReaderBook", () => {
 
     const state = readerStore.getState();
 
-    expect(state.readerDocument).toBeNull();
+    expect(state.readerDocument).toEqual(readerDocument);
     expect(state.parsedBook).toBeNull();
   });
 });

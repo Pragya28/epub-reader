@@ -16,9 +16,12 @@ export async function loadReaderBook(bookId: string) {
       throw new Error("Book not found");
     }
 
+    // Set immediately (before the slow parse) so the loading screen can show
+    // the book's title/cover instead of a bare spinner.
+    store.setReaderDocument(readerDocument);
+
     const parsedBook = await parser.parseBook(readerDocument.file);
 
-    store.setReaderDocument(readerDocument);
     store.setParsedBook(parsedBook);
 
     const savedProgress = readerDocument.book.progress;
