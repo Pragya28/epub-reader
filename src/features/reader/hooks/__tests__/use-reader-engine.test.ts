@@ -704,6 +704,99 @@ describe("useReaderEngine", () => {
     });
   });
 
+  describe("resize/orientation handling", () => {
+    const sectionsForChapters = (count: number) => {
+      const sections = Array.from({ length: count }, (_, i) => {
+        const section = mockIframeDoc.createElement("section");
+        section.setAttribute("data-chapter", String(i));
+        (section as HTMLElement).getBoundingClientRect = vi.fn(
+          () => ({ top: i * 100 }) as DOMRect,
+        );
+        return section as HTMLElement;
+      });
+      sections.forEach((section) => mockIframeDoc.body.appendChild(section));
+      return sections;
+    };
+
+    it("attaches resize and orientationchange listeners", async () => {
+      vi.spyOn(getChapterSectionsModule, "getChapterSections").mockReturnValue(
+        sectionsForChapters(3),
+      );
+      const windowAddSpy = vi.spyOn(window, "addEventListener");
+
+      renderHook(() =>
+        useReaderEngine({ iframeRef, parsedBook: mockParsedBook }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const mockWin = iframeRef.current?.contentWindow as any;
+      expect(mockWin.addEventListener).toHaveBeenCalledWith(
+        "resize",
+        expect.any(Function),
+      );
+      expect(windowAddSpy).toHaveBeenCalledWith(
+        "orientationchange",
+        expect.any(Function),
+      );
+    });
+
+    it("re-anchors scroll position (debounced) after a resize", async () => {
+      vi.useFakeTimers();
+
+      try {
+        vi.spyOn(
+          getChapterSectionsModule,
+          "getChapterSections",
+        ).mockReturnValue(sectionsForChapters(3));
+
+        renderHook(() =>
+          useReaderEngine({ iframeRef, parsedBook: mockParsedBook }),
+        );
+
+        await vi.advanceTimersByTimeAsync(0);
+
+        const mockWin = iframeRef.current?.contentWindow as any;
+        const onResize = mockWin.addEventListener.mock.calls.find(
+          ([event]: [string]) => event === "resize",
+        )?.[1];
+        expect(onResize).toBeDefined();
+
+        mockWin.scrollTo.mockClear();
+        onResize();
+
+        // Debounced — nothing should happen immediately.
+        expect(mockWin.scrollTo).not.toHaveBeenCalled();
+
+        await vi.advanceTimersByTimeAsync(200);
+
+        expect(mockWin.scrollTo).toHaveBeenCalled();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("removes resize/orientationchange listeners on unmount", async () => {
+      vi.spyOn(getChapterSectionsModule, "getChapterSections").mockReturnValue(
+        sectionsForChapters(3),
+      );
+
+      const { unmount } = renderHook(() =>
+        useReaderEngine({ iframeRef, parsedBook: mockParsedBook }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const mockWin = iframeRef.current?.contentWindow as any;
+      unmount();
+
+      expect(mockWin.removeEventListener).toHaveBeenCalledWith(
+        "resize",
+        expect.any(Function),
+      );
+    });
+  });
+
   describe("link click handling", () => {
     // Helper: fire a synthetic click on the iframeDoc with a given href.
     // Simulates clicking an <a> element (or a child of one).

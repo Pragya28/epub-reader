@@ -424,6 +424,35 @@ export function useReaderEngine({
         );
       };
 
+      let resizeTimeoutId: ReturnType<typeof setTimeout> | undefined;
+
+      const handleResize = () => {
+        if (resizeTimeoutId) clearTimeout(resizeTimeoutId);
+
+        // Debounced — resize fires continuously while dragging/rotating, and
+        // orientation changes need a beat for the OS to settle the new
+        // layout before section offsets/heights can be measured correctly.
+        resizeTimeoutId = setTimeout(() => {
+          const store = readerStore.getState();
+          const progress = computeReaderProgress({
+            iframeDoc,
+            win,
+            activeIndex: store.currentChapterIndex,
+            totalChapters,
+          });
+
+          logger.debug("resize/orientation change — re-anchoring position", {
+            chapterIndex: progress.chapterIndex,
+            scrollFraction: progress.scrollFraction,
+          });
+
+          restoreInitialPosition(iframeDoc, win, progress);
+        }, 150);
+      };
+
+      win.addEventListener("resize", handleResize);
+      window.addEventListener("orientationchange", handleResize);
+
       let attempts = 0;
 
       const waitForInitialSections = () => {
@@ -487,6 +516,9 @@ export function useReaderEngine({
         logger.debug("removing scroll listener");
         win.removeEventListener("scroll", onScroll);
         iframeDoc.removeEventListener("click", onLinkClick);
+        win.removeEventListener("resize", handleResize);
+        window.removeEventListener("orientationchange", handleResize);
+        if (resizeTimeoutId) clearTimeout(resizeTimeoutId);
       };
     };
 
