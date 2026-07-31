@@ -11,6 +11,7 @@ import { ExternalLinkDialog } from "@/features/reader/components/external-link-d
 import { ChevronLeft } from "lucide-react";
 import { Progress, ProgressValue } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/utils/routes";
 
 export const ReaderScreen: FC = () => {
   const navigate = useNavigate();
@@ -91,9 +92,21 @@ export const ReaderScreen: FC = () => {
   if (error) {
     return (
       <div className="flex h-screen items-center justify-center bg-background text-foreground">
-        <div className="text-center">
+        <div className="flex flex-col items-center gap-4 text-center">
           <p className="mb-2 font-semibold">Error loading book</p>
           <p className="text-muted-foreground text-sm">{error}</p>
+
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => bookId && void loadReaderBook(bookId)}
+            >
+              Try again
+            </Button>
+            <Button onClick={() => navigate(ROUTES.LIBRARY)}>
+              Back to library
+            </Button>
+          </div>
         </div>
       </div>
     );
