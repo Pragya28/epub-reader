@@ -1,9 +1,7 @@
 import type { FC } from "react";
 
 import type { BookWithProgress } from "../../types/library.types";
-import { hashString } from "@/utils/hash";
-import { COVER_PALETTES } from "@/constants/cover-palettes";
-import { ORNAMENT_COMPONENTS, deriveOrnamentId } from "@/shared/ornaments";
+import { getBookCoverVisual } from "@/shared/ornaments";
 
 export const BookCover: FC<BookWithProgress> = ({
   id,
@@ -11,9 +9,7 @@ export const BookCover: FC<BookWithProgress> = ({
   author,
   title,
 }) => {
-  const palette = COVER_PALETTES[hashString(id) % COVER_PALETTES.length];
-  const ornamentId = deriveOrnamentId(id);
-  const OrnamentComponent = ORNAMENT_COMPONENTS[ornamentId];
+  const { palette, OrnamentComponent } = getBookCoverVisual(id);
 
   if (coverBg) {
     return (

@@ -14,6 +14,7 @@ import { Progress, ProgressValue } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/utils/routes";
 import { getBookCoverUrl } from "@/services/storage/book-repository";
+import { getBookCoverVisual } from "@/shared/ornaments";
 
 export const ReaderScreen: FC = () => {
   const navigate = useNavigate();
@@ -37,13 +38,16 @@ export const ReaderScreen: FC = () => {
   const toc = parsedBook?.toc ?? [];
 
   const [coverUrl, setCoverUrl] = useState<string | undefined>(undefined);
+  const [coverChecked, setCoverChecked] = useState(false);
 
   useEffect(() => {
     if (!bookId) return;
 
     let cancelled = false;
     void getBookCoverUrl(bookId).then((url) => {
-      if (!cancelled) setCoverUrl(url);
+      if (cancelled) return;
+      setCoverUrl(url);
+      setCoverChecked(true);
     });
 
     return () => {
@@ -99,6 +103,10 @@ export const ReaderScreen: FC = () => {
   );
 
   if (isLoading) {
+    const { palette, OrnamentComponent } = bookId
+      ? getBookCoverVisual(bookId)
+      : { palette: undefined, OrnamentComponent: undefined };
+
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-4 bg-background text-foreground">
         {coverUrl ? (
@@ -107,6 +115,12 @@ export const ReaderScreen: FC = () => {
             alt=""
             className="h-40 w-28 rounded-sm object-cover shadow-md"
           />
+        ) : coverChecked && palette && OrnamentComponent ? (
+          <div
+            className={`flex h-40 w-28 items-center justify-center rounded-sm ${palette.gradient}`}
+          >
+            <OrnamentComponent className={`h-16 w-auto ${palette.accent}`} />
+          </div>
         ) : (
           <div className="h-40 w-28 animate-pulse rounded-sm bg-muted" />
         )}

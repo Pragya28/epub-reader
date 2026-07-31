@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { describe, expect, it, vi, beforeEach } from "vitest";
@@ -110,5 +110,15 @@ describe("ReaderScreen", () => {
     renderReaderScreen("book-42");
 
     expect(loadReaderBookMock).toHaveBeenCalledWith("book-42");
+  });
+
+  it("falls back to a book ornament once the cover check resolves with no cover", async () => {
+    readerStore.setState({ isLoading: true });
+
+    const { container } = renderReaderScreen("book-no-cover");
+
+    await waitFor(() => {
+      expect(container.querySelector("svg")).toBeInTheDocument();
+    });
   });
 });
