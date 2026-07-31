@@ -61,8 +61,8 @@ All four done:
 ## Day 5 — Reader UX Polish
 
 19. ✅ **Loading experience** — bare "Loading reader..." text; show title/cover skeleton (matters more while parsing stays eager). _(done 2026-07-31)_
-20. ❌ **Reader toolbar** — no font size, line height, or theme controls; `--reading-line-height` token exists but isn't adjustable.
-21. ❌ **Orientation/resize handling** — nothing listens to `resize`/`orientationchange`; rotating loses reading position (restore runs only once at mount).
+20. ✅ **Reader toolbar** — no font size, line height, or theme controls; `--reading-line-height` token exists but isn't adjustable. _(done 2026-07-31)_
+21. ✅ **Orientation/resize handling** — nothing listens to `resize`/`orientationchange`; rotating loses reading position (restore runs only once at mount). _(done 2026-07-31)_
 22. 🟡 **Viewport units** — `reader-screen.tsx` uses `h-screen`, not `h-dvh`; footer sits under mobile Safari's URL bar (`TocDrawer` already uses `dvh`).
 23. ❌ **Touch/keyboard interaction** — no gestures, no PgUp/PgDn/arrow handling, iframe not focusable.
 

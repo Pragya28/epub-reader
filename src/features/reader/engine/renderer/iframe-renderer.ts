@@ -53,7 +53,6 @@ function buildReaderBaseStyle(bookId?: string): string {
   const baseStyle = `
   :root {
     color-scheme: light dark;
-
     --sep-ink:  #695d4a;
     --sep-fade: #fff9ee;
     --sep-text: #1f1c0f;
@@ -83,12 +82,14 @@ function buildReaderBaseStyle(bookId?: string): string {
   }
 
   body {
-    margin: 0;
+    margin: 0 !important;
     font-family: "Literata", serif !important;
     font-size: calc(1rem * var(--reading-font-scale)) !important;
     line-height: var(--reading-line-height);
     background: var(--sep-fade);
     color: var(--sep-text) !important;
+    padding: 0 16px;
+    box-sizing: border-box;
   }
 
   body * {

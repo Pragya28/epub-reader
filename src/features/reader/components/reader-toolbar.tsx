@@ -1,5 +1,5 @@
 import { useState, type FC } from "react";
-import { Minus, Plus, SlidersHorizontal } from "lucide-react";
+import { CaseSensitive, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -41,7 +41,7 @@ export const ReaderToolbar: FC = () => {
       <SheetTrigger
         render={
           <Button variant="ghost" size="icon" aria-label="Reading preferences">
-            <SlidersHorizontal className="size-5" strokeWidth={1.5} />
+            <CaseSensitive className="size-5" strokeWidth={1.5} />
           </Button>
         }
       />
