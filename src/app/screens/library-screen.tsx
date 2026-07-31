@@ -62,10 +62,13 @@ export const LibraryScreen: FC = () => {
           <Button variant="ghost" size="icon" aria-label="Filter">
             <SlidersHorizontal strokeWidth={1.5} className="size-5" />
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Settings">
-            <Link to={ROUTES.SETTINGS}>
-              <Settings strokeWidth={1.5} className="size-5" />
-            </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Settings"
+            render={<Link to={ROUTES.SETTINGS} />}
+          >
+            <Settings strokeWidth={1.5} className="size-5" />
           </Button>
         </nav>
       </header>

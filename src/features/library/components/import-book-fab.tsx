@@ -54,13 +54,12 @@ export const ImportBookFab: FC = () => {
 
   return (
     <Button
-      size="icon-lg"
       onClick={handleImport}
       disabled={isLoading}
       aria-label="Import book"
       className="
         fixed bottom-5 right-2
-        p-6
+        size-16
         rounded-2xl
         bg-cover-dark
         text-cover-gold

@@ -23,7 +23,7 @@ export const ContinueReadingBanner: FC<ContinueReadingBannerProps> = ({
     <button
       onClick={() => navigate(ROUTES.READER.replace(":bookId", book.id))}
       aria-label={`Continue reading ${book.title}`}
-      className="fixed bottom-5 left-2 right-15 flex items-center gap-2 p-2 rounded-2xl border-none cursor-pointer text-left transition-opacity hover:opacity-95 active:opacity-80 z-40 bg-foreground shadow-(--shadow-floating)"
+      className="fixed bottom-5 left-2 right-20 flex items-center gap-2 p-2 rounded-2xl border-none cursor-pointer text-left transition-opacity hover:opacity-95 active:opacity-80 z-40 bg-foreground shadow-(--shadow-floating)"
     >
       {/* Book icon in a dark tile */}
       <div className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-cover-dark text-cover-gold">

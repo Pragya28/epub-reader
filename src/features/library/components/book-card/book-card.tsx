@@ -1,7 +1,7 @@
 import { type FC } from "react";
 import type { BookWithProgress } from "../../types/library.types";
 import { BookCover } from "./book-cover";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/utils/routes";
 import {
   DropdownMenu,
@@ -28,10 +28,16 @@ export const BookCard: FC<BookWithProgress> = (book) => {
       : null;
 
   return (
-    <div
-      className="group flex cursor-pointer flex-col gap-2.5"
-      onClick={() => navigate(ROUTES.READER.replace(":bookId", id))}
-    >
+    <div className="group relative flex flex-col gap-2.5">
+      {/* Stretched link: covers the whole card so any non-interactive area
+          navigates to the reader, without nesting the dropdown's <button>
+          inside an <a> (invalid HTML). The dropdown trigger below sits in
+          a higher stacking context so it still receives its own clicks. */}
+      <Link
+        to={ROUTES.READER.replace(":bookId", id)}
+        aria-label={title}
+        className="absolute inset-0 z-10 rounded-xl focus-visible:ring-2 focus-visible:ring-ring outline-none"
+      />
       <div
         className="
           relative
@@ -66,8 +72,7 @@ export const BookCard: FC<BookWithProgress> = (book) => {
           <DropdownMenu>
             <DropdownMenuTrigger
               aria-label="More options"
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring outline-none"
+              className="relative z-20 inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring outline-none"
             >
               <EllipsisVertical size={24} strokeWidth={1.5} />
             </DropdownMenuTrigger>
