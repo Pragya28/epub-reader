@@ -1,5 +1,17 @@
 import JSZip from "jszip";
 
+export type EpubParseErrorCode = "corrupted" | "unsupported" | "drm";
+
+export class EpubParseError extends Error {
+  readonly code: EpubParseErrorCode;
+
+  constructor(code: EpubParseErrorCode, message: string) {
+    super(message);
+    this.name = "EpubParseError";
+    this.code = code;
+  }
+}
+
 export interface EpubExtractionResult {
   zip: JSZip;
   opfPath: string;

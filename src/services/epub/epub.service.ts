@@ -1,9 +1,14 @@
 import JSZip from "jszip";
-import { type EpubExtractionResult, type EpubService } from "./epub-types";
+import {
+  EpubParseError,
+  type EpubExtractionResult,
+  type EpubService,
+} from "./epub-types";
 
 export class EpubServiceImpl implements EpubService {
   async extractOpf(file: Blob): Promise<EpubExtractionResult> {
     const zip = await this.loadZip(file);
+    this.checkForDrm(zip);
     const containerXml = await this.loadContainerXml(zip);
     const opfPath = this.extractOpfPath(containerXml);
     const opfXml = await this.loadOpf(zip, opfPath);
@@ -17,35 +22,72 @@ export class EpubServiceImpl implements EpubService {
 
   // ---- Step 1 ----
   private async loadZip(file: Blob): Promise<JSZip> {
-    return JSZip.loadAsync(file);
+    try {
+      return await JSZip.loadAsync(file);
+    } catch {
+      throw new EpubParseError(
+        "corrupted",
+        "This file doesn't appear to be a valid EPUB.",
+      );
+    }
   }
 
   // ---- Step 2 ----
+  private checkForDrm(zip: JSZip): void {
+    if (zip.file("META-INF/encryption.xml")) {
+      throw new EpubParseError(
+        "drm",
+        "This book is protected by DRM and can't be opened.",
+      );
+    }
+  }
+
+  // ---- Step 3 ----
   private async loadContainerXml(zip: JSZip): Promise<Document> {
     const containerFile = zip.file("META-INF/container.xml");
-    if (!containerFile) throw new Error("container.xml not found");
+    if (!containerFile) {
+      throw new EpubParseError(
+        "unsupported",
+        "This EPUB is missing required container data.",
+      );
+    }
 
     const xmlString = await containerFile.async("text");
     return this.parseXml(xmlString);
   }
 
-  // ---- Step 3 ----
+  // ---- Step 4 ----
   private extractOpfPath(containerXml: Document): string {
     const rootfile = containerXml.querySelector("rootfile");
-    if (!rootfile) throw new Error("rootfile not found in container.xml");
+    if (!rootfile) {
+      throw new EpubParseError(
+        "unsupported",
+        "This EPUB is missing required container data.",
+      );
+    }
 
     const opfPath = rootfile.getAttribute("full-path");
-    if (!opfPath) throw new Error("full-path attribute missing on rootfile");
+    if (!opfPath) {
+      throw new EpubParseError(
+        "unsupported",
+        "This EPUB is missing required container data.",
+      );
+    }
 
     return opfPath;
   }
 
-  // ---- Step 4 ----
+  // ---- Step 5 ----
   private async loadOpf(zip: JSZip, opfPath: string): Promise<Document> {
     const normalizedPath = opfPath.replace(/^\/+/, "");
 
     const opfFile = zip.file(normalizedPath);
-    if (!opfFile) throw new Error(`OPF file not found at path: ${opfPath}`);
+    if (!opfFile) {
+      throw new EpubParseError(
+        "unsupported",
+        "This EPUB is missing its package document.",
+      );
+    }
 
     const opfString = await opfFile.async("text");
     return this.parseXml(opfString);
@@ -57,7 +99,7 @@ export class EpubServiceImpl implements EpubService {
 
     const errorNode = doc.querySelector("parsererror");
     if (errorNode) {
-      throw new Error("Invalid XML");
+      throw new EpubParseError("corrupted", "This EPUB's XML is malformed.");
     }
 
     return doc;
