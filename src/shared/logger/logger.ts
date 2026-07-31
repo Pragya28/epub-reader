@@ -100,4 +100,4 @@ export class Logger {
   }
 }
 
-export const logger = new Logger({ enabled: true });
+export const logger = new Logger();

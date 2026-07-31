@@ -1,4 +1,3 @@
-import type { ParsedChapter } from "@/services/epub/epub-types";
 import { unmountChapterSection } from "../renderer/iframe-renderer";
 import { getChapterSections } from "../scroll/get-chapter-sections";
 
@@ -9,7 +8,6 @@ interface MaintainChapterWindowProps {
   iframeDoc: Document;
   win: Window;
   activeIndex: number;
-  chapters: ParsedChapter[];
   loadedIndices: ReadonlySet<number>;
   onUnload: (index: number) => void;
 }
@@ -18,7 +16,6 @@ export function maintainChapterWindow({
   iframeDoc,
   win,
   activeIndex,
-  chapters,
   loadedIndices,
   onUnload,
 }: MaintainChapterWindowProps): void {
@@ -40,7 +37,6 @@ export function maintainChapterWindow({
       Math.abs(index - activeIndex) > WINDOW_RADIUS
     ) {
       unmountChapterSection(iframeDoc, index);
-      revokeChapterAssets(chapters[index]);
       onUnload(index);
     }
   });
@@ -50,12 +46,4 @@ export function maintainChapterWindow({
   if (delta !== 0) {
     win.scrollBy(0, delta);
   }
-}
-
-function revokeChapterAssets(chapter: ParsedChapter | undefined): void {
-  if (!chapter) return;
-
-  chapter.assetMap.forEach((blobUrl) => {
-    URL.revokeObjectURL(blobUrl);
-  });
 }

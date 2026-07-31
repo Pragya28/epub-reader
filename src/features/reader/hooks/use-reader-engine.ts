@@ -166,7 +166,6 @@ export function useReaderEngine({
             iframeDoc,
             win,
             activeIndex,
-            chapters,
             loadedIndices: loaded,
             onUnload: (index) => {
               logger.debug("unloading chapter", { index });
@@ -515,6 +514,13 @@ export function useReaderEngine({
       window.removeEventListener("pagehide", flushPendingProgress);
 
       flushPendingProgress();
+
+      // ponytail: assetMap blob URLs are baked into chapter.content and reused
+      // verbatim across mount/unmount cycles, so they can only be revoked once
+      // the whole book is torn down — not when a chapter slides out of the window.
+      chapters.forEach((chapter) => {
+        chapter.assetMap.forEach((blobUrl) => URL.revokeObjectURL(blobUrl));
+      });
     };
   }, [
     iframeRef,

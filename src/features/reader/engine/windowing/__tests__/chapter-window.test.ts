@@ -4,30 +4,16 @@ import {
   WINDOW_RADIUS,
   MAX_WINDOW_SIZE,
 } from "../chapter-window";
-import type { ParsedChapter } from "@/services/epub/epub-types";
 
 describe("maintainChapterWindow", () => {
   let doc: Document;
   let win: Window;
-  let chapters: ParsedChapter[];
   let onUnload: ReturnType<typeof vi.fn<(index: number) => void>>;
 
   beforeEach(() => {
     doc = document.implementation.createHTMLDocument("test");
     win = window;
     onUnload = vi.fn<(index: number) => void>();
-
-    // Create test chapters with asset maps
-    chapters = Array.from({ length: 10 }, (_, i) => ({
-      id: `ch${i}`,
-      href: `text/ch${i}.xhtml`,
-      content: `<p>Chapter ${i}</p>`,
-      stylesheets: [],
-      assetMap: new Map([
-        [`asset-${i}-1`, `blob:http://localhost/${i}-1`],
-        [`asset-${i}-2`, `blob:http://localhost/${i}-2`],
-      ]),
-    }));
   });
 
   describe("constants", () => {
@@ -56,7 +42,6 @@ describe("maintainChapterWindow", () => {
         iframeDoc: doc,
         win,
         activeIndex: 2,
-        chapters,
         loadedIndices,
         onUnload,
       });
@@ -79,7 +64,6 @@ describe("maintainChapterWindow", () => {
         iframeDoc: doc,
         win,
         activeIndex: 999, // Non-existent
-        chapters,
         loadedIndices,
         onUnload,
       });
@@ -117,7 +101,6 @@ describe("maintainChapterWindow", () => {
         iframeDoc: doc,
         win,
         activeIndex: 5,
-        chapters,
         loadedIndices,
         onUnload,
       });
@@ -138,7 +121,6 @@ describe("maintainChapterWindow", () => {
         iframeDoc: doc,
         win,
         activeIndex: 5,
-        chapters,
         loadedIndices,
         onUnload,
       });
@@ -162,7 +144,6 @@ describe("maintainChapterWindow", () => {
         iframeDoc: doc,
         win,
         activeIndex: 0,
-        chapters,
         loadedIndices,
         onUnload,
       });
@@ -185,7 +166,6 @@ describe("maintainChapterWindow", () => {
         iframeDoc: doc,
         win,
         activeIndex: 9,
-        chapters,
         loadedIndices,
         onUnload,
       });
@@ -207,7 +187,6 @@ describe("maintainChapterWindow", () => {
         iframeDoc: doc,
         win,
         activeIndex: 5,
-        chapters,
         loadedIndices,
         onUnload,
       });
@@ -226,7 +205,6 @@ describe("maintainChapterWindow", () => {
         iframeDoc: doc,
         win,
         activeIndex: 3,
-        chapters,
         loadedIndices,
         onUnload,
       });
@@ -282,7 +260,6 @@ describe("maintainChapterWindow", () => {
         iframeDoc: doc,
         win,
         activeIndex: 2,
-        chapters,
         loadedIndices,
         onUnload,
       });
@@ -326,7 +303,6 @@ describe("maintainChapterWindow", () => {
         iframeDoc: doc,
         win,
         activeIndex: 2,
-        chapters,
         loadedIndices,
         onUnload,
       });
@@ -339,7 +315,7 @@ describe("maintainChapterWindow", () => {
   });
 
   describe("asset revocation", () => {
-    it("revokes blob URLs for unmounted chapters", () => {
+    it("does not revoke blob URLs on window slide (revocation happens once at teardown)", () => {
       const revokeUrlSpy = vi.spyOn(URL, "revokeObjectURL");
 
       for (let i = 0; i < 7; i++) {
@@ -356,87 +332,17 @@ describe("maintainChapterWindow", () => {
 
       const loadedIndices = new Set([0, 1, 2, 3, 4]);
 
-      // With activeIndex=4, window=[2,3,4,5,6]→[2,3,4]
-      // Chapters 0 and 1 are outside window and will be unmounted
       maintainChapterWindow({
         iframeDoc: doc,
         win,
         activeIndex: 4,
-        chapters: chapters.slice(0, 5),
         loadedIndices,
         onUnload,
       });
 
-      // Chapter 0 should be unmounted and its assets revoked
       expect(onUnload).toHaveBeenCalledWith(0);
       expect(onUnload).toHaveBeenCalledWith(1);
-      expect(revokeUrlSpy).toHaveBeenCalledWith(`blob:http://localhost/0-1`);
-      expect(revokeUrlSpy).toHaveBeenCalledWith(`blob:http://localhost/0-2`);
-    });
-    it("handles chapters with empty assetMaps", () => {
-      const emptyChapter: ParsedChapter = {
-        id: "empty",
-        href: "text/empty.xhtml",
-        content: "<p>No assets</p>",
-        stylesheets: [],
-        assetMap: new Map(),
-      };
-
-      for (let i = 0; i < 3; i++) {
-        const section = doc.createElement("section");
-        section.setAttribute("data-chapter", String(i));
-        doc.body.appendChild(section);
-        (section as HTMLElement).getBoundingClientRect = vi.fn(
-          () =>
-            ({
-              top: i * 100,
-            }) as DOMRect,
-        );
-      }
-
-      const loadedIndices = new Set([0, 1, 2]);
-
-      maintainChapterWindow({
-        iframeDoc: doc,
-        win,
-        activeIndex: 1,
-        chapters: [emptyChapter, emptyChapter, emptyChapter],
-        loadedIndices,
-        onUnload,
-      });
-
-      // Should not throw; revokeObjectURL may not be called for empty maps
-      expect(true).toBe(true);
-    });
-
-    it("handles undefined chapters gracefully", () => {
-      for (let i = 0; i < 3; i++) {
-        const section = doc.createElement("section");
-        section.setAttribute("data-chapter", String(i));
-        doc.body.appendChild(section);
-        (section as HTMLElement).getBoundingClientRect = vi.fn(
-          () =>
-            ({
-              top: i * 100,
-            }) as DOMRect,
-        );
-      }
-
-      // Shorter chapters array
-      const shortChapters = chapters.slice(0, 1);
-
-      const loadedIndices = new Set([0, 1, 2]);
-
-      expect(() => {
-        maintainChapterWindow({
-          iframeDoc: doc,
-          win,
-          activeIndex: 0,
-          chapters: shortChapters,
-          loadedIndices,
-          onUnload,
-        });
-      }).not.toThrow();
+      expect(revokeUrlSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -461,7 +367,6 @@ describe("maintainChapterWindow", () => {
         iframeDoc: doc,
         win,
         activeIndex: 2,
-        chapters,
         loadedIndices,
         onUnload,
       });
@@ -476,7 +381,6 @@ describe("maintainChapterWindow", () => {
         iframeDoc: doc,
         win,
         activeIndex: 6,
-        chapters,
         loadedIndices,
         onUnload,
       });
@@ -508,7 +412,6 @@ describe("maintainChapterWindow", () => {
         iframeDoc: doc,
         win,
         activeIndex: 7,
-        chapters,
         loadedIndices,
         onUnload,
       });
@@ -523,7 +426,6 @@ describe("maintainChapterWindow", () => {
         iframeDoc: doc,
         win,
         activeIndex: 1,
-        chapters,
         loadedIndices,
         onUnload,
       });

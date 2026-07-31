@@ -16,10 +16,7 @@ export class ChapterParser {
 
     const chapterContent = await this.loadChapterContent(zip, chapterPath);
 
-    const chapterDoc = new DOMParser().parseFromString(
-      chapterContent,
-      "application/xhtml+xml",
-    );
+    const chapterDoc = this.parseChapterDocument(chapterContent);
 
     const chapterBasePath = this.getBasePath(chapterPath);
 
@@ -57,6 +54,32 @@ export class ChapterParser {
     }
 
     return chapters;
+  }
+
+  /**
+   * XHTML entities like bare `&` are common in real-world EPUBs and make the
+   * strict XML parser fail outright, replacing the whole chapter with the
+   * browser's error document. Falling back to the lenient HTML parser
+   * recovers readable content instead of losing the chapter.
+   */
+  private parseChapterDocument(chapterContent: string): Document {
+    const xhtmlDoc = new DOMParser().parseFromString(
+      chapterContent,
+      "application/xhtml+xml",
+    );
+
+    if (!xhtmlDoc.querySelector("parsererror")) return xhtmlDoc;
+
+    const htmlDoc = new DOMParser().parseFromString(
+      chapterContent,
+      "text/html",
+    );
+
+    if (htmlDoc.querySelector("parsererror")) {
+      throw new Error("Malformed chapter markup");
+    }
+
+    return htmlDoc;
   }
 
   private getSpineManifestItem(

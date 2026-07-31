@@ -10,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import type { TocItem } from "@/services/epub/epub-types";
 import { flattenToc } from "../utils/flatten-toc";
 import { TableOfContents } from "lucide-react";
-import { useState } from "react";
+import { memo, useMemo, useState } from "react";
 
 interface TocDrawerProps {
   toc: TocItem[];
@@ -18,12 +18,12 @@ interface TocDrawerProps {
   onItemClick: (item: TocItem) => void;
 }
 
-export function TocDrawer({
+export const TocDrawer = memo(function TocDrawer({
   toc,
   currentChapterIndex,
   onItemClick,
 }: TocDrawerProps) {
-  const flatItems = flattenToc(toc, 0);
+  const flatItems = useMemo(() => flattenToc(toc, 0), [toc]);
   const [open, setOpen] = useState(false);
 
   return (
@@ -64,7 +64,7 @@ export function TocDrawer({
                   key={item.href}
                   variant={isActive ? "secondary" : "ghost"}
                   disabled={!isNavigable}
-                  className="h-auto justify-center px-5 py-3 text-center"
+                  className="h-auto w-full justify-center whitespace-normal px-5 py-3 text-center"
                   onClick={() => {
                     if (!isNavigable) return;
                     onItemClick(item);
@@ -87,4 +87,4 @@ export function TocDrawer({
       </SheetContent>
     </Sheet>
   );
-}
+});
