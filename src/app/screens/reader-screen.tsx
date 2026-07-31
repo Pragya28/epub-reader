@@ -7,6 +7,7 @@ import { useReaderEngine } from "@/features/reader/hooks/use-reader-engine";
 import { readerStore } from "@/features/reader/store/reader-store";
 import type { TocItem } from "@/services/epub/epub-types";
 import { TocDrawer } from "@/features/reader/components/toc-drawer";
+import { ReaderToolbar } from "@/features/reader/components/reader-toolbar";
 import { ExternalLinkDialog } from "@/features/reader/components/external-link-dialog";
 import { ChevronLeft } from "lucide-react";
 import { Progress, ProgressValue } from "@/components/ui/progress";
@@ -39,7 +40,15 @@ export const ReaderScreen: FC = () => {
 
   useEffect(() => {
     if (!bookId) return;
-    void getBookCoverUrl(bookId).then(setCoverUrl);
+
+    let cancelled = false;
+    void getBookCoverUrl(bookId).then((url) => {
+      if (!cancelled) setCoverUrl(url);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [bookId]);
 
   useEffect(() => {
@@ -176,7 +185,7 @@ export const ReaderScreen: FC = () => {
           </p>
         </div>
 
-        <Button variant="ghost" size="icon" className="invisible" />
+        <ReaderToolbar />
       </header>
 
       {/* Reader Content */}

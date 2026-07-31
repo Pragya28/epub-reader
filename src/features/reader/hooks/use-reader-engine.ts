@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import type { RefObject } from "react";
 import type { ParsedBook, ParsedChapter } from "@/services/epub/epub-types";
 import { readerStore } from "../store/reader-store";
+import { readerPreferencesStore } from "../store/reader-preferences-store";
 import { ChapterLoader } from "../engine/loader/chapter-loader";
 import { getChapterSections } from "../engine/scroll/get-chapter-sections";
 import { detectVisibleChapter } from "../engine/scroll/detect-visible-chapter";
@@ -11,6 +12,7 @@ import {
   mountChapter,
   mountChapterFallback,
 } from "../engine/renderer/chapter-renderer";
+import { applyReaderPreferences } from "../engine/renderer/iframe-renderer";
 import { logger as rootLogger } from "@/shared/logger/logger";
 import {
   computeReaderProgress,
@@ -62,6 +64,7 @@ export function useReaderEngine({
     logger.info("effect starting", { totalChapters });
 
     let scrollCleanup: (() => void) | undefined;
+    let preferenceCleanup: (() => void) | undefined;
     let cancelled = false;
     let restoredInitialPosition = false;
     let saveTimeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -107,6 +110,13 @@ export function useReaderEngine({
       logger.info("startEngine — iframe document ready", {
         readyState: iframeDoc.readyState,
       });
+
+      applyReaderPreferences(iframeDoc, readerPreferencesStore.getState());
+
+      const unsubscribePreferences = readerPreferencesStore.subscribe(
+        (preferences) => applyReaderPreferences(iframeDoc, preferences),
+      );
+      preferenceCleanup = unsubscribePreferences;
 
       const handleScroll = () => {
         const store = readerStore.getState();
@@ -514,6 +524,7 @@ export function useReaderEngine({
       cancelled = true;
       iframe.removeEventListener("load", handleIframeLoad);
       scrollCleanup?.();
+      preferenceCleanup?.();
 
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("pagehide", flushPendingProgress);

@@ -1,4 +1,30 @@
 import { deriveOrnamentId, ORNAMENT_SVG_STRINGS } from "@/shared/ornaments";
+import type { ReaderTheme } from "../../store/reader-preferences-store";
+
+/**
+ * Applies live font-scale/line-height/theme preferences to an already
+ * -initialized iframe document by setting CSS custom properties and a
+ * data-theme attribute, instead of rewriting srcdoc (which would drop
+ * mounted chapters and scroll position).
+ */
+export function applyReaderPreferences(
+  iframeDoc: Document,
+  preferences: { fontScale: number; lineHeight: number; theme: ReaderTheme },
+): void {
+  const root = iframeDoc.documentElement;
+
+  root.style.setProperty("--reading-font-scale", String(preferences.fontScale));
+  root.style.setProperty(
+    "--reading-line-height",
+    String(preferences.lineHeight),
+  );
+
+  if (preferences.theme === "system") {
+    root.removeAttribute("data-theme");
+  } else {
+    root.setAttribute("data-theme", preferences.theme);
+  }
+}
 
 function sanitizeStylesheet(css: string): string {
   return css
@@ -30,33 +56,44 @@ function buildReaderBaseStyle(bookId?: string): string {
 
     --sep-ink:  #695d4a;
     --sep-fade: #fff9ee;
+    --sep-text: #1f1c0f;
+    --reading-font-scale: 1;
+    --reading-line-height: 1.6;
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
       --sep-ink:  #cbb98e;
       --sep-fade: #141210;
+      --sep-text: #f2ead8;
     }
+  }
+
+  /* Explicit theme choice wins over the OS-level prefers-color-scheme. */
+  :root[data-theme="light"] {
+    --sep-ink:  #695d4a;
+    --sep-fade: #fff9ee;
+    --sep-text: #1f1c0f;
+  }
+
+  :root[data-theme="dark"] {
+    --sep-ink:  #cbb98e;
+    --sep-fade: #141210;
+    --sep-text: #f2ead8;
   }
 
   body {
     margin: 0;
     font-family: "Literata", serif !important;
-    line-height: 1.6;
+    font-size: calc(1rem * var(--reading-font-scale)) !important;
+    line-height: var(--reading-line-height);
     background: var(--sep-fade);
-    color: #1f1c0f !important;
+    color: var(--sep-text) !important;
   }
 
   body * {
     font-family: "Literata", serif !important;
-    color: #1f1c0f !important;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    body,
-    body * {
-      color: #f2ead8 !important;
-    }
+    color: var(--sep-text) !important;
   }
 `;
 

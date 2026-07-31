@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import {
+  applyReaderPreferences,
   initializeReaderDocument,
   mountChapterSection,
   unmountChapterSection,
@@ -257,6 +258,51 @@ describe("iframe-renderer", () => {
       // For this test, we use a separate doc but verify the flow
       mountChapterSection(doc, "<p>Chapter</p>", 0);
       expect(doc.querySelector('section[data-chapter="0"]')).toBeDefined();
+    });
+  });
+
+  describe("applyReaderPreferences", () => {
+    let doc: Document;
+
+    beforeEach(() => {
+      doc = document.implementation.createHTMLDocument("test");
+    });
+
+    it("sets font-scale and line-height custom properties", () => {
+      applyReaderPreferences(doc, {
+        fontScale: 1.2,
+        lineHeight: 1.8,
+        theme: "system",
+      });
+
+      expect(
+        doc.documentElement.style.getPropertyValue("--reading-font-scale"),
+      ).toBe("1.2");
+      expect(
+        doc.documentElement.style.getPropertyValue("--reading-line-height"),
+      ).toBe("1.8");
+    });
+
+    it("sets data-theme when an explicit theme is chosen", () => {
+      applyReaderPreferences(doc, {
+        fontScale: 1,
+        lineHeight: 1.6,
+        theme: "dark",
+      });
+
+      expect(doc.documentElement.getAttribute("data-theme")).toBe("dark");
+    });
+
+    it("removes data-theme when theme is system", () => {
+      doc.documentElement.setAttribute("data-theme", "dark");
+
+      applyReaderPreferences(doc, {
+        fontScale: 1,
+        lineHeight: 1.6,
+        theme: "system",
+      });
+
+      expect(doc.documentElement.hasAttribute("data-theme")).toBe(false);
     });
   });
 });
