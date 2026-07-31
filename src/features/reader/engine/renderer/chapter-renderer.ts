@@ -24,6 +24,14 @@ export function mountChapter(
   mountChapterSection(iframeDoc, chapter.content, index);
 }
 
+export function mountChapterFallback(iframeDoc: Document, index: number): void {
+  mountChapterSection(
+    iframeDoc,
+    `<p class="chapter-mount-error">This chapter couldn't be displayed.</p>`,
+    index,
+  );
+}
+
 export function unmountChapter(iframeDoc: Document, index: number): void {
   unmountChapterSection(iframeDoc, index);
 }

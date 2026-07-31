@@ -9,6 +9,7 @@ import { maintainChapterWindow } from "../engine/windowing/chapter-window";
 import {
   initializeChapterDocument,
   mountChapter,
+  mountChapterFallback,
 } from "../engine/renderer/chapter-renderer";
 import { logger as rootLogger } from "@/shared/logger/logger";
 import {
@@ -185,11 +186,15 @@ export function useReaderEngine({
 
         try {
           mountChapter(iframeDoc, chapters[index] as ParsedChapter, index);
-          store.addLoadedChapterIndex(index);
           logger.debug("chapter mounted", { index });
         } catch (error) {
           logger.error(`failed to mount chapter ${index}`, error);
+          // Mount a placeholder in place of the throwing content so the
+          // index is still considered loaded — otherwise the windowing
+          // loop retries the same failing mount on every scroll tick.
+          mountChapterFallback(iframeDoc, index);
         } finally {
+          store.addLoadedChapterIndex(index);
           store.setIsMountingChapter(false);
           onSettled?.();
         }
