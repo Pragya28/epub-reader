@@ -25,3 +25,6 @@ dev-dist
 *.sw?
 
 src/tests/dev/*
+
+# Symlink
+docs
