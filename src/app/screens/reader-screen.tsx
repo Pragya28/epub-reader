@@ -35,6 +35,7 @@ export const ReaderScreen: FC = () => {
   const hasFootnoteBackPosition = readerStore(
     (state) => state.footnoteBackStack.length > 0,
   );
+  const isJumping = readerStore((state) => state.isJumping);
 
   const totalChapters = parsedBook?.chapters.length ?? 0;
 
@@ -106,11 +107,14 @@ export const ReaderScreen: FC = () => {
   );
 
   const handleChapterNav = useCallback(
-    (targetIndex: number) => {
+    (direction: 1 | -1) => {
+      // Read the live store value rather than the closed-over currentChapterIndex —
+      // a second click before React re-renders would otherwise recompute the same
+      // target as the first, silently dropping the increment.
       handleTocItemClick({
         label: "",
         href: "",
-        chapterIndex: targetIndex,
+        chapterIndex: readerStore.getState().currentChapterIndex + direction,
         children: [],
       });
     },
@@ -255,8 +259,8 @@ export const ReaderScreen: FC = () => {
               variant="ghost"
               size="icon-sm"
               aria-label="Previous chapter"
-              disabled={currentChapterIndex <= 0}
-              onClick={() => handleChapterNav(currentChapterIndex - 1)}
+              disabled={currentChapterIndex <= 0 || isJumping}
+              onClick={() => handleChapterNav(-1)}
             >
               <ChevronLeft className="size-4" strokeWidth={1.5} />
             </Button>
@@ -270,8 +274,8 @@ export const ReaderScreen: FC = () => {
               variant="ghost"
               size="icon-sm"
               aria-label="Next chapter"
-              disabled={currentChapterIndex >= totalChapters - 1}
-              onClick={() => handleChapterNav(currentChapterIndex + 1)}
+              disabled={currentChapterIndex >= totalChapters - 1 || isJumping}
+              onClick={() => handleChapterNav(1)}
             >
               <ChevronRight className="size-4" strokeWidth={1.5} />
             </Button>
