@@ -333,4 +333,83 @@ describe("ChapterParser sanitization", () => {
     expect(chapter.content).toContain("<em>text</em>");
     expect(chapter.content).toContain("<strong>bold</strong>");
   });
+
+  it("strips inline style attributes (decision: see sanitize-config.ts)", async () => {
+    const zip = await createTestZip(`
+      <p style="position: fixed; top: 0; background: url('https://evil.example/track.png')">Hello</p>
+    `);
+
+    const chapter = await parser.parseChapter(zip, parsedEpub, 0, "OPS/");
+
+    expect(chapter.content).not.toContain("style=");
+    expect(chapter.content).not.toContain("evil.example");
+    expect(chapter.content).toContain("Hello");
+  });
+
+  it("strips embedded <style> blocks (decision: see sanitize-config.ts)", async () => {
+    const zip = await createTestZip(`
+      <style>body { background: url('https://evil.example/track.png'); }</style>
+      <p>Hello</p>
+    `);
+
+    const chapter = await parser.parseChapter(zip, parsedEpub, 0, "OPS/");
+
+    expect(chapter.content).not.toContain("<style");
+    expect(chapter.content).not.toContain("evil.example");
+    expect(chapter.content).toContain("Hello");
+  });
+});
+
+describe("ChapterParser CSS asset resolution", () => {
+  const parser = new ChapterParser();
+
+  it("neutralizes an absolute url() in a linked stylesheet instead of passing it through", async () => {
+    const zip = new JSZip();
+
+    zip.file(
+      "OPS/text/ch1.xhtml",
+      `
+        <html xmlns="http://www.w3.org/1999/xhtml">
+          <head>
+            <link rel="stylesheet" href="../styles/book.css" />
+          </head>
+          <body><p>Hello</p></body>
+        </html>
+      `,
+    );
+    zip.file(
+      "OPS/styles/book.css",
+      `body { background: url('https://evil.example/track.png'); }`,
+    );
+
+    const chapter = await parser.parseChapter(zip, parsedEpub, 0, "OPS/");
+
+    expect(chapter.stylesheets[0]).not.toContain("evil.example");
+    expect(chapter.stylesheets[0]).toContain("url()");
+  });
+
+  it("still resolves a same-archive relative url() in a linked stylesheet", async () => {
+    const zip = new JSZip();
+
+    zip.file(
+      "OPS/text/ch1.xhtml",
+      `
+        <html xmlns="http://www.w3.org/1999/xhtml">
+          <head>
+            <link rel="stylesheet" href="../styles/book.css" />
+          </head>
+          <body><p>Hello</p></body>
+        </html>
+      `,
+    );
+    zip.file(
+      "OPS/styles/book.css",
+      `body { background: url('../images/bg.png'); }`,
+    );
+    zip.file("OPS/images/bg.png", new Uint8Array([1, 2, 3]));
+
+    const chapter = await parser.parseChapter(zip, parsedEpub, 0, "OPS/");
+
+    expect(chapter.stylesheets[0]).toContain("blob:");
+  });
 });

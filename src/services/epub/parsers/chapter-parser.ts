@@ -266,6 +266,13 @@ export class ChapterParser {
    * relative to the CSS file's own location, not the chapter's — a
    * stylesheet in styles/ referencing fonts/foo.woff must resolve against
    * styles/, not the (possibly different) chapter directory.
+   *
+   * Absolute URLs (url(https://...)) are neutralized rather than resolved:
+   * left alone, they'd fire a real network request straight from the
+   * sandboxed iframe with no JS required — sandbox="allow-same-origin"
+   * doesn't block plain CSS resource loads — which is exactly the kind of
+   * phone-home this local-first app's whole premise (nothing uploaded to a
+   * server) rules out.
    */
   private async resolveCssAssets(
     cssText: string,
@@ -281,8 +288,13 @@ export class ChapterParser {
     for (const match of matches) {
       const rawUrl = match[2]?.trim();
 
-      if (!rawUrl || rawUrl.startsWith("data:")) continue;
-      if (/^[a-z]+:\/\//i.test(rawUrl)) continue;
+      if (!rawUrl) continue;
+      if (rawUrl.startsWith("data:")) continue;
+
+      if (/^[a-z]+:\/\//i.test(rawUrl)) {
+        resolvedCss = resolvedCss.split(match[0]).join("url()");
+        continue;
+      }
 
       const assetPath = this.resolvePath(cssBasePath, rawUrl);
 
