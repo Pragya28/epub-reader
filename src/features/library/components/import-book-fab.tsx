@@ -54,7 +54,10 @@ export const ImportBookFab: FC = () => {
 
   return (
     <Button
-      onClick={handleImport}
+      onClick={(e) => {
+        e.stopPropagation();
+        handleImport();
+      }}
       disabled={isLoading}
       aria-label="Import book"
       className="
