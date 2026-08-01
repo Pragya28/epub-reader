@@ -2,6 +2,7 @@ import type { TocItem } from "@/services/epub/epub-types";
 import type { ParsedChapter } from "@/services/epub/epub-types";
 import { readerStore } from "../store/reader-store";
 import { mountChapter } from "../engine/renderer/chapter-renderer";
+import { invalidateChapterSections } from "../engine/scroll/get-chapter-sections";
 import { logger as rootLogger } from "@/shared/logger/logger";
 
 const logger = rootLogger.child("jump-to-toc-item");
@@ -45,6 +46,7 @@ export function jumpToTocItem(
       store.setIsMountingChapter(true);
       try {
         mountChapter(iframeDoc, chapters[chapterIndex]!, chapterIndex);
+        invalidateChapterSections(iframeDoc);
         store.addLoadedChapterIndex(chapterIndex);
       } finally {
         store.setIsMountingChapter(false);
