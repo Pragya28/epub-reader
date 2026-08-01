@@ -56,7 +56,7 @@ All four done:
 15. ✅ **Rerender control** — `reader-screen.tsx` calls `readerStore()` without a selector, so every scroll-tick `setProgressPercent` re-renders header, frame, and `TocDrawer`, re-running `flattenToc` on the whole tree. Add selectors + memoize. _(done 2026-07-31)_
 16. ✅ **Scroll-tick layout thrash** — `getChapterSections()` runs querySelectorAll + rect reads on every tick; cache sections or use `IntersectionObserver`. _(done 2026-08-01)_
 17. ✅ **Gate logger** — root logger is unconditionally enabled at TRACE (`src/shared/logger/logger.ts`); `handleScroll` traces fire per rAF tick in production. Gate on `import.meta.env.DEV`. _(done 2026-07-31)_
-18. ❌ **Perf benchmark** — `large-book.epub` fixture exists but no reader performance test uses it.
+18. ✅ **Perf benchmark** — `large-book.epub` fixture exists but no reader performance test uses it. _(done 2026-08-02)_
 
 ## Day 5 — Reader UX Polish
 
