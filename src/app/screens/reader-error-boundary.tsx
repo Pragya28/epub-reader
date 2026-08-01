@@ -16,7 +16,7 @@ export const ReaderErrorBoundary: FC<ReaderErrorBoundaryProps> = ({
   return (
     <ErrorBoundary
       fallback={(error, reset) => (
-        <div className="flex h-screen flex-col items-center justify-center gap-4 bg-background px-6 text-center text-foreground">
+        <div className="flex h-dvh flex-col items-center justify-center gap-4 bg-background px-6 text-center text-foreground">
           <p className="font-semibold">This book couldn't be displayed</p>
 
           <p className="max-w-sm text-sm text-muted-foreground">

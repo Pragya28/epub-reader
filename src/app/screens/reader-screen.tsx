@@ -108,7 +108,7 @@ export const ReaderScreen: FC = () => {
       : { palette: undefined, OrnamentComponent: undefined };
 
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-4 bg-background text-foreground">
+      <div className="flex h-dvh flex-col items-center justify-center gap-4 bg-background text-foreground">
         {coverUrl ? (
           <img
             src={coverUrl}
@@ -148,7 +148,7 @@ export const ReaderScreen: FC = () => {
 
   if (error) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background text-foreground">
+      <div className="flex h-dvh items-center justify-center bg-background text-foreground">
         <div className="flex flex-col items-center gap-4 text-center">
           <p className="mb-2 font-semibold">Error loading book</p>
           <p className="text-muted-foreground text-sm">{error}</p>
@@ -171,14 +171,14 @@ export const ReaderScreen: FC = () => {
 
   if (!readerDocument || !parsedBook) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background text-foreground">
+      <div className="flex h-dvh items-center justify-center bg-background text-foreground">
         <p>No book loaded</p>
       </div>
     );
   }
 
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden bg-background">
+    <div className="relative flex h-dvh flex-col overflow-hidden bg-background">
       {/* Header */}
       <header className="folio-header flex items-center justify-between">
         <Button
