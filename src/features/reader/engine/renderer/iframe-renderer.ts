@@ -81,6 +81,10 @@ function buildReaderBaseStyle(bookId?: string): string {
     --sep-text: #f2ead8;
   }
 
+  html, body {
+    overflow-x: hidden;
+  }
+
   body {
     margin: 0 !important;
     font-family: "Literata", serif !important;
@@ -90,6 +94,7 @@ function buildReaderBaseStyle(bookId?: string): string {
     color: var(--sep-text) !important;
     padding: 0 16px;
     box-sizing: border-box;
+    overflow-wrap: break-word;
   }
 
   body * {
@@ -100,6 +105,15 @@ function buildReaderBaseStyle(bookId?: string): string {
   img, svg {
     max-width: 100%;
     height: auto;
+  }
+
+  /* overflow-x: hidden on body clips wide content instead of letting the
+     page scroll sideways — but that would silently hide the overflowing
+     part of a wide code block entirely. Give it its own local horizontal
+     scroll instead so nothing is lost, just contained. */
+  pre {
+    max-width: 100%;
+    overflow-x: auto;
   }
 `;
 
