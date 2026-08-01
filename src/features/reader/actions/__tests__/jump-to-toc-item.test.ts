@@ -37,7 +37,11 @@ const createTocItem = (chapterIndex: number, fragmentId?: string): TocItem => ({
 
 describe("jumpToTocItem", () => {
   let doc: Document;
-  let win: { scrollTo: ReturnType<typeof vi.fn>; scrollY: number };
+  let win: {
+    scrollTo: ReturnType<typeof vi.fn>;
+    scrollY: number;
+    dispatchEvent: ReturnType<typeof vi.fn>;
+  };
   let chapters: ParsedChapter[];
 
   beforeEach(() => {
@@ -46,7 +50,7 @@ describe("jumpToTocItem", () => {
 
     doc = document.implementation.createHTMLDocument("test");
 
-    win = { scrollTo: vi.fn(), scrollY: 0 };
+    win = { scrollTo: vi.fn(), scrollY: 0, dispatchEvent: vi.fn() };
 
     chapters = Array.from({ length: 5 }, (_, i) => createChapter(i));
   });
@@ -212,6 +216,28 @@ describe("jumpToTocItem", () => {
       rafCalls.forEach((cb) => cb(0));
 
       expect(readerStore.getState().isJumping).toBe(false);
+
+      vi.unstubAllGlobals();
+    });
+
+    it("dispatches a synthetic scroll event after isJumping clears, to trigger window/progress reconciliation", () => {
+      const rafCalls: FrameRequestCallback[] = [];
+      vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+        rafCalls.push(cb);
+        return 1;
+      });
+
+      mountSection(0);
+
+      jumpToTocItem(createTocItem(0), doc, win as any, chapters);
+
+      expect(win.dispatchEvent).not.toHaveBeenCalled();
+
+      rafCalls.forEach((cb) => cb(0));
+
+      expect(win.dispatchEvent).toHaveBeenCalledWith(
+        expect.objectContaining({ type: "scroll" }),
+      );
 
       vi.unstubAllGlobals();
     });

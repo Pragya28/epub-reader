@@ -94,8 +94,18 @@ export function jumpToTocItem(
     store.setCurrentChapterIndex(chapterIndex);
     win.scrollTo(0, targetY);
 
+    // The native 'scroll' event fired by scrollTo() above is ignored by
+    // handleScroll while isJumping is true (by design, so the programmatic
+    // jump doesn't get misread as user scrolling) — which means window
+    // reconciliation (unloading far chapters, prefetching neighbors) and
+    // progress recomputation never happen unless the user scrolls again
+    // afterward. Dispatching a synthetic scroll event once isJumping clears
+    // lets the already-attached onScroll listener run that reconciliation
+    // for us, the same way restoreInitialPosition does with its own
+    // explicit handleScroll() call.
     requestAnimationFrame(() => {
       store.setIsJumping(false);
+      win.dispatchEvent(new Event("scroll"));
     });
   } catch (error) {
     logger.error("jumpToTocItem — unexpected error", error);
