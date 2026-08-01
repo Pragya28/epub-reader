@@ -150,6 +150,18 @@ describe("iframe-renderer", () => {
       expect(section?.querySelector("img")).toBeDefined();
     });
 
+    it("hides an image on load error instead of leaving a broken-image icon", () => {
+      mountChapterSection(doc, "<img src='missing.jpg'/>", 0);
+
+      const img = doc.querySelector(
+        'section[data-chapter="0"] img',
+      ) as HTMLImageElement;
+
+      expect(img.style.display).not.toBe("none");
+      img.dispatchEvent(new Event("error"));
+      expect(img.style.display).toBe("none");
+    });
+
     it("handles empty chapter HTML", () => {
       mountChapterSection(doc, "", 0);
 

@@ -183,6 +183,37 @@ export class ChapterParser {
       assetMap.set(src, blobUrl);
 
       image.setAttribute("src", blobUrl);
+      image.setAttribute("loading", "lazy");
+    }
+
+    // SVG <image> uses xlink:href (or bare href in EPUB3) instead of src.
+    const svgImages = chapterDoc.querySelectorAll("image");
+
+    for (const svgImage of svgImages) {
+      const href =
+        svgImage.getAttribute("xlink:href") ?? svgImage.getAttribute("href");
+
+      if (!href) continue;
+
+      const assetPath = this.resolvePath(chapterBasePath, href);
+
+      const assetFile = zip.file(assetPath);
+
+      if (!assetFile) continue;
+
+      const buffer = await assetFile.async("arraybuffer");
+
+      const blob = new Blob([buffer]);
+
+      const blobUrl = URL.createObjectURL(blob);
+
+      assetMap.set(href, blobUrl);
+
+      if (svgImage.hasAttribute("xlink:href")) {
+        svgImage.setAttribute("xlink:href", blobUrl);
+      } else {
+        svgImage.setAttribute("href", blobUrl);
+      }
     }
 
     const rawHtml = chapterDoc.body?.innerHTML ?? "";

@@ -96,6 +96,11 @@ function buildReaderBaseStyle(bookId?: string): string {
     font-family: "Literata", serif !important;
     color: var(--sep-text) !important;
   }
+
+  img, svg {
+    max-width: 100%;
+    height: auto;
+  }
 `;
 
   if (!bookId) {
@@ -193,6 +198,15 @@ export function mountChapterSection(
   const section = iframeDoc.createElement("section");
   section.setAttribute("data-chapter", String(index));
   section.innerHTML = chapterHtml;
+
+  // Inline onerror attributes are stripped by the sanitizer (rightly so —
+  // it's a script-injection vector), so broken images need a real listener
+  // instead. Hide rather than leave the browser's broken-image icon.
+  section.querySelectorAll("img").forEach((img) => {
+    img.addEventListener("error", () => {
+      img.style.display = "none";
+    });
+  });
 
   let inserted = false;
 

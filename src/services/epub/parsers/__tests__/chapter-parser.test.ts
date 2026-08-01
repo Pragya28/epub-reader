@@ -88,6 +88,34 @@ describe("ChapterParser", () => {
       expect(chapter.content).toContain("blob:");
     });
 
+    it("marks resolved images as lazy-loaded", async () => {
+      const chapter = await parser.parseChapter(zip, parsedEpub, 0, "OPS/");
+
+      expect(chapter.content).toContain('loading="lazy"');
+    });
+
+    it("resolves SVG <image xlink:href> assets", async () => {
+      zip.file(
+        "OPS/text/ch2.xhtml",
+        `
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <body>
+              <svg viewBox="0 0 100 100">
+                <image xlink:href="../images/cover.jpg" />
+              </svg>
+            </body>
+          </html>
+        `,
+      );
+      parsedEpub.manifest.ch2 = { href: "text/ch2.xhtml", properties: "" };
+      parsedEpub.spine.push("ch2");
+
+      const chapter = await parser.parseChapter(zip, parsedEpub, 1, "OPS/");
+
+      expect(chapter.assetMap.size).toBe(1);
+      expect(chapter.content).toContain("blob:");
+    });
+
     it("returns correct chapter metadata", async () => {
       const chapter = await parser.parseChapter(zip, parsedEpub, 0, "OPS/");
 
