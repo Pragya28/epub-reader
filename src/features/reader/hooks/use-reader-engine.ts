@@ -4,7 +4,10 @@ import type { ParsedBook, ParsedChapter } from "@/services/epub/epub-types";
 import { readerStore } from "../store/reader-store";
 import { readerPreferencesStore } from "../store/reader-preferences-store";
 import { ChapterLoader } from "../engine/loader/chapter-loader";
-import { getChapterSections } from "../engine/scroll/get-chapter-sections";
+import {
+  getChapterSections,
+  invalidateChapterSections,
+} from "../engine/scroll/get-chapter-sections";
 import { detectVisibleChapter } from "../engine/scroll/detect-visible-chapter";
 import { maintainChapterWindow } from "../engine/windowing/chapter-window";
 import {
@@ -204,6 +207,7 @@ export function useReaderEngine({
           // loop retries the same failing mount on every scroll tick.
           mountChapterFallback(iframeDoc, index);
         } finally {
+          invalidateChapterSections(iframeDoc);
           store.addLoadedChapterIndex(index);
           store.setIsMountingChapter(false);
           onSettled?.();

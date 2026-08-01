@@ -1,5 +1,8 @@
 import { unmountChapterSection } from "../renderer/iframe-renderer";
-import { getChapterSections } from "../scroll/get-chapter-sections";
+import {
+  getChapterSections,
+  invalidateChapterSections,
+} from "../scroll/get-chapter-sections";
 
 export const WINDOW_RADIUS = 2;
 export const MAX_WINDOW_SIZE = WINDOW_RADIUS * 2 + 1;
@@ -37,6 +40,7 @@ export function maintainChapterWindow({
       Math.abs(index - activeIndex) > WINDOW_RADIUS
     ) {
       unmountChapterSection(iframeDoc, index);
+      invalidateChapterSections(iframeDoc);
       onUnload(index);
     }
   });
