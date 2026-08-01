@@ -37,7 +37,7 @@ const createTocItem = (chapterIndex: number, fragmentId?: string): TocItem => ({
 
 describe("jumpToTocItem", () => {
   let doc: Document;
-  let win: { scrollTo: ReturnType<typeof vi.fn> };
+  let win: { scrollTo: ReturnType<typeof vi.fn>; scrollY: number };
   let chapters: ParsedChapter[];
 
   beforeEach(() => {
@@ -46,20 +46,21 @@ describe("jumpToTocItem", () => {
 
     doc = document.implementation.createHTMLDocument("test");
 
-    win = { scrollTo: vi.fn() };
+    win = { scrollTo: vi.fn(), scrollY: 0 };
 
     chapters = Array.from({ length: 5 }, (_, i) => createChapter(i));
   });
 
-  // Helper: insert a <section data-chapter="N"> into doc with a given offsetTop.
-  // jsdom doesn't do layout so offsetTop is always 0 — we override it directly.
-  const mountSection = (chapterIndex: number, offsetTop = 0): HTMLElement => {
+  // Helper: insert a <section data-chapter="N"> into doc with a given rect top.
+  // jsdom doesn't do layout so getBoundingClientRect always returns 0s — we override it directly.
+  const stubRectTop = (el: HTMLElement, top: number) => {
+    el.getBoundingClientRect = () => ({ top }) as DOMRect;
+  };
+
+  const mountSection = (chapterIndex: number, top = 0): HTMLElement => {
     const section = doc.createElement("section");
     section.setAttribute("data-chapter", String(chapterIndex));
-    Object.defineProperty(section, "offsetTop", {
-      value: offsetTop,
-      configurable: true,
-    });
+    stubRectTop(section, top);
     doc.body.appendChild(section);
     return section;
   };
@@ -67,14 +68,11 @@ describe("jumpToTocItem", () => {
   const mountFragment = (
     section: HTMLElement,
     id: string,
-    offsetTop = 0,
+    top = 0,
   ): HTMLElement => {
     const el = doc.createElement("span");
     el.id = id;
-    Object.defineProperty(el, "offsetTop", {
-      value: offsetTop,
-      configurable: true,
-    });
+    stubRectTop(el, top);
     section.appendChild(el);
     return el;
   };
@@ -161,14 +159,14 @@ describe("jumpToTocItem", () => {
   });
 
   describe("scroll target — with fragment", () => {
-    it("scrolls to section.offsetTop + fragmentEl.offsetTop when fragment found", () => {
+    it("scrolls to the fragment element's position when fragment found", () => {
       const section = mountSection(2, 300);
-      mountFragment(section, "section-1", 150);
+      mountFragment(section, "section-1", 450);
       readerStore.getState().addLoadedChapterIndex(2);
 
       jumpToTocItem(createTocItem(2, "section-1"), doc, win as any, chapters);
 
-      expect(win.scrollTo).toHaveBeenCalledWith(0, 450); // 300 + 150
+      expect(win.scrollTo).toHaveBeenCalledWith(0, 450);
     });
 
     it("falls back to section offsetTop when fragment element not found in DOM", () => {

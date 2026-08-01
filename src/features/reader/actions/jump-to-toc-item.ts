@@ -62,18 +62,16 @@ export function jumpToTocItem(
       return;
     }
 
-    // Resolve scroll target: fragment element or section top
-    let targetY = section.offsetTop;
+    // Resolve scroll target: fragment element or section top. getBoundingClientRect
+    // + current scroll offset works regardless of the offsetParent chain, unlike
+    // offsetTop which silently breaks under positioned publisher HTML ancestors.
+    let target: HTMLElement = section;
 
     if (fragmentId) {
       const fragmentEl = iframeDoc.getElementById(fragmentId);
       if (fragmentEl) {
-        // offsetTop is relative to the offsetParent (section), so add section.offsetTop
-        targetY = section.offsetTop + (fragmentEl as HTMLElement).offsetTop;
-        logger.debug("jumpToTocItem — scrolling to fragment", {
-          fragmentId,
-          targetY,
-        });
+        target = fragmentEl;
+        logger.debug("jumpToTocItem — scrolling to fragment", { fragmentId });
       } else {
         logger.debug(
           "jumpToTocItem — fragment element not found, falling back to section top",
@@ -81,6 +79,8 @@ export function jumpToTocItem(
         );
       }
     }
+
+    const targetY = win.scrollY + target.getBoundingClientRect().top;
 
     logger.info("jumpToTocItem — scrolling", {
       chapterIndex,

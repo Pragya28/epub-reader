@@ -40,7 +40,7 @@ All four done:
 5. ❌ **Post-jump window reconciliation** — after a TOC jump the loaded chapter set is non-contiguous; no re-plan via `maintainChapterWindow`, and progress isn't recomputed if no scroll event fires.
 6. ❌ **Return-to-position after footnote jump** — no history; tapping an endnote loses the reading position.
 7. ✅ **Prev/next chapter controls** — footer shows `n of m` text only. _(done 2026-08-01)_
-8. 🟡 **Fragment offset** — `jump-to-toc-item.ts` uses `offsetTop` assuming the section is the offsetParent; needs `getBoundingClientRect` fallback for positioned publisher HTML.
+8. ✅ **Fragment offset** — `jump-to-toc-item.ts` uses `offsetTop` assuming the section is the offsetParent; needs `getBoundingClientRect` fallback for positioned publisher HTML. _(done 2026-08-01)_
 
 ## Day 3 — Rendering Robustness
 
