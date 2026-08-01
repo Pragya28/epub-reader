@@ -47,7 +47,7 @@ All four done:
 9. ✅ **Malformed XHTML guard** — `ChapterParser.parseChapter` (`src/services/epub/parsers/chapter-parser.ts`) has no `parsererror` check; a single bad entity renders the browser's error document as the chapter. Mirror the guard + `text/html` fallback already in `epub.service.ts`. _(done 2026-07-31)_
 10. ✅ **Image hardening** — no `img { max-width: 100% }` in base style (wide images force horizontal scroll), no `loading="lazy"`, no `onerror` fallback; SVG `<image xlink:href>` not resolved and `svg` not in `ALLOWED_TAGS`. _(done 2026-08-01)_
 11. 🟡 **Inline style fidelity** — sanitizer strips `style` attributes and `<style>` blocks; only linked CSS survives. Decide and document the tradeoff.
-12. 🟡 **Offline fonts** — iframe loads Literata from Google Fonts CDN only; first offline read falls back to system serif. Consider self-hosting.
+12. ✅ **Offline fonts** — iframe loads Literata from Google Fonts CDN only; first offline read falls back to system serif. Consider self-hosting. _(done 2026-08-01)_
 13. ❌ **Robustness tests** — `invalid.epub` / `broken-spine.epub` fixtures exist but no chapter-level graceful-degradation tests; no image-heavy EPUB tests.
 
 ## Day 4 — Performance Optimisation

@@ -35,19 +35,56 @@ function sanitizeStylesheet(css: string): string {
 
 /**
  * The iframe is a separate document (written via srcdoc), so it does
- * NOT inherit the parent app's index.css custom properties or its
- * Google Fonts <link> — those only apply to the outer document. Both
- * have to be re-declared here.
+ * NOT inherit the parent app's index.css custom properties — those only
+ * apply to the outer document. Those values have to be re-declared here.
  *
  * These values are hand-mirrored from the `--color-*` / `--font-reading`
  * / `--reading-line-height` tokens in src/index.css (light + the
  * `prefers-color-scheme: dark` override block). If those tokens change,
  * update this constant too.
+ *
+ * Fonts are self-hosted (public/fonts/literata/, see the README there)
+ * rather than loaded from the Google Fonts CDN: a CDN @font-face only
+ * gets cached by the service worker's runtime-caching rule the first
+ * time it's actually fetched, so a book opened offline before the reader
+ * was ever opened online would fall back to system serif. Self-hosted
+ * files under public/ are part of the app-shell precache manifest, so
+ * they're guaranteed available from the very first offline read.
  */
-const READER_FONTS_LINK =
-  '<link rel="preconnect" href="https://fonts.googleapis.com">' +
-  '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
-  '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,300..900&display=swap">';
+const READER_FONTS_STYLE = `
+  @font-face {
+    font-family: "Literata";
+    font-style: normal;
+    font-display: swap;
+    font-weight: 200 900;
+    src: url("/fonts/literata/literata-latin-wght-normal.woff2") format("woff2-variations");
+    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+  }
+  @font-face {
+    font-family: "Literata";
+    font-style: normal;
+    font-display: swap;
+    font-weight: 200 900;
+    src: url("/fonts/literata/literata-latin-ext-wght-normal.woff2") format("woff2-variations");
+    unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+  }
+  @font-face {
+    font-family: "Literata";
+    font-style: italic;
+    font-display: swap;
+    font-weight: 200 900;
+    src: url("/fonts/literata/literata-latin-wght-italic.woff2") format("woff2-variations");
+    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+  }
+  @font-face {
+    font-family: "Literata";
+    font-style: italic;
+    font-display: swap;
+    font-weight: 200 900;
+    src: url("/fonts/literata/literata-latin-ext-wght-italic.woff2") format("woff2-variations");
+    unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+  }
+`;
 
 function buildReaderBaseStyle(bookId?: string): string {
   const baseStyle = `
@@ -184,7 +221,7 @@ export function initializeReaderDocument(
   <!doctype html>
   <html>
     <head>
-      ${READER_FONTS_LINK}
+      <style>${READER_FONTS_STYLE}</style>
       <style>${readerBaseStyle}</style>
       ${bookCss}
     </head>

@@ -23,6 +23,15 @@ describe("iframe-renderer", () => {
       expect(iframe.srcdoc).toContain("<body></body>");
     });
 
+    it("self-hosts the Literata font instead of loading it from Google Fonts", () => {
+      initializeReaderDocument(iframe, []);
+
+      expect(iframe.srcdoc).toContain("/fonts/literata/");
+      expect(iframe.srcdoc).toContain("@font-face");
+      expect(iframe.srcdoc).not.toContain("fonts.googleapis.com");
+      expect(iframe.srcdoc).not.toContain("fonts.gstatic.com");
+    });
+
     it("injects stylesheets into head", () => {
       const stylesheets = ["body { font-size: 18px; }", "p { color: black; }"];
 
