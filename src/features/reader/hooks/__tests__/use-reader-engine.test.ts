@@ -19,6 +19,7 @@ vi.mock("@/shared/logger/logger", () => ({
       debug: vi.fn(),
       info: vi.fn(),
       trace: vi.fn(),
+      warn: vi.fn(),
       error: vi.fn(),
     })),
   },
@@ -201,6 +202,41 @@ describe("useReaderEngine", () => {
         "load",
         expect.any(Function),
       );
+    });
+
+    it("attaches the load listener before triggering the load (initializeChapterDocument)", () => {
+      // A 'load' that fires before the listener is attached would be missed
+      // entirely and the reader would hang forever — this ordering is load-bearing.
+      const callOrder: string[] = [];
+
+      vi.spyOn(
+        chapterRendererModule,
+        "initializeChapterDocument",
+      ).mockImplementation(() => {
+        callOrder.push("initializeChapterDocument");
+      });
+
+      const iframe = iframeRef.current!;
+      const originalAddEventListener = iframe.addEventListener as ReturnType<
+        typeof vi.fn
+      >;
+      originalAddEventListener.mockImplementation(
+        (event: string, handler: EventListener) => {
+          if (event === "load") {
+            callOrder.push("addEventListener(load)");
+            setTimeout(() => handler({} as Event), 0);
+          }
+        },
+      );
+
+      renderHook(() =>
+        useReaderEngine({ iframeRef, parsedBook: mockParsedBook }),
+      );
+
+      expect(callOrder).toEqual([
+        "addEventListener(load)",
+        "initializeChapterDocument",
+      ]);
     });
   });
 
@@ -671,6 +707,79 @@ describe("useReaderEngine", () => {
       // isJumping must be released again after the restore settles, so
       // the reader isn't permanently stuck ignoring real scroll events.
       expect(readerStore.getState().isJumping).toBe(false);
+    });
+
+    it("retries restoring position if the target section isn't mounted yet, until it appears", async () => {
+      vi.spyOn(getChapterSectionsModule, "getChapterSections").mockReturnValue(
+        sectionsForChapters(3), // chapters 0,1,2 mounted immediately
+      );
+
+      const initialProgress: ReadingProgress = {
+        chapterIndex: 3, // not among the initially-mounted sections
+        totalChapters: 5,
+        scrollFraction: 0.5,
+        atDocumentEnd: false,
+        percent: 50,
+        updatedAt: Date.now(),
+      };
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          bookId: "book-1",
+          initialProgress,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const mockWin = iframeRef.current?.contentWindow as any;
+      expect(mockWin.scrollTo).not.toHaveBeenCalled();
+
+      // Simulate the target chapter mounting a bit late.
+      const section3 = mockIframeDoc.createElement("section");
+      section3.setAttribute("data-chapter", "3");
+      mockIframeDoc.body.appendChild(section3);
+
+      // Let the rAF-based retry loop pick it up.
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      expect(mockWin.scrollTo).toHaveBeenCalled();
+    });
+
+    it("gives up after max retries if the target section never mounts, and falls back to handleScroll", async () => {
+      vi.spyOn(getChapterSectionsModule, "getChapterSections").mockReturnValue(
+        sectionsForChapters(3),
+      );
+      const detectSpy = vi.spyOn(
+        detectVisibleChapterModule,
+        "detectVisibleChapter",
+      );
+
+      const initialProgress: ReadingProgress = {
+        chapterIndex: 3, // never mounted in this test
+        totalChapters: 5,
+        scrollFraction: 0.5,
+        atDocumentEnd: false,
+        percent: 50,
+        updatedAt: Date.now(),
+      };
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          bookId: "book-1",
+          initialProgress,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const mockWin = iframeRef.current?.contentWindow as any;
+      expect(mockWin.scrollTo).not.toHaveBeenCalled();
+      expect(detectSpy).toHaveBeenCalled();
     });
 
     it("does not restore scroll position when no initialProgress is given", async () => {

@@ -26,6 +26,7 @@ import { jumpToTocItem } from "../actions/jump-to-toc-item";
 
 const SCROLL_PREFETCH_THRESHOLD_PX = 300;
 const ENGINE_START_MAX_ATTEMPTS = 120;
+const RESTORE_RETRY_MAX_ATTEMPTS = 10;
 const PROGRESS_SAVE_DEBOUNCE_MS = 1500;
 
 const logger = rootLogger.child("reader-engine");
@@ -334,6 +335,7 @@ export function useReaderEngine({
         iframeDoc: Document,
         win: Window,
         progress: ReadingProgress,
+        retriesLeft = RESTORE_RETRY_MAX_ATTEMPTS,
       ) => {
         const store = readerStore.getState();
         const section = iframeDoc.querySelector(
@@ -341,8 +343,24 @@ export function useReaderEngine({
         ) as HTMLElement | null;
 
         if (!section) {
-          logger.debug(
-            "restoreInitialPosition — target section not mounted, skipping jump",
+          // The target chapter's section can legitimately not be mounted yet
+          // (load plan mounting is synchronous, but this still runs a beat
+          // before it in some call orderings) — retry a few frames before
+          // giving up, instead of silently dropping the restore on the
+          // first miss.
+          if (retriesLeft > 0) {
+            logger.debug(
+              "restoreInitialPosition — target section not mounted yet, retrying",
+              { chapterIndex: progress.chapterIndex, retriesLeft },
+            );
+            requestAnimationFrame(() =>
+              restoreInitialPosition(iframeDoc, win, progress, retriesLeft - 1),
+            );
+            return;
+          }
+
+          logger.warn(
+            "restoreInitialPosition — target section never mounted, giving up",
             { chapterIndex: progress.chapterIndex },
           );
           handleScroll();
@@ -649,9 +667,6 @@ export function useReaderEngine({
       };
     };
 
-    initializeChapterDocument(iframe, chapters, bookId);
-    logger.debug("initializeChapterDocument called, waiting for load event");
-
     const handleIframeLoad = () => {
       if (cancelled) {
         logger.debug("iframe load fired but effect already cancelled");
@@ -676,7 +691,14 @@ export function useReaderEngine({
       startEngine(iframeDoc, win);
     };
 
+    // Attach the listener BEFORE triggering the load (srcdoc assignment
+    // below), not after — otherwise a 'load' that fires before this line
+    // runs would be missed entirely and the reader would hang on the
+    // loading screen forever.
     iframe.addEventListener("load", handleIframeLoad);
+
+    initializeChapterDocument(iframe, chapters, bookId);
+    logger.debug("initializeChapterDocument called, waiting for load event");
 
     return () => {
       logger.info("effect cleanup");
