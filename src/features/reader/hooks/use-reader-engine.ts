@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { RefObject } from "react";
 import type { ParsedBook, ParsedChapter } from "@/services/epub/epub-types";
 import { readerStore } from "../store/reader-store";
@@ -49,6 +49,23 @@ export function useReaderEngine({
   onExternalLink,
 }: UseReaderEngineProps) {
   const chapterLoader = useMemo(() => new ChapterLoader(), []);
+  const restoreRef = useRef<
+    | ((iframeDoc: Document, win: Window, progress: ReadingProgress) => void)
+    | null
+  >(null);
+
+  const jumpBack = useCallback(() => {
+    const progress = readerStore.getState().footnoteBackStack.at(-1);
+    const iframe = iframeRef.current;
+    if (!progress || !restoreRef.current || !iframe?.contentDocument) return;
+
+    readerStore.getState().popFootnoteBackPosition();
+    restoreRef.current(
+      iframe.contentDocument,
+      iframe.contentWindow as Window,
+      progress,
+    );
+  }, [iframeRef]);
 
   useEffect(() => {
     const iframe = iframeRef.current;
@@ -377,6 +394,41 @@ export function useReaderEngine({
           return;
         }
 
+        // Bare fragment (e.g. "#endnotes1") — the common footnote/endnote
+        // pattern. No path to resolve against the spine; getElementById
+        // searches the whole iframe document, so it works whether the
+        // target lives in the current chapter or another mounted one.
+        if (href.startsWith("#")) {
+          const fragmentId = href.slice(1);
+          if (!iframeDoc.getElementById(fragmentId)) return;
+
+          e.preventDefault();
+
+          const store = readerStore.getState();
+          store.pushFootnoteBackPosition(
+            computeReaderProgress({
+              iframeDoc,
+              win,
+              activeIndex: store.currentChapterIndex,
+              totalChapters,
+            }),
+          );
+
+          jumpToTocItem(
+            {
+              label: "",
+              href,
+              chapterIndex: store.currentChapterIndex,
+              fragmentId,
+              children: [],
+            },
+            iframeDoc,
+            win,
+            chapters,
+          );
+          return;
+        }
+
         // Internal link — resolve relative to the active chapter's own href,
         // since sibling-relative paths like "../notes/endnotes.xhtml" are
         // relative to the chapter file, not the OPF directory.
@@ -413,6 +465,20 @@ export function useReaderEngine({
         }
 
         e.preventDefault();
+
+        // Only footnote/endnote-style links target a fragment — record where we
+        // jumped from so the reader can return to it (TOC/prev-next navigation
+        // has no fragment and isn't something users expect to "return" from).
+        if (fragmentId) {
+          readerStore.getState().pushFootnoteBackPosition(
+            computeReaderProgress({
+              iframeDoc,
+              win,
+              activeIndex: readerStore.getState().currentChapterIndex,
+              totalChapters,
+            }),
+          );
+        }
 
         jumpToTocItem(
           {
@@ -456,6 +522,8 @@ export function useReaderEngine({
 
       win.addEventListener("resize", handleResize);
       window.addEventListener("orientationchange", handleResize);
+
+      restoreRef.current = restoreInitialPosition;
 
       let attempts = 0;
 
@@ -523,6 +591,7 @@ export function useReaderEngine({
         win.removeEventListener("resize", handleResize);
         window.removeEventListener("orientationchange", handleResize);
         if (resizeTimeoutId) clearTimeout(resizeTimeoutId);
+        restoreRef.current = null;
       };
     };
 
@@ -582,4 +651,6 @@ export function useReaderEngine({
     initialProgress,
     onExternalLink,
   ]);
+
+  return { jumpBack };
 }

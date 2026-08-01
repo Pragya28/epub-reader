@@ -23,7 +23,7 @@ vi.mock("@/features/reader/actions/load-reader-book", () => ({
 }));
 
 vi.mock("@/features/reader/hooks/use-reader-engine", () => ({
-  useReaderEngine: vi.fn(),
+  useReaderEngine: vi.fn(() => ({ jumpBack: vi.fn() })),
 }));
 
 const jumpToTocItemMock = vi.fn();

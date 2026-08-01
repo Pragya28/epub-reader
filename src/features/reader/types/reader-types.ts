@@ -1,5 +1,8 @@
 import type { ParsedBook } from "@/services/epub/epub-types";
-import type { StoredBook } from "@/services/storage/storage-types";
+import type {
+  ReadingProgress,
+  StoredBook,
+} from "@/services/storage/storage-types";
 
 interface ReaderDocument {
   book: StoredBook;
@@ -26,6 +29,8 @@ export interface ReaderStore {
    * user's actual position within the current chapter.
    */
   progressPercent: number;
+  /** Positions to return to after an in-content (footnote/endnote) jump, most recent last. */
+  footnoteBackStack: ReadingProgress[];
 
   setReaderDocument: (readerDocument: ReaderDocument | null) => void;
   setParsedBook: (parsedBook: ParsedBook | null) => void;
@@ -38,6 +43,8 @@ export interface ReaderStore {
   removeLoadedChapterIndex: (index: number) => void;
   setIsMountingChapter: (isMountingChapter: boolean) => void;
   setIsJumping: (isJumping: boolean) => void;
+  pushFootnoteBackPosition: (progress: ReadingProgress) => void;
+  popFootnoteBackPosition: () => void;
 
   reset: () => void;
 }

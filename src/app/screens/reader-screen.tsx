@@ -9,7 +9,7 @@ import type { TocItem } from "@/services/epub/epub-types";
 import { TocDrawer } from "@/features/reader/components/toc-drawer";
 import { ReaderToolbar } from "@/features/reader/components/reader-toolbar";
 import { ExternalLinkDialog } from "@/features/reader/components/external-link-dialog";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Undo2 } from "lucide-react";
 import { Progress, ProgressValue } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/utils/routes";
@@ -32,6 +32,9 @@ export const ReaderScreen: FC = () => {
     currentChapterIndex,
     progressPercent,
   } = readerStore();
+  const hasFootnoteBackPosition = readerStore(
+    (state) => state.footnoteBackStack.length > 0,
+  );
 
   const totalChapters = parsedBook?.chapters.length ?? 0;
 
@@ -78,7 +81,7 @@ export const ReaderScreen: FC = () => {
     };
   }, [bookId]);
 
-  useReaderEngine({
+  const { jumpBack } = useReaderEngine({
     iframeRef,
     parsedBook,
     bookId,
@@ -215,8 +218,21 @@ export const ReaderScreen: FC = () => {
       </header>
 
       {/* Reader Content */}
-      <main className="flex flex-1 overflow-hidden px-2">
+      <main className="relative flex flex-1 overflow-hidden px-2">
         <ReaderFrame ref={iframeRef} />
+
+        {hasFootnoteBackPosition && (
+          <Button
+            variant="secondary"
+            size="sm"
+            aria-label="Return to previous position"
+            className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 shadow-floating"
+            onClick={jumpBack}
+          >
+            <Undo2 className="size-4" strokeWidth={1.5} />
+            Back
+          </Button>
+        )}
       </main>
 
       {/* Footer */}

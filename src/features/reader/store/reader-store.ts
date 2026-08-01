@@ -12,6 +12,7 @@ const initialState: Partial<ReaderStore> = {
   isMountingChapter: false,
   isJumping: false,
   progressPercent: 0,
+  footnoteBackStack: [],
 };
 
 export const readerStore = create<ReaderStore>()(
@@ -63,9 +64,31 @@ export const readerStore = create<ReaderStore>()(
       setIsJumping: (isJumping) =>
         set({ isJumping }, false, "reader/setIsJumping"),
 
+      pushFootnoteBackPosition: (progress) =>
+        set(
+          (state) => ({
+            footnoteBackStack: [...state.footnoteBackStack, progress],
+          }),
+          false,
+          "reader/pushFootnoteBackPosition",
+        ),
+
+      popFootnoteBackPosition: () =>
+        set(
+          (state) => ({
+            footnoteBackStack: state.footnoteBackStack.slice(0, -1),
+          }),
+          false,
+          "reader/popFootnoteBackPosition",
+        ),
+
       reset: () =>
         set(
-          { ...initialState, loadedChapterIndices: new Set<number>() },
+          {
+            ...initialState,
+            loadedChapterIndices: new Set<number>(),
+            footnoteBackStack: [],
+          },
           false,
           "reader/reset",
         ),
