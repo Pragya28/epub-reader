@@ -55,16 +55,17 @@ export const TocDrawer = memo(function TocDrawer({
 
         <ScrollArea className="flex-1 overflow-auto">
           <div className="flex flex-col gap-2 px-2 py-2">
-            {flatItems.map(({ item }) => {
+            {flatItems.map(({ item, depth }, index) => {
               const isActive = item.chapterIndex === currentChapterIndex;
               const isNavigable = item.chapterIndex >= 0;
 
               return (
                 <Button
-                  key={item.href}
+                  key={`${item.href}-${index}`}
                   variant={isActive ? "secondary" : "ghost"}
                   disabled={!isNavigable}
-                  className="h-auto w-full justify-center whitespace-normal px-5 py-3 text-center"
+                  className="h-auto w-full justify-start whitespace-normal py-3 pr-5 text-left"
+                  style={{ paddingLeft: `${1.25 + depth * 1.25}rem` }}
                   onClick={() => {
                     if (!isNavigable) return;
                     onItemClick(item);
