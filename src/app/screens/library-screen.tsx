@@ -3,7 +3,10 @@ import { useEffect, type FC } from "react";
 import { Link } from "react-router-dom";
 import { libraryStore } from "@/features/library/store/library-store";
 import { loadLibrary } from "@/features/library/actions/load-library";
-import { enrichBookWithProgress } from "@/features/library/utils/derive-book-status";
+import {
+  enrichBookWithProgress,
+  pickCurrentlyReadingBook,
+} from "@/features/library/utils/derive-book-status";
 import { BookGrid } from "@/features/library/components/book-grid";
 import { ContinueReadingBanner } from "@/features/library/components/continue-reading-banner";
 import { ImportBookFab } from "@/features/library/components/import-book-fab";
@@ -41,14 +44,7 @@ export const LibraryScreen: FC = () => {
     ...enriched.filter((book) => book.isFinished),
   ];
 
-  // Most recently read book still in progress — real data from
-  // book.progress.updatedAt, not just "the first 'reading' book found".
-  const currentBook =
-    [...ordered]
-      .filter((b) => b.isReading)
-      .sort(
-        (a, b) => (b.progressUpdatedAt ?? 0) - (a.progressUpdatedAt ?? 0),
-      )[0] ?? null;
+  const currentBook = pickCurrentlyReadingBook(ordered);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

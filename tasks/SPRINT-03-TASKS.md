@@ -76,4 +76,4 @@ All four done:
 ## Day 7 — Hardening
 
 28. ✅ **Component tests** — `reader-screen`, `toc-drawer`, `reader-frame`, `external-link-dialog`, `flatten-toc`, `error-boundary` all untested. _(done 2026-07-31)_
-29. ❌ **Library↔reader seam test** — progress write → `deriveReadingStatus` → continue-reading round-trip; each half is tested, the seam is not.
+29. ✅ **Library↔reader seam test** — progress write → `deriveReadingStatus` → continue-reading round-trip; each half is tested, the seam is not. _(done 2026-08-01)_

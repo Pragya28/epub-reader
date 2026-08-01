@@ -33,6 +33,23 @@ function deriveReadingStatus(
   return reachedEnd ? "finished" : "reading";
 }
 
+/**
+ * Picks the "continue reading" candidate: the most recently read book
+ * that's still in progress. Real data from progress.updatedAt, not just
+ * "the first 'reading' book found" in whatever order books arrived.
+ */
+export function pickCurrentlyReadingBook(
+  books: BookWithProgress[],
+): BookWithProgress | null {
+  return (
+    [...books]
+      .filter((book) => book.isReading)
+      .sort(
+        (a, b) => (b.progressUpdatedAt ?? 0) - (a.progressUpdatedAt ?? 0),
+      )[0] ?? null
+  );
+}
+
 export function enrichBookWithProgress(book: StoredBook): BookWithProgress {
   const status = deriveReadingStatus(book.progress, book.manualStatus);
 
