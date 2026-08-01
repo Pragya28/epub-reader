@@ -26,6 +26,11 @@ vi.mock("@/features/reader/hooks/use-reader-engine", () => ({
   useReaderEngine: vi.fn(),
 }));
 
+const jumpToTocItemMock = vi.fn();
+vi.mock("@/features/reader/actions/jump-to-toc-item", () => ({
+  jumpToTocItem: (...args: unknown[]) => jumpToTocItemMock(...args),
+}));
+
 function renderReaderScreen(bookId = "book-1") {
   return render(
     <MemoryRouter initialEntries={[`/reader/${bookId}`]}>
@@ -50,10 +55,22 @@ const mockParsedBook: ParsedBook = {
   toc: [],
 };
 
+const mockThreeChapterBook: ParsedBook = {
+  ...mockParsedBook,
+  chapters: [0, 1, 2].map((i) => ({
+    id: `ch${i}`,
+    href: `text/ch${i}.xhtml`,
+    content: `<p>Chapter ${i}</p>`,
+    stylesheets: [],
+    assetMap: new Map(),
+  })),
+};
+
 describe("ReaderScreen", () => {
   beforeEach(() => {
     readerStore.getState().reset();
     loadReaderBookMock.mockClear();
+    jumpToTocItemMock.mockClear();
   });
 
   it("shows a loading state while the book is loading", () => {
@@ -119,6 +136,81 @@ describe("ReaderScreen", () => {
 
     await waitFor(() => {
       expect(container.querySelector("svg")).toBeInTheDocument();
+    });
+  });
+
+  describe("prev/next chapter controls", () => {
+    function setLoadedAt(chapterIndex: number) {
+      readerStore.setState({
+        isLoading: false,
+        error: null,
+        readerDocument: {
+          book: {
+            id: "book-1",
+            title: "Test Book",
+            author: "Test Author",
+          } as never,
+          file: new Blob(),
+        },
+        parsedBook: mockThreeChapterBook,
+        currentChapterIndex: chapterIndex,
+      });
+    }
+
+    it("disables the previous button on the first chapter", () => {
+      setLoadedAt(0);
+      renderReaderScreen();
+
+      expect(
+        screen.getByRole("button", { name: "Previous chapter" }),
+      ).toBeDisabled();
+      expect(
+        screen.getByRole("button", { name: "Next chapter" }),
+      ).not.toBeDisabled();
+    });
+
+    it("disables the next button on the last chapter", () => {
+      setLoadedAt(2);
+      renderReaderScreen();
+
+      expect(
+        screen.getByRole("button", { name: "Next chapter" }),
+      ).toBeDisabled();
+      expect(
+        screen.getByRole("button", { name: "Previous chapter" }),
+      ).not.toBeDisabled();
+    });
+
+    it("jumps to the next chapter when clicked", async () => {
+      setLoadedAt(1);
+      const user = userEvent.setup();
+      renderReaderScreen();
+
+      await user.click(screen.getByRole("button", { name: "Next chapter" }));
+
+      expect(jumpToTocItemMock).toHaveBeenCalledWith(
+        expect.objectContaining({ chapterIndex: 2 }),
+        expect.anything(),
+        expect.anything(),
+        mockThreeChapterBook.chapters,
+      );
+    });
+
+    it("jumps to the previous chapter when clicked", async () => {
+      setLoadedAt(1);
+      const user = userEvent.setup();
+      renderReaderScreen();
+
+      await user.click(
+        screen.getByRole("button", { name: "Previous chapter" }),
+      );
+
+      expect(jumpToTocItemMock).toHaveBeenCalledWith(
+        expect.objectContaining({ chapterIndex: 0 }),
+        expect.anything(),
+        expect.anything(),
+        mockThreeChapterBook.chapters,
+      );
     });
   });
 });

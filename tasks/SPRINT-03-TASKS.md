@@ -39,7 +39,7 @@ All four done:
 4. ❌ **TOC depth indentation** — `flatten-toc.ts` computes `depth` but `toc-drawer.tsx` discards it (deep TOCs render flat). Also `key={item.href}` collides when entries share an href.
 5. ❌ **Post-jump window reconciliation** — after a TOC jump the loaded chapter set is non-contiguous; no re-plan via `maintainChapterWindow`, and progress isn't recomputed if no scroll event fires.
 6. ❌ **Return-to-position after footnote jump** — no history; tapping an endnote loses the reading position.
-7. ❌ **Prev/next chapter controls** — footer shows `n of m` text only.
+7. ✅ **Prev/next chapter controls** — footer shows `n of m` text only. _(done 2026-08-01)_
 8. 🟡 **Fragment offset** — `jump-to-toc-item.ts` uses `offsetTop` assuming the section is the offsetParent; needs `getBoundingClientRect` fallback for positioned publisher HTML.
 
 ## Day 3 — Rendering Robustness
@@ -63,7 +63,7 @@ All four done:
 19. ✅ **Loading experience** — bare "Loading reader..." text; show title/cover skeleton (matters more while parsing stays eager). _(done 2026-07-31)_
 20. ✅ **Reader toolbar** — no font size, line height, or theme controls; `--reading-line-height` token exists but isn't adjustable. _(done 2026-07-31)_
 21. ✅ **Orientation/resize handling** — nothing listens to `resize`/`orientationchange`; rotating loses reading position (restore runs only once at mount). _(done 2026-07-31)_
-22. 🟡 **Viewport units** — `reader-screen.tsx` uses `h-screen`, not `h-dvh`; footer sits under mobile Safari's URL bar (`TocDrawer` already uses `dvh`).
+22. ✅ **Viewport units** — `reader-screen.tsx` uses `h-screen`, not `h-dvh`; footer sits under mobile Safari's URL bar (`TocDrawer` already uses `dvh`). _(done 2026-08-01)_
 23. ❌ **Touch/keyboard interaction** — no gestures, no PgUp/PgDn/arrow handling, iframe not focusable.
 
 ## Day 6 — Error Handling & Recovery

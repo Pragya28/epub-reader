@@ -9,7 +9,7 @@ import type { TocItem } from "@/services/epub/epub-types";
 import { TocDrawer } from "@/features/reader/components/toc-drawer";
 import { ReaderToolbar } from "@/features/reader/components/reader-toolbar";
 import { ExternalLinkDialog } from "@/features/reader/components/external-link-dialog";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Progress, ProgressValue } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/utils/routes";
@@ -100,6 +100,18 @@ export const ReaderScreen: FC = () => {
       );
     },
     [parsedBook],
+  );
+
+  const handleChapterNav = useCallback(
+    (targetIndex: number) => {
+      handleTocItemClick({
+        label: "",
+        href: "",
+        chapterIndex: targetIndex,
+        children: [],
+      });
+    },
+    [handleTocItemClick],
   );
 
   if (isLoading) {
@@ -222,11 +234,32 @@ export const ReaderScreen: FC = () => {
             currentChapterIndex={currentChapterIndex}
             onItemClick={handleTocItemClick}
           />
-          <p className="metadata normal-case">
-            {totalChapters > 0 ? currentChapterIndex + 1 : "–"}
-            {totalChapters > 0 ? ` of ${totalChapters}` : ""}
-          </p>
-          <div className="w-5" />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Previous chapter"
+              disabled={currentChapterIndex <= 0}
+              onClick={() => handleChapterNav(currentChapterIndex - 1)}
+            >
+              <ChevronLeft className="size-4" strokeWidth={1.5} />
+            </Button>
+
+            <p className="metadata normal-case">
+              {totalChapters > 0 ? currentChapterIndex + 1 : "–"}
+              {totalChapters > 0 ? ` of ${totalChapters}` : ""}
+            </p>
+
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Next chapter"
+              disabled={currentChapterIndex >= totalChapters - 1}
+              onClick={() => handleChapterNav(currentChapterIndex + 1)}
+            >
+              <ChevronRight className="size-4" strokeWidth={1.5} />
+            </Button>
+          </div>
         </div>
       </footer>
 
