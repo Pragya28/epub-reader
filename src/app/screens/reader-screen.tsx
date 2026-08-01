@@ -82,14 +82,6 @@ export const ReaderScreen: FC = () => {
     };
   }, [bookId]);
 
-  const { jumpBack } = useReaderEngine({
-    iframeRef,
-    parsedBook,
-    bookId,
-    initialProgress: readerDocument?.book.progress ?? null,
-    onExternalLink: setPendingExternalHref,
-  });
-
   const handleTocItemClick = useCallback(
     (item: TocItem) => {
       const iframe = iframeRef.current;
@@ -120,6 +112,14 @@ export const ReaderScreen: FC = () => {
     },
     [handleTocItemClick],
   );
+
+  const { jumpBack } = useReaderEngine({
+    iframeRef,
+    parsedBook,
+    bookId,
+    initialProgress: readerDocument?.book.progress ?? null,
+    onExternalLink: setPendingExternalHref,
+  });
 
   if (isLoading) {
     const { palette, OrnamentComponent } = bookId

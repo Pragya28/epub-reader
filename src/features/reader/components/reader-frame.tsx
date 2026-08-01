@@ -7,6 +7,7 @@ export const ReaderFrame = forwardRef<HTMLIFrameElement>((_props, ref) => {
       ref={ref}
       className="h-full w-full border-0"
       title="reader"
+      tabIndex={0}
     />
   );
 });

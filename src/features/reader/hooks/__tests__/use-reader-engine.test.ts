@@ -74,6 +74,7 @@ describe("useReaderEngine", () => {
       scrollY: 0,
       innerHeight: 800,
       scrollTo: vi.fn(),
+      scrollBy: vi.fn(),
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       requestAnimationFrame: (cb: FrameRequestCallback) => {
@@ -1047,6 +1048,176 @@ describe("useReaderEngine", () => {
         "click",
         expect.any(Function),
       );
+    });
+  });
+
+  describe("keyboard and swipe navigation", () => {
+    const setupWithSections = async () => {
+      const sections = Array.from({ length: 3 }, (_, i) => {
+        const section = mockIframeDoc.createElement("section");
+        section.setAttribute("data-chapter", String(i));
+        mockIframeDoc.body.appendChild(section);
+        return section as HTMLElement;
+      });
+
+      vi.spyOn(getChapterSectionsModule, "getChapterSections").mockReturnValue(
+        sections,
+      );
+    };
+
+    it("scrolls forward on PageDown/ArrowDown/Space", async () => {
+      await setupWithSections();
+
+      renderHook(() =>
+        useReaderEngine({ iframeRef, parsedBook: mockParsedBook }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const mockWin = iframeRef.current?.contentWindow as any;
+
+      for (const key of ["PageDown", "ArrowDown", " "]) {
+        mockWin.scrollBy.mockClear();
+        mockIframeDoc.dispatchEvent(
+          new KeyboardEvent("keydown", { key, cancelable: true }),
+        );
+        expect(mockWin.scrollBy).toHaveBeenCalledWith(
+          expect.objectContaining({ top: expect.any(Number) }),
+        );
+        expect(mockWin.scrollBy.mock.calls[0][0].top).toBeGreaterThan(0);
+      }
+    });
+
+    it("scrolls backward on PageUp/ArrowUp", async () => {
+      await setupWithSections();
+
+      renderHook(() =>
+        useReaderEngine({ iframeRef, parsedBook: mockParsedBook }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const mockWin = iframeRef.current?.contentWindow as any;
+
+      for (const key of ["PageUp", "ArrowUp"]) {
+        mockWin.scrollBy.mockClear();
+        mockIframeDoc.dispatchEvent(
+          new KeyboardEvent("keydown", { key, cancelable: true }),
+        );
+        expect(mockWin.scrollBy.mock.calls[0][0].top).toBeLessThan(0);
+      }
+    });
+
+    it("calls onSwipeChapter(1) on a leftward swipe", async () => {
+      await setupWithSections();
+      const onSwipeChapter = vi.fn();
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          onSwipeChapter,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      mockIframeDoc.dispatchEvent(
+        new TouchEvent("touchstart", {
+          touches: [{ clientX: 300, clientY: 100 } as Touch],
+        }),
+      );
+      mockIframeDoc.dispatchEvent(
+        new TouchEvent("touchend", {
+          changedTouches: [{ clientX: 200, clientY: 100 } as Touch],
+        }),
+      );
+
+      expect(onSwipeChapter).toHaveBeenCalledWith(1);
+    });
+
+    it("calls onSwipeChapter(-1) on a rightward swipe", async () => {
+      await setupWithSections();
+      const onSwipeChapter = vi.fn();
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          onSwipeChapter,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      mockIframeDoc.dispatchEvent(
+        new TouchEvent("touchstart", {
+          touches: [{ clientX: 100, clientY: 100 } as Touch],
+        }),
+      );
+      mockIframeDoc.dispatchEvent(
+        new TouchEvent("touchend", {
+          changedTouches: [{ clientX: 250, clientY: 100 } as Touch],
+        }),
+      );
+
+      expect(onSwipeChapter).toHaveBeenCalledWith(-1);
+    });
+
+    it("ignores a short swipe below the distance threshold", async () => {
+      await setupWithSections();
+      const onSwipeChapter = vi.fn();
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          onSwipeChapter,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      mockIframeDoc.dispatchEvent(
+        new TouchEvent("touchstart", {
+          touches: [{ clientX: 100, clientY: 100 } as Touch],
+        }),
+      );
+      mockIframeDoc.dispatchEvent(
+        new TouchEvent("touchend", {
+          changedTouches: [{ clientX: 120, clientY: 100 } as Touch],
+        }),
+      );
+
+      expect(onSwipeChapter).not.toHaveBeenCalled();
+    });
+
+    it("ignores a diagonal drag with too much vertical drift", async () => {
+      await setupWithSections();
+      const onSwipeChapter = vi.fn();
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          onSwipeChapter,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      mockIframeDoc.dispatchEvent(
+        new TouchEvent("touchstart", {
+          touches: [{ clientX: 100, clientY: 100 } as Touch],
+        }),
+      );
+      mockIframeDoc.dispatchEvent(
+        new TouchEvent("touchend", {
+          changedTouches: [{ clientX: 250, clientY: 300 } as Touch],
+        }),
+      );
+
+      expect(onSwipeChapter).not.toHaveBeenCalled();
     });
   });
 });

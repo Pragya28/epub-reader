@@ -64,7 +64,7 @@ All four done:
 20. ✅ **Reader toolbar** — no font size, line height, or theme controls; `--reading-line-height` token exists but isn't adjustable. _(done 2026-07-31)_
 21. ✅ **Orientation/resize handling** — nothing listens to `resize`/`orientationchange`; rotating loses reading position (restore runs only once at mount). _(done 2026-07-31)_
 22. ✅ **Viewport units** — `reader-screen.tsx` uses `h-screen`, not `h-dvh`; footer sits under mobile Safari's URL bar (`TocDrawer` already uses `dvh`). _(done 2026-08-01)_
-23. ❌ **Touch/keyboard interaction** — no gestures, no PgUp/PgDn/arrow handling, iframe not focusable.
+23. ✅ **Touch/keyboard interaction** — no gestures, no PgUp/PgDn/arrow handling, iframe not focusable. PgUp/PgDn/arrows scroll, iframe is focusable. Swipe-gesture detection exists in `use-reader-engine.ts` (`onSwipeChapter` prop) but isn't wired to anything — chapter nav is buttons + scroll only, swipe felt redundant on a continuous-scroll reader. _(done 2026-08-01)_
 
 ## Day 6 — Error Handling & Recovery
 

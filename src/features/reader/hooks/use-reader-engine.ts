@@ -39,6 +39,8 @@ interface UseReaderEngineProps {
   initialProgress?: ReadingProgress | null;
   /** Called when the reader taps an external link — caller handles confirmation UI. */
   onExternalLink?: (href: string) => void;
+  /** Called on a horizontal swipe gesture; direction is 1 (forward) or -1 (back). */
+  onSwipeChapter?: (direction: 1 | -1) => void;
 }
 
 export function useReaderEngine({
@@ -47,6 +49,7 @@ export function useReaderEngine({
   bookId,
   initialProgress,
   onExternalLink,
+  onSwipeChapter,
 }: UseReaderEngineProps) {
   const chapterLoader = useMemo(() => new ChapterLoader(), []);
   const restoreRef = useRef<
@@ -494,6 +497,49 @@ export function useReaderEngine({
         );
       };
 
+      // PgUp/PgDn/arrow keys scroll by ~90% of the viewport (a full page would
+      // hide the last line the user was reading; 10% overlap keeps context).
+      const onKeyDown = (e: KeyboardEvent) => {
+        const step = win.innerHeight * 0.9;
+
+        if (e.key === "PageDown" || e.key === "ArrowDown" || e.key === " ") {
+          e.preventDefault();
+          win.scrollBy({ top: step, behavior: "smooth" });
+        } else if (e.key === "PageUp" || e.key === "ArrowUp") {
+          e.preventDefault();
+          win.scrollBy({ top: -step, behavior: "smooth" });
+        }
+      };
+
+      const SWIPE_MIN_DISTANCE_PX = 60;
+      const SWIPE_MAX_VERTICAL_DRIFT_PX = 50;
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      const onTouchStart = (e: TouchEvent) => {
+        const touch = e.touches[0];
+        if (!touch) return;
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+      };
+
+      const onTouchEnd = (e: TouchEvent) => {
+        const touch = e.changedTouches[0];
+        if (!touch) return;
+
+        const deltaX = touch.clientX - touchStartX;
+        const deltaY = touch.clientY - touchStartY;
+
+        if (
+          Math.abs(deltaX) < SWIPE_MIN_DISTANCE_PX ||
+          Math.abs(deltaY) > SWIPE_MAX_VERTICAL_DRIFT_PX
+        ) {
+          return;
+        }
+
+        onSwipeChapter?.(deltaX < 0 ? 1 : -1);
+      };
+
       let resizeTimeoutId: ReturnType<typeof setTimeout> | undefined;
 
       const handleResize = () => {
@@ -573,6 +619,11 @@ export function useReaderEngine({
 
         win.addEventListener("scroll", onScroll, { passive: true });
         iframeDoc.addEventListener("click", onLinkClick);
+        iframeDoc.addEventListener("keydown", onKeyDown);
+        iframeDoc.addEventListener("touchstart", onTouchStart, {
+          passive: true,
+        });
+        iframeDoc.addEventListener("touchend", onTouchEnd, { passive: true });
 
         if (!restoredInitialPosition && initialProgress) {
           restoredInitialPosition = true;
@@ -588,6 +639,9 @@ export function useReaderEngine({
         logger.debug("removing scroll listener");
         win.removeEventListener("scroll", onScroll);
         iframeDoc.removeEventListener("click", onLinkClick);
+        iframeDoc.removeEventListener("keydown", onKeyDown);
+        iframeDoc.removeEventListener("touchstart", onTouchStart);
+        iframeDoc.removeEventListener("touchend", onTouchEnd);
         win.removeEventListener("resize", handleResize);
         window.removeEventListener("orientationchange", handleResize);
         if (resizeTimeoutId) clearTimeout(resizeTimeoutId);
@@ -650,6 +704,7 @@ export function useReaderEngine({
     bookId,
     initialProgress,
     onExternalLink,
+    onSwipeChapter,
   ]);
 
   return { jumpBack };
