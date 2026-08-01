@@ -2,6 +2,9 @@ import DOMPurify from "dompurify";
 import type JSZip from "jszip";
 import type { ManifestItem, ParsedChapter, ParsedEpub } from "../epub-types";
 import { SANITIZE_CONFIG } from "@/constants/sanitize-config";
+import { logger as rootLogger } from "@/shared/logger/logger";
+
+const logger = rootLogger.child("chapter-parser");
 
 export class ChapterParser {
   async parseChapter(
@@ -50,10 +53,41 @@ export class ChapterParser {
     const chapters: ParsedChapter[] = [];
 
     for (let i = 0; i < parsedEpub.spine.length; i++) {
-      chapters.push(await this.parseChapter(zip, parsedEpub, i, opfDirectory));
+      try {
+        chapters.push(
+          await this.parseChapter(zip, parsedEpub, i, opfDirectory),
+        );
+      } catch (error) {
+        // One malformed/missing chapter file shouldn't sink the whole book —
+        // a reader who can't get past chapter 12 of 40 because chapter 13's
+        // file is corrupt is worse off than one who sees a placeholder there
+        // and keeps reading. Mirrors the reader engine's own
+        // mountChapterFallback() for the equivalent render-time failure.
+        logger.error(
+          `failed to parse chapter at spine index ${i}, using fallback`,
+          error,
+        );
+        chapters.push(this.createFallbackChapter(parsedEpub, i));
+      }
     }
 
     return chapters;
+  }
+
+  private createFallbackChapter(
+    parsedEpub: ParsedEpub,
+    spineIndex: number,
+  ): ParsedChapter {
+    const spineId = parsedEpub.spine[spineIndex] ?? `spine-${spineIndex}`;
+    const href = parsedEpub.manifest[spineId]?.href ?? spineId;
+
+    return {
+      id: spineId,
+      href,
+      content: `<p class="chapter-parse-error">This chapter couldn't be loaded.</p>`,
+      stylesheets: [],
+      assetMap: new Map(),
+    };
   }
 
   /**

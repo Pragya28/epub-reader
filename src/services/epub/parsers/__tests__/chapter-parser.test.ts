@@ -1,8 +1,20 @@
 import JSZip from "jszip";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ChapterParser } from "../chapter-parser";
 import type { ParsedEpub } from "../../epub-types";
+
+vi.mock("@/shared/logger/logger", () => ({
+  logger: {
+    child: vi.fn(() => ({
+      trace: vi.fn(),
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    })),
+  },
+}));
 
 describe("ChapterParser", () => {
   let zip: JSZip;
@@ -116,6 +128,38 @@ describe("ChapterParser", () => {
       expect(chapter.content).toContain("blob:");
     });
 
+    it("resolves every image in an image-heavy chapter, skipping only the ones actually missing", async () => {
+      zip.file("OPS/images/fig1.jpg", new Uint8Array([1]));
+      zip.file("OPS/images/fig2.jpg", new Uint8Array([2]));
+      // fig3.jpg intentionally not added to the zip — a real-world case of
+      // a manifest/markup referencing an asset that never made it into the
+      // archive (bad packaging, not something the reader can fix).
+      zip.file(
+        "OPS/text/ch2.xhtml",
+        `
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <body>
+              <img src="../images/fig1.jpg" />
+              <img src="../images/fig2.jpg" />
+              <img src="../images/fig3.jpg" />
+            </body>
+          </html>
+        `,
+      );
+      parsedEpub.manifest.ch2 = { href: "text/ch2.xhtml", properties: "" };
+      parsedEpub.spine.push("ch2");
+
+      const chapter = await parser.parseChapter(zip, parsedEpub, 1, "OPS/");
+
+      expect(chapter.assetMap.size).toBe(2);
+      expect(chapter.content.match(/blob:/g)).toHaveLength(2);
+      // The missing image's <img> tag survives with its original (now
+      // dead) src rather than the chapter parse failing outright — the
+      // browser's own broken-image handling (plus the onerror listener
+      // added in chapter-renderer.ts) takes it from there.
+      expect(chapter.content).toContain("fig3.jpg");
+    });
+
     it("returns correct chapter metadata", async () => {
       const chapter = await parser.parseChapter(zip, parsedEpub, 0, "OPS/");
 
@@ -130,6 +174,53 @@ describe("ChapterParser", () => {
       const chapters = await parser.parseAllChapters(zip, parsedEpub, "OPS/");
 
       expect(chapters).toHaveLength(1);
+    });
+
+    it("degrades gracefully when one chapter's file is missing, instead of failing the whole book", async () => {
+      zip.file(
+        "OPS/text/ch2.xhtml",
+        `<html xmlns="http://www.w3.org/1999/xhtml"><body><h1>Chapter Two</h1></body></html>`,
+      );
+      zip.file(
+        "OPS/text/ch3.xhtml",
+        `<html xmlns="http://www.w3.org/1999/xhtml"><body><h1>Chapter Three</h1></body></html>`,
+      );
+      parsedEpub.manifest.ch2 = { href: "text/ch2-typo.xhtml", properties: "" }; // wrong path — file won't be found
+      parsedEpub.manifest.ch3 = { href: "text/ch3.xhtml", properties: "" };
+      parsedEpub.spine = ["ch1", "ch2", "ch3"];
+
+      const chapters = await parser.parseAllChapters(zip, parsedEpub, "OPS/");
+
+      // All three spine positions are still present — chapter count/order
+      // stays correct so windowing and TOC navigation don't shift.
+      expect(chapters).toHaveLength(3);
+      expect(chapters[0]?.content).toContain("Chapter One");
+      expect(chapters[1]?.content).toContain("couldn't be loaded");
+      expect(chapters[2]?.content).toContain("Chapter Three");
+    });
+
+    it("degrades gracefully when a chapter's manifest entry is missing entirely", async () => {
+      parsedEpub.spine = ["ch1", "missing-id"];
+
+      const chapters = await parser.parseAllChapters(zip, parsedEpub, "OPS/");
+
+      expect(chapters).toHaveLength(2);
+      expect(chapters[1]?.content).toContain("couldn't be loaded");
+      expect(chapters[1]?.id).toBe("missing-id");
+    });
+
+    it("degrades gracefully when a chapter's markup is unparseable by both XML and HTML parsers", async () => {
+      // Neither a well-formed XHTML doc nor recoverable as loose HTML —
+      // exercises the fallback path chapter-parser.ts's malformed-XHTML
+      // guard doesn't already handle.
+      zip.file("OPS/text/ch2.xhtml", "\x00\x01\x02not markup at all\x03");
+      parsedEpub.manifest.ch2 = { href: "text/ch2.xhtml", properties: "" };
+      parsedEpub.spine = ["ch1", "ch2"];
+
+      const chapters = await parser.parseAllChapters(zip, parsedEpub, "OPS/");
+
+      expect(chapters).toHaveLength(2);
+      expect(chapters[0]?.content).toContain("Chapter One");
     });
   });
 
