@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Librune — a local-first EPUB reader PWA (React 19 + TypeScript + Vite). All book data (files, covers, reading progress) lives in IndexedDB; nothing is uploaded to a server.
 
+`docs/` is a symlink to `~/Personal/some-any-every-thing/04-Projects/Epub Reader` (planning notes, sprint specs) — not tracked in this repo's git history.
+
 ## Commands
 
 ```bash
