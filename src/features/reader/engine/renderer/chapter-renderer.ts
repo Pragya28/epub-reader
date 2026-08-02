@@ -7,13 +7,10 @@ import {
 
 export function initializeChapterDocument(
   iframe: HTMLIFrameElement,
-  chapters: ParsedChapter[],
+  stylesheets: string[],
   bookId?: string,
 ): void {
-  const uniqueStylesheets = [
-    ...new Set(chapters.flatMap((chapter) => chapter.stylesheets)),
-  ];
-  initializeReaderDocument(iframe, uniqueStylesheets, bookId);
+  initializeReaderDocument(iframe, [...new Set(stylesheets)], bookId);
 }
 
 export function mountChapter(

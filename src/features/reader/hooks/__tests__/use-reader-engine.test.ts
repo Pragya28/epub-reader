@@ -57,6 +57,9 @@ describe("useReaderEngine", () => {
     metadata: { title: "Test Book", author: "Test Author", language: "en" },
     chapters: Array.from({ length: 5 }, (_, i) => createMockChapter(i)),
     toc: [],
+    stylesheets: [],
+    loadChapter: (index: number) =>
+      Promise.resolve(mockParsedBook.chapters[index]!),
   };
 
   beforeEach(() => {
@@ -169,7 +172,7 @@ describe("useReaderEngine", () => {
 
       expect(initSpy).toHaveBeenCalledWith(
         iframeRef.current,
-        mockParsedBook.chapters,
+        mockParsedBook.stylesheets,
         undefined,
       );
     });
@@ -1093,7 +1096,7 @@ describe("useReaderEngine", () => {
         expect.objectContaining({ chapterIndex: 1 }),
         mockIframeDoc,
         expect.any(Object),
-        mockParsedBook.chapters,
+        mockParsedBook,
       );
     });
 
@@ -1115,7 +1118,7 @@ describe("useReaderEngine", () => {
         expect.objectContaining({ chapterIndex: 2, fragmentId: "section-1" }),
         mockIframeDoc,
         expect.any(Object),
-        mockParsedBook.chapters,
+        mockParsedBook,
       );
     });
 

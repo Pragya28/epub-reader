@@ -39,7 +39,10 @@ describe("chapter-renderer", () => {
         },
       ];
 
-      initializeChapterDocument(iframe, chapters);
+      initializeChapterDocument(
+        iframe,
+        chapters.flatMap((c) => c.stylesheets),
+      );
 
       expect(spy).toHaveBeenCalled();
       const passedStylesheets = spy.mock.calls[0][1];
@@ -79,7 +82,10 @@ describe("chapter-renderer", () => {
         },
       ];
 
-      initializeChapterDocument(iframe, chapters);
+      initializeChapterDocument(
+        iframe,
+        chapters.flatMap((c) => c.stylesheets),
+      );
 
       const passedStylesheets = spy.mock.calls[0][1];
       const sharedCount = passedStylesheets.filter(
@@ -103,7 +109,10 @@ describe("chapter-renderer", () => {
         },
       ];
 
-      initializeChapterDocument(iframe, chapters);
+      initializeChapterDocument(
+        iframe,
+        chapters.flatMap((c) => c.stylesheets),
+      );
 
       expect(spy).toHaveBeenCalledWith(
         iframe,
@@ -132,7 +141,10 @@ describe("chapter-renderer", () => {
         },
       ];
 
-      initializeChapterDocument(iframe, chapters);
+      initializeChapterDocument(
+        iframe,
+        chapters.flatMap((c) => c.stylesheets),
+      );
 
       const passedStylesheets = spy.mock.calls[0][1];
       expect(passedStylesheets).toEqual([]);
@@ -151,7 +163,10 @@ describe("chapter-renderer", () => {
         },
       ];
 
-      initializeChapterDocument(iframe, chapters);
+      initializeChapterDocument(
+        iframe,
+        chapters.flatMap((c) => c.stylesheets),
+      );
 
       expect(spy).toHaveBeenCalledWith(iframe, expect.any(Array), undefined);
     });
@@ -169,7 +184,10 @@ describe("chapter-renderer", () => {
         },
       ];
 
-      initializeChapterDocument(iframe, chapters);
+      initializeChapterDocument(
+        iframe,
+        chapters.flatMap((c) => c.stylesheets),
+      );
 
       const passedStylesheets = spy.mock.calls[0][1];
       expect(passedStylesheets).toEqual([
@@ -319,7 +337,10 @@ describe("chapter-renderer", () => {
       ];
 
       // Initialize with all chapters' styles
-      initializeChapterDocument(iframe, chapters);
+      initializeChapterDocument(
+        iframe,
+        chapters.flatMap((c) => c.stylesheets),
+      );
       expect(initSpy).toHaveBeenCalled();
 
       // Mount individual chapters

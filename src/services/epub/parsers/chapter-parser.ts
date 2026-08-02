@@ -74,9 +74,32 @@ export class ChapterParser {
     return chapters;
   }
 
-  private createFallbackChapter(
+  createFallbackChapter(
     parsedEpub: ParsedEpub,
     spineIndex: number,
+  ): ParsedChapter {
+    return this.createPlaceholderChapter(
+      parsedEpub,
+      spineIndex,
+      `<p class="chapter-parse-error">This chapter couldn't be loaded.</p>`,
+    );
+  }
+
+  /**
+   * A stub entry for a spine position whose body hasn't been parsed yet
+   * (lazy loading — see EpubParser.loadChapter). Its `content` is never
+   * actually rendered: mounting always awaits the real parse first, so
+   * this only exists so `.length`/`.href` are available synchronously
+   * before that happens.
+   */
+  createChapterStub(parsedEpub: ParsedEpub, spineIndex: number): ParsedChapter {
+    return this.createPlaceholderChapter(parsedEpub, spineIndex, "");
+  }
+
+  private createPlaceholderChapter(
+    parsedEpub: ParsedEpub,
+    spineIndex: number,
+    content: string,
   ): ParsedChapter {
     const spineId = parsedEpub.spine[spineIndex] ?? `spine-${spineIndex}`;
     const href = parsedEpub.manifest[spineId]?.href ?? spineId;
@@ -84,7 +107,7 @@ export class ChapterParser {
     return {
       id: spineId,
       href,
-      content: `<p class="chapter-parse-error">This chapter couldn't be loaded.</p>`,
+      content,
       stylesheets: [],
       assetMap: new Map(),
     };
@@ -146,6 +169,52 @@ export class ChapterParser {
     }
 
     return chapterFile.async("string");
+  }
+
+  /**
+   * Book-level stylesheet loading, independent of chapter parsing. Chapter
+   * bodies are only ever parsed on demand (see EpubParser.loadChapter), but
+   * the iframe's initial <head> needs the book's CSS up front — so instead
+   * of collecting stylesheets from each chapter's own <link> tags (which
+   * would require parsing every chapter just to find them), this reads
+   * every CSS file declared in the OPF manifest directly. mountChapter()
+   * never reads ParsedChapter.stylesheets itself; only this initial
+   * iframe-head setup ever needed the stylesheet list, so scoping it to
+   * the manifest instead of "whichever chapters happen to be parsed" is a
+   * closer match to what was actually being used already, not a new idea.
+   */
+  async loadBookStylesheets(
+    zip: JSZip,
+    parsedEpub: ParsedEpub,
+    opfDirectory: string,
+  ): Promise<string[]> {
+    const assetMap = new Map<string, string>();
+    const stylesheets: string[] = [];
+
+    const cssItems = Object.values(parsedEpub.manifest).filter((item) =>
+      item.href.toLowerCase().endsWith(".css"),
+    );
+
+    for (const item of cssItems) {
+      const cssPath = this.resolvePath(opfDirectory, item.href);
+      const cssFile = zip.file(cssPath);
+
+      if (!cssFile) continue;
+
+      const cssText = await cssFile.async("string");
+      const cssBasePath = this.getBasePath(cssPath);
+
+      const resolvedCss = await this.resolveCssAssets(
+        cssText,
+        cssBasePath,
+        zip,
+        assetMap,
+      );
+
+      stylesheets.push(resolvedCss);
+    }
+
+    return stylesheets;
   }
 
   private async loadChapterStylesheets(

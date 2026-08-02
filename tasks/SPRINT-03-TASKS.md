@@ -30,7 +30,7 @@ All four done:
 
 ## Day 1 — Reader State & Synchronization
 
-1. ❌ **Lazy/async book parsing** — `src/services/epub/epub-parser.ts` eagerly parses ALL chapters and mints every asset blob URL on open, on the main thread, before first paint. Biggest open-flow and memory gap.
+1. ✅ **Lazy/async book parsing** — `src/services/epub/epub-parser.ts` eagerly parses ALL chapters and mints every asset blob URL on open, on the main thread, before first paint. Biggest open-flow and memory gap. _(done 2026-08-02 — lighter approach: chapters come back as stubs from `parseBook()`, parsed/blob-minted on demand via `loadChapter()`, memoized. Book-level CSS split out of per-chapter parsing into `ChapterParser.loadBookStylesheets()` since it was only ever consumed at iframe-init time, never per-chapter. `parseBook()` for a 368-chapter book: ~1.7s → ~84ms. See "OPFS-based normalized storage" below for the bigger architecture this defers.)_
 2. ✅ **Restore retry** — `restoreInitialPosition()` in `use-reader-engine.ts` silently drops the restore if the target section isn't mounted yet; no `readyState` fallback if the iframe `load` event fires before the effect attaches. _(done 2026-08-01)_
 3. ✅ **Scroll-fraction drift** — restore multiplies stored fraction by `scrollHeight`; font/viewport changes between sessions shift the position. No element-anchor (CFI-like) fallback. _(done 2026-08-02)_
 
@@ -77,3 +77,45 @@ All four done:
 
 28. ✅ **Component tests** — `reader-screen`, `toc-drawer`, `reader-frame`, `external-link-dialog`, `flatten-toc`, `error-boundary` all untested. _(done 2026-07-31)_
 29. ✅ **Library↔reader seam test** — progress write → `deriveReadingStatus` → continue-reading round-trip; each half is tested, the seam is not. _(done 2026-08-01)_
+
+---
+
+# Deferred to a Later Sprint
+
+## OPFS-based normalized storage (was docs/04, never implemented)
+
+`docs/04 - Implementation Planning/02 - Storage Architecture.md` and
+`04 - Normalized EPUB Format.md` describe a hybrid storage model that
+was designed but never built: on import, extract + normalize the EPUB
+into individual files written to **OPFS** (Origin Private File System)
+— `meta.json`, `spine.json`, `toc.json`, `/chapters/ch_0001.xhtml`,
+`/assets/*` — with IndexedDB holding only lightweight metadata +
+progress. `chapter-loader.ts`'s own doc comment still says it's
+"responsible for retrieving chapter content from OPFS," but what
+actually got built is a much smaller DOM-free class that only computes
+_which indices_ should be mounted (windowing math) — the OPFS-backed
+responsibility was never implemented. What actually shipped instead
+(see #1 above): the raw `.epub` Blob stays in IndexedDB, and
+`EpubParser` now parses chapters lazily/on-demand from that in-memory
+JSZip archive rather than eagerly, closing the immediate first-paint
+gap without touching the storage layer.
+
+**Why this is still worth doing eventually**: the JSZip-blob approach
+still re-parses and re-sanitizes a chapter's XHTML from scratch every
+time it's visited, in every session — nothing survives a reload. The
+compressed archive also has to stay resident in memory for the whole
+reading session. OPFS-normalized files would parse/sanitize once at
+import, then just get read (cheap file I/O) forever after, and only
+ever hold in memory whatever chapter is actually being read.
+
+**Why it was deferred**: much bigger lift than the lazy-parsing fix —
+new `opfs-storage.ts` layer, import pipeline rewritten to normalize +
+write instead of just storing a blob, `chapter-loader.ts` gets real
+file-reading responsibility, and every book already imported by
+existing users needs a migration path (extract-to-OPFS on next open,
+or dual-path support for old vs new books). New failure modes to
+handle (OPFS write/quota errors, partial-normalization cleanup). It's
+the riskiest kind of change to take on speculatively, since it touches
+the hot path for every single book open — worth doing once repeated-
+session re-parse cost or large-book memory is an actual reported pain
+point, not before.

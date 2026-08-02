@@ -67,8 +67,23 @@ export interface TocItem {
 
 export interface ParsedBook {
   metadata: ParsedEpubMetadata;
+  /**
+   * Entries are stubs (empty content) until `loadChapter` resolves them —
+   * chapter bodies are parsed on demand, not all eagerly at open time. Safe
+   * to read `.length`/`.href` synchronously; never read `.content` etc.
+   * directly without going through `loadChapter` first.
+   */
   chapters: ParsedChapter[];
   toc: TocItem[];
+  /** Book-level CSS (see ChapterParser.loadBookStylesheets) — not per-chapter. */
+  stylesheets: string[];
+  /**
+   * Parses (and sanitizes, and blob-mints assets for) a single chapter on
+   * demand, memoized — concurrent/repeated calls for the same index share
+   * one in-flight parse rather than redoing the work. Also updates the
+   * corresponding `chapters[index]` entry in place.
+   */
+  loadChapter(index: number): Promise<ParsedChapter>;
 }
 
 export interface ParsedLibraryBook {

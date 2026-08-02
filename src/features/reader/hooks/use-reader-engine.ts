@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { RefObject } from "react";
-import type { ParsedBook, ParsedChapter } from "@/services/epub/epub-types";
+import type { ParsedBook } from "@/services/epub/epub-types";
 import { readerStore } from "../store/reader-store";
 import { readerPreferencesStore } from "../store/reader-preferences-store";
 import { ChapterLoader } from "../engine/loader/chapter-loader";
@@ -213,25 +213,40 @@ export function useReaderEngine({
         }
       };
 
-      const loadChapter = (index: number, onSettled?: () => void) => {
+      const loadChapter = async (index: number, onSettled?: () => void) => {
         const store = readerStore.getState();
         logger.info("loadChapter", { index });
 
-        store.setIsMountingChapter(true);
-
+        // The async parse/sanitize/blob-mint work (parsedBook.loadChapter)
+        // happens outside the isMountingChapter guard — that flag exists to
+        // keep maintainChapterWindow from running mid-DOM-mutation, and the
+        // actual DOM mutation (mountChapter) is still synchronous. Holding
+        // the guard across an await would widen the window for a concurrent
+        // jump/prefetch to observe a stuck "mounting" state for no reason.
         try {
-          mountChapter(iframeDoc, chapters[index] as ParsedChapter, index);
-          logger.debug("chapter mounted", { index });
+          const chapter = await parsedBook.loadChapter(index);
+
+          store.setIsMountingChapter(true);
+          try {
+            mountChapter(iframeDoc, chapter, index);
+            logger.debug("chapter mounted", { index });
+          } finally {
+            store.setIsMountingChapter(false);
+          }
         } catch (error) {
-          logger.error(`failed to mount chapter ${index}`, error);
+          logger.error(`failed to load/mount chapter ${index}`, error);
           // Mount a placeholder in place of the throwing content so the
           // index is still considered loaded — otherwise the windowing
           // loop retries the same failing mount on every scroll tick.
-          mountChapterFallback(iframeDoc, index);
+          store.setIsMountingChapter(true);
+          try {
+            mountChapterFallback(iframeDoc, index);
+          } finally {
+            store.setIsMountingChapter(false);
+          }
         } finally {
           invalidateChapterSections(iframeDoc);
           store.addLoadedChapterIndex(index);
-          store.setIsMountingChapter(false);
           onSettled?.();
         }
       };
@@ -448,7 +463,7 @@ export function useReaderEngine({
             }),
           );
 
-          jumpToTocItem(
+          void jumpToTocItem(
             {
               label: "",
               href,
@@ -458,7 +473,7 @@ export function useReaderEngine({
             },
             iframeDoc,
             win,
-            chapters,
+            parsedBook,
           );
           return;
         }
@@ -514,7 +529,7 @@ export function useReaderEngine({
           );
         }
 
-        jumpToTocItem(
+        void jumpToTocItem(
           {
             label: "",
             href,
@@ -524,7 +539,7 @@ export function useReaderEngine({
           },
           iframeDoc,
           win,
-          chapters,
+          parsedBook,
         );
       };
 
@@ -710,7 +725,7 @@ export function useReaderEngine({
     // loading screen forever.
     iframe.addEventListener("load", handleIframeLoad);
 
-    initializeChapterDocument(iframe, chapters, bookId);
+    initializeChapterDocument(iframe, parsedBook.stylesheets, bookId);
     logger.debug("initializeChapterDocument called, waiting for load event");
 
     return () => {

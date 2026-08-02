@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { jumpToTocItem } from "../jump-to-toc-item";
 import { readerStore } from "../../store/reader-store";
 import * as chapterRendererModule from "../../engine/renderer/chapter-renderer";
-import type { TocItem, ParsedChapter } from "@/services/epub/epub-types";
+import type {
+  TocItem,
+  ParsedBook,
+  ParsedChapter,
+} from "@/services/epub/epub-types";
 
 vi.mock("@/shared/logger/logger", () => ({
   logger: {
@@ -43,6 +47,7 @@ describe("jumpToTocItem", () => {
     dispatchEvent: ReturnType<typeof vi.fn>;
   };
   let chapters: ParsedChapter[];
+  let parsedBook: ParsedBook;
 
   beforeEach(() => {
     readerStore.getState().reset();
@@ -53,6 +58,13 @@ describe("jumpToTocItem", () => {
     win = { scrollTo: vi.fn(), scrollY: 0, dispatchEvent: vi.fn() };
 
     chapters = Array.from({ length: 5 }, (_, i) => createChapter(i));
+    parsedBook = {
+      metadata: { title: "Test", author: "Author", language: "en" },
+      chapters,
+      toc: [],
+      stylesheets: [],
+      loadChapter: vi.fn((index: number) => Promise.resolve(chapters[index]!)),
+    };
   });
 
   // Helper: insert a <section data-chapter="N"> into doc with a given rect top.
@@ -82,32 +94,37 @@ describe("jumpToTocItem", () => {
   };
 
   describe("range guard", () => {
-    it("does nothing when chapterIndex is -1", () => {
-      jumpToTocItem(createTocItem(-1), doc, win as any, chapters);
+    it("does nothing when chapterIndex is -1", async () => {
+      await jumpToTocItem(createTocItem(-1), doc, win as any, parsedBook);
 
       expect(win.scrollTo).not.toHaveBeenCalled();
       expect(readerStore.getState().isJumping).toBe(false);
     });
 
-    it("does nothing when chapterIndex equals chapters.length", () => {
-      jumpToTocItem(createTocItem(chapters.length), doc, win as any, chapters);
+    it("does nothing when chapterIndex equals chapters.length", async () => {
+      await jumpToTocItem(
+        createTocItem(chapters.length),
+        doc,
+        win as any,
+        parsedBook,
+      );
 
       expect(win.scrollTo).not.toHaveBeenCalled();
       expect(readerStore.getState().isJumping).toBe(false);
     });
 
-    it("does nothing when chapterIndex exceeds chapters.length", () => {
-      jumpToTocItem(createTocItem(99), doc, win as any, chapters);
+    it("does nothing when chapterIndex exceeds chapters.length", async () => {
+      await jumpToTocItem(createTocItem(99), doc, win as any, parsedBook);
 
       expect(win.scrollTo).not.toHaveBeenCalled();
     });
   });
 
   describe("chapter mounting", () => {
-    it("mounts the chapter when it is not yet loaded", () => {
+    it("mounts the chapter when it is not yet loaded", async () => {
       mountSection(2);
 
-      jumpToTocItem(createTocItem(2), doc, win as any, chapters);
+      await jumpToTocItem(createTocItem(2), doc, win as any, parsedBook);
 
       expect(chapterRendererModule.mountChapter).toHaveBeenCalledWith(
         doc,
@@ -116,76 +133,86 @@ describe("jumpToTocItem", () => {
       );
     });
 
-    it("adds the chapter index to loadedChapterIndices after mounting", () => {
+    it("adds the chapter index to loadedChapterIndices after mounting", async () => {
       mountSection(2);
 
-      jumpToTocItem(createTocItem(2), doc, win as any, chapters);
+      await jumpToTocItem(createTocItem(2), doc, win as any, parsedBook);
 
       expect(readerStore.getState().loadedChapterIndices.has(2)).toBe(true);
     });
 
-    it("does not call mountChapter when chapter is already loaded", () => {
+    it("does not call mountChapter when chapter is already loaded", async () => {
       readerStore.getState().addLoadedChapterIndex(1);
       mountSection(1);
 
-      jumpToTocItem(createTocItem(1), doc, win as any, chapters);
+      await jumpToTocItem(createTocItem(1), doc, win as any, parsedBook);
 
       expect(chapterRendererModule.mountChapter).not.toHaveBeenCalled();
     });
 
-    it("clears isMountingChapter after a successful mount", () => {
+    it("clears isMountingChapter after a successful mount", async () => {
       mountSection(0);
 
-      jumpToTocItem(createTocItem(0), doc, win as any, chapters);
+      await jumpToTocItem(createTocItem(0), doc, win as any, parsedBook);
 
       expect(readerStore.getState().isMountingChapter).toBe(false);
     });
   });
 
   describe("scroll target — no fragment", () => {
-    it("scrolls to section offsetTop when no fragmentId", () => {
+    it("scrolls to section offsetTop when no fragmentId", async () => {
       mountSection(1, 400);
       readerStore.getState().addLoadedChapterIndex(1);
 
-      jumpToTocItem(createTocItem(1), doc, win as any, chapters);
+      await jumpToTocItem(createTocItem(1), doc, win as any, parsedBook);
 
       expect(win.scrollTo).toHaveBeenCalledWith(0, 400);
     });
 
-    it("scrolls to 0 when section is at the top", () => {
+    it("scrolls to 0 when section is at the top", async () => {
       mountSection(0, 0);
       readerStore.getState().addLoadedChapterIndex(0);
 
-      jumpToTocItem(createTocItem(0), doc, win as any, chapters);
+      await jumpToTocItem(createTocItem(0), doc, win as any, parsedBook);
 
       expect(win.scrollTo).toHaveBeenCalledWith(0, 0);
     });
   });
 
   describe("scroll target — with fragment", () => {
-    it("scrolls to the fragment element's position when fragment found", () => {
+    it("scrolls to the fragment element's position when fragment found", async () => {
       const section = mountSection(2, 300);
       mountFragment(section, "section-1", 450);
       readerStore.getState().addLoadedChapterIndex(2);
 
-      jumpToTocItem(createTocItem(2, "section-1"), doc, win as any, chapters);
+      await jumpToTocItem(
+        createTocItem(2, "section-1"),
+        doc,
+        win as any,
+        parsedBook,
+      );
 
       expect(win.scrollTo).toHaveBeenCalledWith(0, 450);
     });
 
-    it("falls back to section offsetTop when fragment element not found in DOM", () => {
+    it("falls back to section offsetTop when fragment element not found in DOM", async () => {
       mountSection(2, 300);
       readerStore.getState().addLoadedChapterIndex(2);
 
       // fragmentId given but no element with that id exists
-      jumpToTocItem(createTocItem(2, "missing-id"), doc, win as any, chapters);
+      await jumpToTocItem(
+        createTocItem(2, "missing-id"),
+        doc,
+        win as any,
+        parsedBook,
+      );
 
       expect(win.scrollTo).toHaveBeenCalledWith(0, 300);
     });
   });
 
   describe("store updates", () => {
-    it("sets isJumping to true before scrolling", () => {
+    it("sets isJumping to true before scrolling", async () => {
       let isJumpingDuringScroll = false;
 
       win.scrollTo = vi.fn(() => {
@@ -194,12 +221,12 @@ describe("jumpToTocItem", () => {
 
       mountSection(0);
 
-      jumpToTocItem(createTocItem(0), doc, win as any, chapters);
+      await jumpToTocItem(createTocItem(0), doc, win as any, parsedBook);
 
       expect(isJumpingDuringScroll).toBe(true);
     });
 
-    it("releases isJumping on the next animation frame", () => {
+    it("releases isJumping on the next animation frame", async () => {
       const rafCalls: FrameRequestCallback[] = [];
       vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
         rafCalls.push(cb);
@@ -208,7 +235,7 @@ describe("jumpToTocItem", () => {
 
       mountSection(0);
 
-      jumpToTocItem(createTocItem(0), doc, win as any, chapters);
+      await jumpToTocItem(createTocItem(0), doc, win as any, parsedBook);
 
       // isJumping is true until rAF fires
       expect(readerStore.getState().isJumping).toBe(true);
@@ -220,7 +247,7 @@ describe("jumpToTocItem", () => {
       vi.unstubAllGlobals();
     });
 
-    it("dispatches a synthetic scroll event after isJumping clears, to trigger window/progress reconciliation", () => {
+    it("dispatches a synthetic scroll event after isJumping clears, to trigger window/progress reconciliation", async () => {
       const rafCalls: FrameRequestCallback[] = [];
       vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
         rafCalls.push(cb);
@@ -229,7 +256,7 @@ describe("jumpToTocItem", () => {
 
       mountSection(0);
 
-      jumpToTocItem(createTocItem(0), doc, win as any, chapters);
+      await jumpToTocItem(createTocItem(0), doc, win as any, parsedBook);
 
       expect(win.dispatchEvent).not.toHaveBeenCalled();
 
@@ -242,44 +269,55 @@ describe("jumpToTocItem", () => {
       vi.unstubAllGlobals();
     });
 
-    it("updates currentChapterIndex in the store", () => {
+    it("updates currentChapterIndex in the store", async () => {
       mountSection(3);
 
-      jumpToTocItem(createTocItem(3), doc, win as any, chapters);
+      await jumpToTocItem(createTocItem(3), doc, win as any, parsedBook);
 
       expect(readerStore.getState().currentChapterIndex).toBe(3);
     });
   });
 
   describe("section not found after mount", () => {
-    it("does not scroll when section is missing from DOM after mount", () => {
+    it("does not scroll when section is missing from DOM after mount", async () => {
       // Chapter is in range but section was never inserted into doc
-      jumpToTocItem(createTocItem(1), doc, win as any, chapters);
+      await jumpToTocItem(createTocItem(1), doc, win as any, parsedBook);
 
       expect(win.scrollTo).not.toHaveBeenCalled();
     });
   });
 
   describe("error handling", () => {
-    it("releases isJumping when mountChapter throws", () => {
+    it("releases isJumping when mountChapter throws", async () => {
       vi.mocked(chapterRendererModule.mountChapter).mockImplementation(() => {
         throw new Error("mount failed");
       });
 
       // No section in doc — but the throw happens before we reach scrollTo
-      jumpToTocItem(createTocItem(0), doc, win as any, chapters);
+      await jumpToTocItem(createTocItem(0), doc, win as any, parsedBook);
 
       expect(readerStore.getState().isJumping).toBe(false);
     });
 
-    it("does not propagate errors to the caller", () => {
+    it("does not propagate errors to the caller", async () => {
       vi.mocked(chapterRendererModule.mountChapter).mockImplementation(() => {
         throw new Error("mount failed");
       });
 
-      expect(() =>
-        jumpToTocItem(createTocItem(0), doc, win as any, chapters),
-      ).not.toThrow();
+      await expect(
+        jumpToTocItem(createTocItem(0), doc, win as any, parsedBook),
+      ).resolves.not.toThrow();
+    });
+
+    it("releases isJumping when loadChapter rejects", async () => {
+      parsedBook.loadChapter = vi.fn(() =>
+        Promise.reject(new Error("load failed")),
+      );
+
+      await jumpToTocItem(createTocItem(0), doc, win as any, parsedBook);
+
+      expect(readerStore.getState().isJumping).toBe(false);
+      expect(chapterRendererModule.mountChapter).not.toHaveBeenCalled();
     });
   });
 });

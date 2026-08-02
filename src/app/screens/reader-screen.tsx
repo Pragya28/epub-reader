@@ -88,11 +88,11 @@ export const ReaderScreen: FC = () => {
       if (!iframe?.contentDocument || !iframe.contentWindow || !parsedBook) {
         return;
       }
-      jumpToTocItem(
+      void jumpToTocItem(
         item,
         iframe.contentDocument,
         iframe.contentWindow,
-        parsedBook.chapters,
+        parsedBook,
       );
     },
     [parsedBook],

@@ -53,6 +53,9 @@ const mockParsedBook: ParsedBook = {
     },
   ],
   toc: [],
+  stylesheets: [],
+  loadChapter: (index: number) =>
+    Promise.resolve(mockParsedBook.chapters[index]!),
 };
 
 const mockThreeChapterBook: ParsedBook = {
@@ -64,6 +67,8 @@ const mockThreeChapterBook: ParsedBook = {
     stylesheets: [],
     assetMap: new Map(),
   })),
+  loadChapter: (index: number) =>
+    Promise.resolve(mockThreeChapterBook.chapters[index]!),
 };
 
 describe("ReaderScreen", () => {
@@ -192,7 +197,7 @@ describe("ReaderScreen", () => {
         expect.objectContaining({ chapterIndex: 2 }),
         expect.anything(),
         expect.anything(),
-        mockThreeChapterBook.chapters,
+        mockThreeChapterBook,
       );
     });
 
@@ -209,7 +214,7 @@ describe("ReaderScreen", () => {
         expect.objectContaining({ chapterIndex: 0 }),
         expect.anything(),
         expect.anything(),
-        mockThreeChapterBook.chapters,
+        mockThreeChapterBook,
       );
     });
   });

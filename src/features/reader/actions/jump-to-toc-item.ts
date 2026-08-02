@@ -1,5 +1,4 @@
-import type { TocItem } from "@/services/epub/epub-types";
-import type { ParsedChapter } from "@/services/epub/epub-types";
+import type { ParsedBook, TocItem } from "@/services/epub/epub-types";
 import { readerStore } from "../store/reader-store";
 import { mountChapter } from "../engine/renderer/chapter-renderer";
 import { invalidateChapterSections } from "../engine/scroll/get-chapter-sections";
@@ -11,7 +10,7 @@ const logger = rootLogger.child("jump-to-toc-item");
  * Navigates the reader iframe to a TOC item.
  *
  * Steps:
- *  1. Ensure the target chapter is mounted in the iframe (load it if not).
+ *  1. Ensure the target chapter is loaded and mounted in the iframe.
  *  2. Set isJumping so scroll events are ignored during the programmatic scroll.
  *  3. Scroll to the fragment element (if any) or the top of the chapter section.
  *  4. Update currentChapterIndex.
@@ -21,18 +20,19 @@ const logger = rootLogger.child("jump-to-toc-item");
  * handler). Errors are logged but not surfaced — a failed jump is not
  * worth crashing the reader over.
  */
-export function jumpToTocItem(
+export async function jumpToTocItem(
   tocItem: TocItem,
   iframeDoc: Document,
   win: Window,
-  chapters: ParsedChapter[],
-): void {
+  parsedBook: ParsedBook,
+): Promise<void> {
   const { chapterIndex, fragmentId } = tocItem;
+  const totalChapters = parsedBook.chapters.length;
 
-  if (chapterIndex < 0 || chapterIndex >= chapters.length) {
+  if (chapterIndex < 0 || chapterIndex >= totalChapters) {
     logger.warn("jumpToTocItem — chapterIndex out of range", {
       chapterIndex,
-      totalChapters: chapters.length,
+      totalChapters,
     });
     return;
   }
@@ -40,12 +40,13 @@ export function jumpToTocItem(
   const store = readerStore.getState();
 
   try {
-    // Mount chapter if not already in the DOM
+    // Ensure chapter is loaded and mounted
     if (!store.loadedChapterIndices.has(chapterIndex)) {
-      logger.info("jumpToTocItem — mounting target chapter", { chapterIndex });
+      logger.info("jumpToTocItem — loading target chapter", { chapterIndex });
+      const chapter = await parsedBook.loadChapter(chapterIndex);
       store.setIsMountingChapter(true);
       try {
-        mountChapter(iframeDoc, chapters[chapterIndex]!, chapterIndex);
+        mountChapter(iframeDoc, chapter, chapterIndex);
         invalidateChapterSections(iframeDoc);
         store.addLoadedChapterIndex(chapterIndex);
       } finally {
