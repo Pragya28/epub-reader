@@ -64,6 +64,7 @@ describe("ChapterParser", () => {
         title: "Test",
         author: "Author",
         language: null,
+        description: null,
       },
 
       manifest: {
@@ -166,6 +167,51 @@ describe("ChapterParser", () => {
       expect(chapter.id).toBe("ch1");
 
       expect(chapter.href).toBe("text/ch1.xhtml");
+    });
+  });
+
+  describe("countWords", () => {
+    it("counts words across every spine chapter", async () => {
+      // ch1 (from the shared fixture above) is "Chapter One" — 2 words.
+      zip.file(
+        "OPS/text/ch2.xhtml",
+        `
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <body><p>one two three four five</p></body>
+          </html>
+        `,
+      );
+      parsedEpub.manifest.ch2 = { href: "text/ch2.xhtml", properties: "" };
+      parsedEpub.spine.push("ch2");
+
+      const wordCount = await parser.countWords(zip, parsedEpub, "OPS/");
+
+      expect(wordCount).toBe(2 + 5);
+    });
+
+    it("does not let one unreadable chapter sink the whole count", async () => {
+      parsedEpub.manifest.missing = {
+        href: "text/missing.xhtml",
+        properties: "",
+      };
+      parsedEpub.spine.push("missing");
+
+      const wordCount = await parser.countWords(zip, parsedEpub, "OPS/");
+
+      expect(wordCount).toBe(2);
+    });
+
+    it("returns 0 for an empty chapter body", async () => {
+      zip.file(
+        "OPS/text/empty.xhtml",
+        `<html xmlns="http://www.w3.org/1999/xhtml"><body></body></html>`,
+      );
+      parsedEpub.manifest = {
+        empty: { href: "text/empty.xhtml", properties: "" },
+      };
+      parsedEpub.spine = ["empty"];
+
+      expect(await parser.countWords(zip, parsedEpub, "OPS/")).toBe(0);
     });
   });
 
@@ -272,6 +318,7 @@ const parsedEpub: ParsedEpub = {
     title: "Test",
     author: "Author",
     language: null,
+    description: null,
   },
   manifest: {
     ch1: {

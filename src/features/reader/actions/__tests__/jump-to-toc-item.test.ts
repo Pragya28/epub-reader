@@ -59,7 +59,12 @@ describe("jumpToTocItem", () => {
 
     chapters = Array.from({ length: 5 }, (_, i) => createChapter(i));
     parsedBook = {
-      metadata: { title: "Test", author: "Author", language: "en" },
+      metadata: {
+        title: "Test",
+        author: "Author",
+        language: "en",
+        description: null,
+      },
       chapters,
       toc: [],
       stylesheets: [],

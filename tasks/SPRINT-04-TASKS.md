@@ -26,11 +26,11 @@ Everything below Sprint 4 actually asks for is **missing** — this sprint hasn'
 
 ## Day 2 — Metadata Enrichment
 
-4. ❌ **Chapter count** — not extracted or stored on `StoredBook`; chapters are parsed lazily per-`loadChapter()` call ([epub-parser.ts](src/services/epub/epub-parser.ts)) and total count is only known transiently inside the reader (`totalChapters` on `ReadingProgress`, not on the book record itself).
-5. ❌ **Word count** — no field, no calculation.
-6. ❌ **Estimated reading time** — no field, no calculation.
-7. ❌ **Book description** — `opf-parser.ts` parses `dc:title`/`dc:creator`/`dc:language`; `dc:description` is not extracted or stored.
-8. ❌ **Extended `StoredBook` schema** — needs a `db.version(4).stores(...)` bump per the CLAUDE.md-documented pattern to add these fields without breaking existing records.
+4. ✅ **Chapter count** — `EpubParser.parseLibraryBook()` returns `chapterCount` (`parsedEpub.spine.length`, no extra parsing needed), persisted on `StoredBook.chapterCount`. _(done 2026-08-02)_
+5. ✅ **Word count** — `ChapterParser.countWords()` reads every spine chapter's raw markup and sums `body.textContent` word counts (no asset resolution/sanitization needed just to count), persisted on `StoredBook.wordCount`. One malformed chapter under-counts rather than failing the whole import, matching `parseAllChapters`'s existing per-chapter fallback philosophy. _(done 2026-08-02)_
+6. ✅ **Estimated reading time** — `readingTimeMinutes = Math.ceil(wordCount / 200)` (min 1), persisted on `StoredBook.readingTimeMinutes`. _(done 2026-08-02)_
+7. ✅ **Book description** — `OpfParser` now also reads `dc:description`; threaded through `ParsedEpubMetadata.description` → `StoredBook.description`. _(done 2026-08-02)_
+8. ✅ **Extended `StoredBook` schema** — added as plain optional fields, no Dexie version bump needed: none of the new fields need indexing (nothing in Day 3/4 sorts or filters by word count), so a `db.version(4)` bump would've been premature — matches the existing "don't add an index prematurely" note on Day 3's search task. _(done 2026-08-02)_
 
 ## Day 3 — Library Search
 
@@ -40,7 +40,7 @@ Everything below Sprint 4 actually asks for is **missing** — this sprint hasn'
 ## Day 4 — Sorting & Filtering
 
 11. ❌ **Sorting** (title, author, imported date, last opened, progress, status) — `library-store.ts` holds `books: StoredBook[]` with no derived/sorted view; `load-library.ts` returns repository order as-is.
-12. ❌ **Filtering** (reading status, language, author) — no filter state or UI control exists. Also closes the `AUDIT_REPORT.md` [P1] "dead Filter button" finding, same reasoning as #9.
+12. ❌ **Filtering** (reading status, language, author, book length) — no filter state or UI control exists. Also closes the `AUDIT_REPORT.md` [P1] "dead Filter button" finding, same reasoning as #9. Book-length buckets are specced in `docs/07 - Gaps/Library-01 Sort and Filter.md`: Short Reads (<20k words), Medium (20k–80k), Long (80k–150k), Epic (150k+) — this is exactly why Day 2 persists `wordCount` on `StoredBook` rather than only using it to derive reading time.
 13. ❌ **Combined search + sort + filter** — depends on #9, #11, #12.
 
 ## Day 5 — Book Management

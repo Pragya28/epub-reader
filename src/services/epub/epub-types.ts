@@ -26,6 +26,7 @@ export interface ParsedEpubMetadata {
   title: string;
   author: string;
   language: string | null;
+  description: string | null;
 }
 
 export interface ManifestItem {
@@ -89,4 +90,8 @@ export interface ParsedBook {
 export interface ParsedLibraryBook {
   metadata: ParsedEpubMetadata;
   cover?: Blob;
+  chapterCount: number;
+  wordCount: number;
+  /** Estimated minutes to read the whole book, at 200 words/minute. */
+  readingTimeMinutes: number;
 }

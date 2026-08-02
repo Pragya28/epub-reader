@@ -54,7 +54,12 @@ describe("useReaderEngine", () => {
   });
 
   const mockParsedBook: ParsedBook = {
-    metadata: { title: "Test Book", author: "Test Author", language: "en" },
+    metadata: {
+      title: "Test Book",
+      author: "Test Author",
+      language: "en",
+      description: null,
+    },
     chapters: Array.from({ length: 5 }, (_, i) => createMockChapter(i)),
     toc: [],
     stylesheets: [],

@@ -51,6 +51,63 @@ describe("OpfParser", () => {
     expect(result.metadata.language).toBe("en");
   });
 
+  it("extracts description when present", () => {
+    const xml = `
+      <package>
+        <metadata>
+          <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">Test Book</dc:title>
+          <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Test Author</dc:creator>
+          <dc:description xmlns:dc="http://purl.org/dc/elements/1.1/">
+            A book about testing.
+          </dc:description>
+        </metadata>
+
+        <manifest>
+          <item
+            id="chapter-1"
+            href="text/chapter-1.xhtml"
+            media-type="application/xhtml+xml"
+          />
+        </manifest>
+
+        <spine>
+          <itemref idref="chapter-1" />
+        </spine>
+      </package>
+    `;
+
+    const result = parser.parse(parseXml(xml));
+
+    expect(result.metadata.description).toBe("A book about testing.");
+  });
+
+  it("returns null description when absent", () => {
+    const xml = `
+      <package>
+        <metadata>
+          <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">Test Book</dc:title>
+          <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Test Author</dc:creator>
+        </metadata>
+
+        <manifest>
+          <item
+            id="chapter-1"
+            href="text/chapter-1.xhtml"
+            media-type="application/xhtml+xml"
+          />
+        </manifest>
+
+        <spine>
+          <itemref idref="chapter-1" />
+        </spine>
+      </package>
+    `;
+
+    const result = parser.parse(parseXml(xml));
+
+    expect(result.metadata.description).toBeNull();
+  });
+
   it("extracts manifest correctly", () => {
     const xml = `
       <package>

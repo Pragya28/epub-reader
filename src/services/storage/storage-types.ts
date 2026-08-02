@@ -35,6 +35,10 @@ export interface StoredBook {
   title: string;
   author?: string;
   language?: string | null;
+  description?: string | null;
+  chapterCount?: number;
+  wordCount?: number;
+  readingTimeMinutes?: number;
   createdAt: number;
   fileHash: string;
   coverBg?: string;

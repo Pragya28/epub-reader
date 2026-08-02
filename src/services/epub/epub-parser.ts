@@ -17,6 +17,8 @@ import type JSZip from "jszip";
 
 const logger = rootLogger.child("epub-parser");
 
+const AVERAGE_READING_WPM = 200;
+
 export class EpubParser {
   private readonly epubService = new EpubServiceImpl();
   private readonly opfParser = new OpfParser();
@@ -102,16 +104,22 @@ export class EpubParser {
     const extraction = await this.epubService.extractOpf(file);
 
     const parsed = this.opfParser.parse(extraction.opfXml);
+    const opfDirectory = this.getOpfDirectory(extraction.opfPath);
 
-    const cover = await this.loadCover(
-      extraction.zip,
-      parsed.coverItem,
-      this.getOpfDirectory(extraction.opfPath),
-    );
+    const [cover, wordCount] = await Promise.all([
+      this.loadCover(extraction.zip, parsed.coverItem, opfDirectory),
+      this.chapterParser.countWords(extraction.zip, parsed, opfDirectory),
+    ]);
 
     return {
       metadata: parsed.metadata,
       cover,
+      chapterCount: parsed.spine.length,
+      wordCount,
+      readingTimeMinutes: Math.max(
+        1,
+        Math.ceil(wordCount / AVERAGE_READING_WPM),
+      ),
     };
   }
 

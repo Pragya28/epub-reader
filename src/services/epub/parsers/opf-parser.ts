@@ -34,7 +34,11 @@ export class OpfParser {
     const author =
       this.getTextContent(metadata, ["creator", "dc:creator"]) ?? "Unknown";
     const language = this.getTextContent(metadata, ["language", "dc:language"]);
-    return { title, author, language };
+    const description = this.getTextContent(metadata, [
+      "description",
+      "dc:description",
+    ]);
+    return { title, author, language, description };
   }
 
   // ---- Manifest ----

@@ -71,6 +71,18 @@ describe("importBook", () => {
     await expect(importBook(file)).rejects.toThrow(/Invalid spine reference/);
   });
 
+  it("persists chapter count, word count and reading time", async () => {
+    const file = await loadFixture("valid-book.epub");
+
+    await importBook(file);
+
+    const [book] = await getAllBooks();
+
+    expect(book.chapterCount).toBeGreaterThan(0);
+    expect(book.wordCount).toBeGreaterThan(0);
+    expect(book.readingTimeMinutes).toBeGreaterThan(0);
+  });
+
   it("rejects duplicate book imports", async () => {
     const file = await loadFixture("valid-book.epub");
     await importBook(file);

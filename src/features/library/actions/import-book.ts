@@ -16,7 +16,8 @@ export async function importBook(file: File) {
     // 2. Parse book
     const parsed = await parser.parseLibraryBook(file);
 
-    const { metadata, cover } = parsed;
+    const { metadata, cover, chapterCount, wordCount, readingTimeMinutes } =
+      parsed;
 
     // 3. Generate app ID
     const bookId = createBookId();
@@ -36,6 +37,10 @@ export async function importBook(file: File) {
       title: metadata.title,
       author: metadata.author,
       language: metadata.language,
+      description: metadata.description,
+      chapterCount,
+      wordCount,
+      readingTimeMinutes,
       createdAt: Date.now(),
       fileHash,
     };

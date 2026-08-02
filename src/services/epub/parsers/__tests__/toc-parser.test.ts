@@ -18,7 +18,12 @@ function makeEpub(
   manifest: Record<string, { href: string; properties: string }>,
 ): ParsedEpub {
   return {
-    metadata: { title: "Test", author: "Author", language: "en" },
+    metadata: {
+      title: "Test",
+      author: "Author",
+      language: "en",
+      description: null,
+    },
     manifest,
     spine: spineIds,
   };

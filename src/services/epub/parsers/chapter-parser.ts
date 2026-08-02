@@ -74,6 +74,46 @@ export class ChapterParser {
     return chapters;
   }
 
+  /**
+   * Total word count across every spine chapter, used for the library's
+   * estimated reading time. Reads and parses each chapter's raw markup (same
+   * as parseChapter) but skips asset resolution/sanitization entirely — this
+   * only ever reads `.textContent`, never renders the markup, so none of
+   * that work is needed just to count words.
+   */
+  async countWords(
+    zip: JSZip,
+    parsedEpub: ParsedEpub,
+    opfDirectory: string,
+  ): Promise<number> {
+    let wordCount = 0;
+
+    for (let i = 0; i < parsedEpub.spine.length; i++) {
+      try {
+        const manifestItem = this.getSpineManifestItem(parsedEpub, i);
+        const chapterPath = this.resolvePath(opfDirectory, manifestItem.href);
+        const chapterContent = await this.loadChapterContent(zip, chapterPath);
+        const chapterDoc = this.parseChapterDocument(chapterContent);
+
+        wordCount += this.countTextWords(chapterDoc.body?.textContent ?? "");
+      } catch (error) {
+        // Mirrors parseAllChapters: one unreadable chapter shouldn't sink the
+        // whole book's word count, just under-count it slightly.
+        logger.error(
+          `failed to count words for chapter at spine index ${i}`,
+          error,
+        );
+      }
+    }
+
+    return wordCount;
+  }
+
+  private countTextWords(text: string): number {
+    const trimmed = text.trim();
+    return trimmed === "" ? 0 : trimmed.split(/\s+/).length;
+  }
+
   createFallbackChapter(
     parsedEpub: ParsedEpub,
     spineIndex: number,

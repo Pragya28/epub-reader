@@ -99,4 +99,26 @@ describe("EpubParser", () => {
       expect(book.stylesheets.length).toBeGreaterThan(0);
     });
   });
+
+  describe("parseLibraryBook", () => {
+    it("computes chapter count, word count and reading time for a real book", async () => {
+      const file = await loadFixture("valid-book.epub");
+      const parser = new EpubParser();
+
+      const book = await parser.parseLibraryBook(file);
+
+      expect(book.chapterCount).toBeGreaterThan(0);
+      expect(book.wordCount).toBeGreaterThan(0);
+      expect(book.readingTimeMinutes).toBe(Math.ceil(book.wordCount / 200));
+    });
+
+    it("estimates at least 1 minute for a book with no readable words", async () => {
+      const file = await loadFixture("missing-metadata.epub");
+      const parser = new EpubParser();
+
+      const book = await parser.parseLibraryBook(file);
+
+      expect(book.readingTimeMinutes).toBeGreaterThanOrEqual(1);
+    });
+  });
 });

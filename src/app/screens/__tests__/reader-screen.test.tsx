@@ -42,7 +42,12 @@ function renderReaderScreen(bookId = "book-1") {
 }
 
 const mockParsedBook: ParsedBook = {
-  metadata: { title: "Test Book", author: "Test Author", language: "en" },
+  metadata: {
+    title: "Test Book",
+    author: "Test Author",
+    language: "en",
+    description: null,
+  },
   chapters: [
     {
       id: "ch0",
