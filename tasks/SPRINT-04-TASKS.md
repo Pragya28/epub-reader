@@ -20,9 +20,9 @@ Everything below Sprint 4 actually asks for is **missing** — this sprint hasn'
 
 ## Day 1 — Storage Layer
 
-1. ❌ **OPFS storage for EPUB files** — `bookFiles` table stores the raw EPUB `Blob` directly in IndexedDB (`src/services/storage/db.ts`); no `services/storage/opfs` module, no `navigator.storage.getDirectory()` usage anywhere in `src/`.
-2. ❌ **Storage abstraction layer** — no interface separating "where the EPUB bytes live" from `book-repository.ts`; repository calls Dexie directly.
-3. ❌ **Migration from existing storage** — no migration path for books already sitting in IndexedDB `bookFiles` moving to OPFS.
+1. ✅ **OPFS storage for EPUB files** — `services/storage/opfs-file-store.ts` writes/reads EPUB blobs via `navigator.storage.getDirectory()` + `createWritable()`. Feature-detected: falls back cleanly when unsupported (e.g. Safari outside workers, where `createWritable` doesn't exist). _(done 2026-08-02)_
+2. ✅ **Storage abstraction layer** — `services/storage/book-file-store.ts` is the single point deciding OPFS vs. IndexedDB; `book-repository.ts` no longer touches `db.bookFiles` directly, it delegates to this module. _(done 2026-08-02)_
+3. ✅ **Migration from existing storage** — no batch migration script; `book-file-store.getBookFile()` migrates a book lazily on first read (write to OPFS, then delete the IndexedDB row) if OPFS is available. Matches the existing "no migration needed, reindex on next write" pattern from the v3 Dexie comment. _(done 2026-08-02)_
 
 ## Day 2 — Metadata Enrichment
 

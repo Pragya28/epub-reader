@@ -1,3 +1,4 @@
+import * as bookFiles from "./book-files";
 import { cacheCoverUrl, getCachedCoverUrl } from "./cover-cache";
 import { db } from "./db";
 import type { ReadingProgress, StoredBook } from "./storage-types";
@@ -6,12 +7,7 @@ export async function saveBookMetadata(book: StoredBook) {
   await db.books.put(book);
 }
 
-export async function saveBookFile(bookId: string, file: Blob) {
-  await db.bookFiles.put({
-    bookId,
-    file,
-  });
-}
+export const saveBookFile = bookFiles.saveBookFile;
 
 export async function saveBookCover(bookId: string, cover: Blob) {
   await db.bookCovers.put({
@@ -28,14 +24,12 @@ export async function getBook(bookId: string) {
   return db.books.get(bookId);
 }
 
-export async function getBookFile(bookId: string) {
-  return db.bookFiles.get(bookId);
-}
+export const getBookFile = bookFiles.getBookFile;
 
 export async function getBookWithFile(bookId: string) {
   const [book, bookFile] = await Promise.all([
     db.books.get(bookId),
-    db.bookFiles.get(bookId),
+    bookFiles.getBookFile(bookId),
   ]);
 
   if (!book || !bookFile) {
@@ -63,27 +57,21 @@ export async function saveImportedBook({
   file,
   cover,
 }: SaveImportedBookParams): Promise<void> {
-  await db.transaction(
-    "rw",
-    db.books,
-    db.bookFiles,
-    db.bookCovers,
-    async () => {
-      await db.books.put(metadata);
+  // File save happens first and outside the transaction below: it may go to
+  // OPFS, which Dexie transactions can't span. Saving it first means a
+  // failure here never leaves book metadata pointing at a missing file.
+  await bookFiles.saveBookFile(metadata.id, file);
 
-      await db.bookFiles.put({
+  await db.transaction("rw", db.books, db.bookCovers, async () => {
+    await db.books.put(metadata);
+
+    if (cover) {
+      await db.bookCovers.put({
         bookId: metadata.id,
-        file,
+        cover,
       });
-
-      if (cover) {
-        await db.bookCovers.put({
-          bookId: metadata.id,
-          cover,
-        });
-      }
-    },
-  );
+    }
+  });
 }
 
 export async function updateBookProgress(
