@@ -78,4 +78,4 @@ Vitest + jsdom. `src/tests/setup.ts` loads `fake-indexeddb/auto` (mocks IndexedD
 
 shadcn/ui config (`components.json`): style `base-lyra`, neutral base color, Phosphor icon library, path aliases `@/components`, `@/components/ui`, `@/utils/cn`. Path alias `@/*` → `./src/*` everywhere (tsconfig + vite).
 
-Design-review slash-command skills live in `.agents/skills/` (`audit`, `colorize`, `layout`, `polish`, `typeset`) — invoke these for UI polish passes rather than freehanding a design review.
+Design review runs through the `impeccable` plugin (`/impeccable audit`, `colorize`, `layout`, `polish`, `typeset`, etc.) — invoke these for UI polish passes rather than freehanding a design review. Product/design context lives in `.agents/context/PRODUCT.md` and `.agents/context/DESIGN.md`.

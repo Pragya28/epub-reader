@@ -28,3 +28,4 @@ src/tests/dev/*
 
 # Symlink
 docs
+UI_REPORT.md

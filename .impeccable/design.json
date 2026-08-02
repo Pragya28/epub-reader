@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-02T00:00:00Z",
+  "title": "Design System: Librune",
+  "extensions": {
+    "colorMeta": {
+      "paper-cream": {
+        "role": "neutral",
+        "displayName": "Paper Cream",
+        "canonical": "#fff9ee",
+        "tonalRamp": [
+          "#141210",
+          "#211d16",
+          "#292319",
+          "#322b1e",
+          "#eae2ce",
+          "#f0e8d4",
+          "#f5edd9",
+          "#fff9ee"
+        ]
+      },
+      "ink-black": {
+        "role": "neutral",
+        "displayName": "Ink Black",
+        "canonical": "#1f1c0f",
+        "tonalRamp": [
+          "#1f1c0f",
+          "#3d3a34",
+          "#444748",
+          "#695d4a",
+          "#a08a5e",
+          "#c4c7c7",
+          "#eae2ce",
+          "#f2ead8"
+        ]
+      },
+      "primary-onyx": {
+        "role": "primary",
+        "displayName": "Primary Onyx",
+        "canonical": "#040505",
+        "tonalRamp": [
+          "#040505",
+          "#1e1e1e",
+          "#2b241c",
+          "#444748",
+          "#695d4a",
+          "#a08a5e",
+          "#c9a84c",
+          "#f5f2ea"
+        ]
+      },
+      "secondary-sand": {
+        "role": "secondary",
+        "displayName": "Secondary Sand",
+        "canonical": "#f2e0c8",
+        "tonalRamp": [
+          "#3a3220",
+          "#4a4028",
+          "#695d4a",
+          "#a08a5e",
+          "#c9a84c",
+          "#e0cba0",
+          "#f2e0c8",
+          "#f8ecd8"
+        ]
+      },
+      "cover-gold": {
+        "role": "accent",
+        "displayName": "Cover Gold",
+        "canonical": "#c9a84c",
+        "tonalRamp": [
+          "#5a4a1e",
+          "#7a622a",
+          "#9a7c36",
+          "#c9a84c",
+          "#d6bc70",
+          "#e2cd94",
+          "#eeddb8",
+          "#f7eeda"
+        ]
+      },
+      "destructive-clay": {
+        "role": "error",
+        "displayName": "Destructive Clay",
+        "canonical": "#b3261e",
+        "tonalRamp": [
+          "#3d0d0a",
+          "#5e1512",
+          "#8a1f19",
+          "#b3261e",
+          "#c9524a",
+          "#dc8079",
+          "#eeb3ae",
+          "#f9dcda"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display (Cinzel)",
+        "purpose": "Screen-level titles; bookplate/spine-lettering feel."
+      },
+      "headline": {
+        "displayName": "Headline (Cinzel)",
+        "purpose": "Section headers."
+      },
+      "reading": {
+        "displayName": "Reading (Literata)",
+        "purpose": "Chapter body text inside the reader iframe."
+      },
+      "ui": {
+        "displayName": "UI (Plus Jakarta Sans)",
+        "purpose": "Buttons, nav, controls, labels."
+      },
+      "meta": {
+        "displayName": "Meta (Plus Jakarta Sans, uppercase)",
+        "purpose": "Timestamps, byline-style metadata, badges."
+      }
+    },
+    "shadows": [
+      {
+        "name": "soft",
+        "value": "0 2px 8px rgba(31, 28, 15, 0.04)",
+        "purpose": "Resting elevation for book covers and card-like content surfaces (.elevated-soft)."
+      },
+      {
+        "name": "floating",
+        "value": "0 8px 40px rgba(0, 0, 0, 0.5)",
+        "purpose": "Heavier lift for elements overlaying other content directly."
+      }
+    ],
+    "motion": [
+      {
+        "name": "press-nudge",
+        "value": "translateY(1px) on :active",
+        "purpose": "Tactile 'pressed into the page' cue on buttons."
+      },
+      {
+        "name": "sheet-slide",
+        "value": "slide up from bottom edge",
+        "purpose": "Bottom sheets (TOC drawer, reader toolbar) enter from the viewport edge instead of fading in."
+      }
+    ],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Default call-to-action button; square corners, solid ink fill.",
+      "html": "<button class=\"ds-btn-primary\">Add Book</button>",
+      "css": ".ds-btn-primary { background: #040505; color: #fff9ee; padding: 0 10px; height: 32px; border: none; border-radius: 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 500; transition: background 0.15s, transform 0.1s; } .ds-btn-primary:hover { background: rgba(4,5,5,0.8); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 1px #695d4a; } .ds-btn-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Ghost Icon Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Icon-only nav control used in the sticky header (search, menu, overflow).",
+      "html": "<button class=\"ds-btn-ghost\" aria-label=\"Search\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 256 256\"><path fill=\"currentColor\" d=\"M229.66 218.34l-50.07-50.06a88.11 88.11 0 1 0-11.31 11.31l50.06 50.07a8 8 0 0 0 11.32-11.32ZM40 112a72 72 0 1 1 72 72a72.08 72.08 0 0 1-72-72Z\"/></svg></button>",
+      "css": ".ds-btn-ghost { background: transparent; color: #1f1c0f; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border: none; border-radius: 0; transition: background 0.15s; } .ds-btn-ghost:hover { background: #f0e8d4; } .ds-btn-ghost:focus-visible { outline: none; box-shadow: 0 0 0 1px #695d4a; }"
+    },
+    {
+      "name": "Book Card",
+      "kind": "card",
+      "refersTo": "book-card",
+      "description": "Library grid item: rounded cover with resting soft shadow and hover deepen.",
+      "html": "<div class=\"ds-book-card\"><div class=\"ds-book-card-cover\"><span class=\"ds-book-card-badge\">NEW</span></div></div>",
+      "css": ".ds-book-card { display: flex; flex-direction: column; gap: 8px; } .ds-book-card-cover { position: relative; aspect-ratio: 2 / 3; overflow: hidden; border-radius: 0.525rem; border: 1px solid rgba(196,199,199,0.4); box-shadow: 0 2px 8px rgba(31,28,15,0.04); background: linear-gradient(135deg, #2b241c, #c9a84c); transition: box-shadow 0.2s; } .ds-book-card-cover:hover { box-shadow: 0 8px 24px rgba(31,28,15,0.12); } .ds-book-card-badge { position: absolute; top: 0; right: 0; background: rgba(255,249,238,0.95); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: #444748; padding: 4px 10px; border-bottom-left-radius: 0.525rem; }"
+    },
+    {
+      "name": "Bottom Sheet",
+      "kind": "custom",
+      "refersTo": "sheet-panel",
+      "description": "TOC drawer / reader toolbar: slides up from viewport edge, rounded top corners only, border instead of shadow.",
+      "html": "<div class=\"ds-sheet\"><div class=\"ds-sheet-handle\"></div><div class=\"ds-sheet-header\">Contents</div><button class=\"ds-sheet-item ds-sheet-item-active\">Chapter 1</button><button class=\"ds-sheet-item\">Chapter 2</button></div>",
+      "css": ".ds-sheet { display: flex; flex-direction: column; max-height: 85dvh; background: #f5edd9; border-radius: 1.05rem 1.05rem 0 0; border-top: 1px solid #eae2ce; } .ds-sheet-handle { width: 64px; height: 4px; border-radius: 9999px; background: #c4c7c7; margin: 12px auto 16px; } .ds-sheet-header { font-family: 'Cinzel', serif; font-size: 24px; letter-spacing: 0.05em; padding: 0 24px 20px; border-bottom: 1px solid #eae2ce; } .ds-sheet-item { text-align: left; padding: 8px 24px; border: none; border-radius: 0; background: transparent; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; color: #1f1c0f; } .ds-sheet-item:hover { background: #f0e8d4; } .ds-sheet-item-active { background: #f2e0c8; color: #695d4a; }"
+    },
+    {
+      "name": "Sticky Header",
+      "kind": "nav",
+      "refersTo": "sheet-panel",
+      "description": "Translucent blurred header with hairline top/bottom dividers.",
+      "html": "<header class=\"ds-header\"><span class=\"ds-header-title\">Librune</span><button class=\"ds-btn-ghost\" aria-label=\"Menu\">•••</button></header>",
+      "css": ".ds-header { position: sticky; top: 0; height: 80px; display: flex; align-items: center; justify-content: space-between; padding: 8px 20px; background: rgba(255,249,238,0.85); backdrop-filter: blur(12px); border-top: 0.5px solid #eae2ce; border-bottom: 0.5px solid #eae2ce; } .ds-header-title { font-family: 'Cinzel', serif; letter-spacing: 0.08em; font-size: 20px; color: #1f1c0f; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Bound Folio",
+    "overview": "Librune reads like a physical folio: warm cream paper, an ink-black spine of UI chrome, and a gold-on-dark cover accent that echoes traditional bookbinding. The reading surface is set in serif type on soft parchment tones, while the architectural chrome around it — buttons, toolbars, the sticky header — stays crisp, sharp-cornered, and quiet, so it never competes with the page. Book covers, bottom sheets, and panels are the \"paper objects\" of the system: they get soft rounded corners and a consistent gentle lift, as if resting slightly above the surface beneath them. Depth is soft and consistent rather than occasional — every card-like surface carries the same low ambient shadow at rest, not just on hover, reinforcing the sense of physical layered pages.\n\nThe system rejects flat, hard-edged material-design card language for controls (no rounded buttons) while embracing it for content objects (rounded covers and sheets) — the split is deliberate: controls are tools, content is the book.",
+    "keyCharacteristics": [
+      "Warm parchment palette in light mode, near-black ink in dark mode — never a cold neutral gray.",
+      "Serif display (Cinzel, wide letter-spacing) for titles; serif body (Literata) for reading; sans (Plus Jakarta Sans) for UI chrome only.",
+      "Sharp rectangular controls (buttons: rounded-none) against soft rounded content objects (covers, sheets: rounded-xl/rounded-3xl).",
+      "Consistent soft ambient shadow as a resting-state signature, not just a hover effect."
+    ],
+    "rules": [
+      {
+        "name": "The Cover Accent Rule",
+        "body": "cover-dark and cover-gold are reserved for book-cover placeholder gradients and never used as UI chrome colors.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ink Inversion Rule",
+        "body": "Primary is never a fixed hex — always the current theme's ink-on-paper extreme. Use the --primary token so dark mode inverts correctly.",
+        "section": "colors"
+      },
+      {
+        "name": "The Serif-For-Content Rule",
+        "body": "Any text meant to be read (titles, chapter text) uses a serif; any text that helps the user operate the app uses the sans.",
+        "section": "typography"
+      },
+      {
+        "name": "The Resting Lift Rule",
+        "body": "Content objects (book covers) carry .elevated-soft at rest, not only on hover — depth communicates 'this is a physical object'.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Object/Control Split",
+        "body": "Round it if it's read or held (covers, sheets, popovers). Keep it square if it's pressed (buttons, controls). Never round a button to match a card's radius.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do keep all button/control corners square (rounded-none) — never introduce a rounded button variant.",
+      "Do give content objects (covers, sheets, popovers) a rounded, soft-lifted treatment (.elevated-soft + rounded-xl/rounded-3xl).",
+      "Do pair serif type (Cinzel/Literata) with anything the user reads, and sans (Plus Jakarta Sans) with anything the user operates.",
+      "Do use the --primary token (never a hardcoded hex) for anything meant to invert correctly between light and dark mode.",
+      "Do reserve cover-dark/cover-gold strictly for book-cover-related surfaces."
+    ],
+    "donts": [
+      "Don't round a button or chip to match card radius — it breaks the control/content split.",
+      "Don't add a drop shadow to bottom sheets; their elevation cue is the top border + rounded-top-corners + slide animation, not shadow.",
+      "Don't introduce a cold neutral gray; all neutrals in this system are warm parchment/ink tones.",
+      "Don't use the sans UI font for reading-surface body text, or the serif reading font for buttons/nav labels."
+    ]
+  }
+}
