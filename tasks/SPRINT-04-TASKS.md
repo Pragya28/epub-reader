@@ -34,13 +34,13 @@ Everything below Sprint 4 actually asks for is **missing** — this sprint hasn'
 
 ## Day 3 — Library Search
 
-9. ❌ **Metadata search (title/author/description)** — no search input or filtering logic anywhere in `src/features/library/`.
+9. ❌ **Metadata search (title/author/description)** — no search input or filtering logic anywhere in `src/features/library/`. Also closes the `AUDIT_REPORT.md` [P1] "dead Search button" finding — the header button has no `onClick` because this feature doesn't exist yet; wire it up as part of building this, don't stub it separately.
 10. ❌ **Search performance work** — moot until search exists; watch for a naive `Array.filter` over the full library being fine at expected scale (don't add an index prematurely).
 
 ## Day 4 — Sorting & Filtering
 
 11. ❌ **Sorting** (title, author, imported date, last opened, progress, status) — `library-store.ts` holds `books: StoredBook[]` with no derived/sorted view; `load-library.ts` returns repository order as-is.
-12. ❌ **Filtering** (reading status, language, author) — no filter state or UI control exists.
+12. ❌ **Filtering** (reading status, language, author) — no filter state or UI control exists. Also closes the `AUDIT_REPORT.md` [P1] "dead Filter button" finding, same reasoning as #9.
 13. ❌ **Combined search + sort + filter** — depends on #9, #11, #12.
 
 ## Day 5 — Book Management
@@ -58,12 +58,24 @@ Everything below Sprint 4 actually asks for is **missing** — this sprint hasn'
 21. ❌ **Loading states** — `library-store.ts` has `isLoading`, but no evidence of a skeleton/spinner component consuming it in the grid.
 22. ❌ **Error states** — `library-store.ts` has `error`, same gap as above.
 23. ❌ **Library animations** — none present.
+24. ❌ **`aria-live`/`role="status"` on loading & error states** — folded in from `AUDIT_REPORT.md` [P2]; build this as part of #21/#22 rather than as a separate pass, since it's the same components.
+25. ❌ **Lazy-load real book cover images** — folded in from `AUDIT_REPORT.md` [P2]; `book-cover.tsx:16-20` renders covers as CSS `background-image` with no `loading="lazy"`. Natural to do alongside #18 (card sizing/spacing pass).
+26. ❌ **Library title as a semantic heading** — folded in from `AUDIT_REPORT.md` [P3]; `library-screen.tsx:75` "Your Personal Collection" is a `<div>`, should be `<h1>`/`<h2>`. One-line fix, same screen as the rest of this day.
 
 ## Day 7 — Integration & Hardening
 
 24. ❌ **Full library regression pass** — blocked on Days 1–6.
 25. ❌ **Large-library performance testing** — no fixture/benchmark analogous to the reader's `large-book.epub` perf test for a large _library_ (many books).
 26. ❌ **Import → Read → Delete workflow test** — `import-book.test.ts` and `load-library.test.ts` exist; no end-to-end workflow test, and delete doesn't exist yet to test.
+
+---
+
+# Deferred (not this sprint)
+
+From `AUDIT_REPORT.md`, two findings are better handled outside Sprint 4:
+
+- **[P1] No `prefers-reduced-motion` support** — project-wide (`button.tsx`, `import-book-fab.tsx`, shared skeletons), not library-specific. Fixing it as a drive-by here means re-touching it again when the reader/settings screens get the same treatment; better as one dedicated accessibility pass across the whole app.
+- **[P2] Font sizes drifted off the DESIGN.md type ramp** — a design-system/theming documentation issue. The Sprint 4 doc itself names Sprint 5 as "where user customization through theming and typography becomes the primary focus" — natural fit there instead.
 
 ---
 
