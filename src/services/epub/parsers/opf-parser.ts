@@ -34,11 +34,27 @@ export class OpfParser {
     const author =
       this.getTextContent(metadata, ["creator", "dc:creator"]) ?? "Unknown";
     const language = this.getTextContent(metadata, ["language", "dc:language"]);
-    const description = this.getTextContent(metadata, [
+    const rawDescription = this.getTextContent(metadata, [
       "description",
       "dc:description",
     ]);
+    const description = rawDescription
+      ? this.stripHtml(rawDescription)
+      : rawDescription;
+
     return { title, author, language, description };
+  }
+
+  /**
+   * Some EPUBs' dc:description is itself HTML, escaped as plain text (e.g.
+   * literal `&lt;p&gt;...&lt;/p&gt;`) rather than real child elements —
+   * textContent alone doesn't strip that, since it's not markup as far as
+   * the OPF's own XML parser is concerned. Re-parsing it as HTML and
+   * reading textContent again removes it either way.
+   */
+  private stripHtml(text: string): string {
+    const doc = new DOMParser().parseFromString(text, "text/html");
+    return doc.body.textContent?.trim() ?? text;
   }
 
   // ---- Manifest ----

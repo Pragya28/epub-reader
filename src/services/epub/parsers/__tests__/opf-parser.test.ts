@@ -81,6 +81,34 @@ describe("OpfParser", () => {
     expect(result.metadata.description).toBe("A book about testing.");
   });
 
+  it("strips HTML markup escaped inside the description text", () => {
+    const xml = `
+      <package>
+        <metadata>
+          <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">Test Book</dc:title>
+          <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Test Author</dc:creator>
+          <dc:description xmlns:dc="http://purl.org/dc/elements/1.1/">&lt;p&gt;A book about &lt;b&gt;testing&lt;/b&gt;.&lt;/p&gt;</dc:description>
+        </metadata>
+
+        <manifest>
+          <item
+            id="chapter-1"
+            href="text/chapter-1.xhtml"
+            media-type="application/xhtml+xml"
+          />
+        </manifest>
+
+        <spine>
+          <itemref idref="chapter-1" />
+        </spine>
+      </package>
+    `;
+
+    const result = parser.parse(parseXml(xml));
+
+    expect(result.metadata.description).toBe("A book about testing.");
+  });
+
   it("returns null description when absent", () => {
     const xml = `
       <package>

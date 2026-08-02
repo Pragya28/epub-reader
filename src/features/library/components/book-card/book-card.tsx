@@ -1,4 +1,4 @@
-import { type FC } from "react";
+import { type FC, useState } from "react";
 import type { BookWithProgress } from "../../types/library.types";
 import { BookCover } from "./book-cover";
 import { Link, useNavigate } from "react-router-dom";
@@ -16,10 +16,12 @@ import {
   markBookUnread,
   startBookAtBeginning,
 } from "../../actions/mark-book-status";
+import { AboutBookSheet } from "../about-book-sheet";
 
 export const BookCard: FC<BookWithProgress> = (book) => {
   const { id, isNew, isFinished, isReading, author, title, progress } = book;
   const navigate = useNavigate();
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   const statusText = isFinished
     ? "Finished"
@@ -105,6 +107,12 @@ export const BookCard: FC<BookWithProgress> = (book) => {
                   Start at Beginning
                 </DropdownMenuItem>
               )}
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem onClick={() => setAboutOpen(true)}>
+                About Book
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -121,6 +129,12 @@ export const BookCard: FC<BookWithProgress> = (book) => {
           <p className="text-meta text-muted-foreground mt-0.5">{statusText}</p>
         )}
       </div>
+
+      <AboutBookSheet
+        book={book}
+        open={aboutOpen}
+        onOpenChange={setAboutOpen}
+      />
     </div>
   );
 };
