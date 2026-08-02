@@ -64,9 +64,9 @@ Everything below Sprint 4 actually asks for is **missing** — this sprint hasn'
 
 ## Day 7 — Integration & Hardening
 
-24. ❌ **Full library regression pass** — blocked on Days 1–6.
-25. ❌ **Large-library performance testing** — no fixture/benchmark analogous to the reader's `large-book.epub` perf test for a large _library_ (many books).
-26. ❌ **Import → Read → Delete workflow test** — `import-book.test.ts` and `load-library.test.ts` exist; no end-to-end workflow test, and delete doesn't exist yet to test.
+27. ❌ **Full library regression pass** — blocked on Days 1–6.
+28. ❌ **Large-library performance testing** — no fixture/benchmark analogous to the reader's `large-book.epub` perf test for a large _library_ (many books).
+29. ❌ **Import → Read → Delete workflow test** — `import-book.test.ts` and `load-library.test.ts` exist; no end-to-end workflow test, and delete doesn't exist yet to test.
 
 ---
 
