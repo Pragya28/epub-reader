@@ -709,6 +709,73 @@ describe("useReaderEngine", () => {
       expect(readerStore.getState().isJumping).toBe(false);
     });
 
+    it("restores by anchor element when available, instead of the raw scroll fraction", async () => {
+      const sections = sectionsForChapters(3);
+      const targetSection = sections[1]!;
+      const p = mockIframeDoc.createElement("p");
+      // Deliberately different from what fraction-based math would give
+      // (section.offsetTop=0 here + 0.5*sectionHeight), so the assertion
+      // can only pass if the anchor path was actually used.
+      p.getBoundingClientRect = vi.fn(() => ({ top: 777 }) as DOMRect);
+      targetSection.appendChild(p);
+
+      const initialProgress: ReadingProgress = {
+        chapterIndex: 1,
+        totalChapters: 5,
+        scrollFraction: 0.5,
+        anchorPath: [0],
+        atDocumentEnd: false,
+        percent: 30,
+        updatedAt: Date.now(),
+      };
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          bookId: "book-1",
+          initialProgress,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const mockWin = iframeRef.current?.contentWindow as any;
+      // mockWin.scrollY is 0, so targetY = 0 + 777.
+      expect(mockWin.scrollTo).toHaveBeenCalledWith(0, 777);
+    });
+
+    it("falls back to scroll fraction when the anchor path doesn't resolve", async () => {
+      sectionsForChapters(3); // no <p> children — path [0] won't resolve
+
+      const initialProgress: ReadingProgress = {
+        chapterIndex: 1,
+        totalChapters: 5,
+        scrollFraction: 0.5,
+        anchorPath: [0],
+        atDocumentEnd: false,
+        percent: 30,
+        updatedAt: Date.now(),
+      };
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          bookId: "book-1",
+          initialProgress,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const mockWin = iframeRef.current?.contentWindow as any;
+      expect(mockWin.scrollTo).toHaveBeenCalled();
+      // Whatever it scrolled to, it must NOT be the anchor-only 777 sentinel
+      // from the previous test — confirming this path used fraction math.
+      expect(mockWin.scrollTo).not.toHaveBeenCalledWith(0, 777);
+    });
+
     it("retries restoring position if the target section isn't mounted yet, until it appears", async () => {
       vi.spyOn(getChapterSectionsModule, "getChapterSections").mockReturnValue(
         sectionsForChapters(3), // chapters 0,1,2 mounted immediately

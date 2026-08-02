@@ -2,6 +2,7 @@ import { libraryStore } from "@/features/library/store/library-store";
 import { updateBookProgress } from "@/services/storage/book-repository";
 import type { ReadingProgress } from "@/services/storage/storage-types";
 import { logger as rootLogger } from "@/shared/logger/logger";
+import { computeScrollAnchor } from "../engine/scroll/scroll-anchor";
 
 const logger = rootLogger.child("save-reader-progress");
 
@@ -68,6 +69,7 @@ export function computeReaderProgress({
   ) as HTMLElement | null;
 
   let scrollFraction = 0;
+  let anchorPath: number[] | null = null;
 
   if (section) {
     const sectionHeight = section.scrollHeight || section.offsetHeight || 1;
@@ -76,6 +78,7 @@ export function computeReaderProgress({
       1,
       Math.max(0, offsetWithinSection / sectionHeight),
     );
+    anchorPath = computeScrollAnchor(section);
   }
 
   const documentHeight = iframeDoc.documentElement?.scrollHeight ?? 0;
@@ -102,6 +105,7 @@ export function computeReaderProgress({
     chapterIndex: activeIndex,
     totalChapters,
     scrollFraction: effectiveFraction,
+    anchorPath,
     atDocumentEnd,
     percent,
     updatedAt: Date.now(),

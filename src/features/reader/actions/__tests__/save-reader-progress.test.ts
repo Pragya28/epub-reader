@@ -390,6 +390,60 @@ describe("computeReaderProgress", () => {
       expect(before.scrollFraction).toBeCloseTo(after.scrollFraction, 5);
     });
   });
+
+  describe("anchorPath", () => {
+    it("includes an anchor path when the active section has content blocks", () => {
+      const doc = makeDoc([
+        { chapterIndex: 0, offsetTop: 0, scrollHeight: 1000 },
+      ]);
+      const section = doc.querySelector(
+        'section[data-chapter="0"]',
+      ) as HTMLElement;
+      const p = doc.createElement("p");
+      p.textContent = "hello";
+      p.getBoundingClientRect = () => ({ bottom: 50 }) as DOMRect;
+      section.appendChild(p);
+
+      const result = computeReaderProgress({
+        iframeDoc: doc,
+        win: makeWin(0) as Window,
+        activeIndex: 0,
+        totalChapters: 3,
+      });
+
+      expect(result.anchorPath).toEqual([0]);
+    });
+
+    it("is null when the active section has no content blocks", () => {
+      const doc = makeDoc([
+        { chapterIndex: 0, offsetTop: 0, scrollHeight: 1000 },
+      ]);
+
+      const result = computeReaderProgress({
+        iframeDoc: doc,
+        win: makeWin(0) as Window,
+        activeIndex: 0,
+        totalChapters: 3,
+      });
+
+      expect(result.anchorPath).toBeNull();
+    });
+
+    it("is null when the active section isn't found in the document", () => {
+      const doc = makeDoc([
+        { chapterIndex: 0, offsetTop: 0, scrollHeight: 1000 },
+      ]);
+
+      const result = computeReaderProgress({
+        iframeDoc: doc,
+        win: makeWin(0) as Window,
+        activeIndex: 3,
+        totalChapters: 5,
+      });
+
+      expect(result.anchorPath).toBeNull();
+    });
+  });
 });
 
 // ---- saveReaderProgress ----

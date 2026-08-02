@@ -9,6 +9,7 @@ import {
   invalidateChapterSections,
 } from "../engine/scroll/get-chapter-sections";
 import { detectVisibleChapter } from "../engine/scroll/detect-visible-chapter";
+import { resolveScrollAnchor } from "../engine/scroll/scroll-anchor";
 import { maintainChapterWindow } from "../engine/windowing/chapter-window";
 import {
   initializeChapterDocument,
@@ -367,13 +368,25 @@ export function useReaderEngine({
           return;
         }
 
+        // Prefer the element anchor — it survives reflow (viewport/font
+        // changes between sessions) that would shift a raw scroll fraction.
+        // Fall back to fraction-based math if there's no anchor (progress
+        // saved before this field existed) or it fails to resolve (chapter
+        // content genuinely changed, which shouldn't happen but shouldn't
+        // crash the restore either).
+        const anchorEl = progress.anchorPath
+          ? resolveScrollAnchor(section, progress.anchorPath)
+          : null;
+
         const sectionHeight = section.scrollHeight || section.offsetHeight || 0;
-        const targetY =
-          section.offsetTop + progress.scrollFraction * sectionHeight;
+        const targetY = anchorEl
+          ? win.scrollY + anchorEl.getBoundingClientRect().top
+          : section.offsetTop + progress.scrollFraction * sectionHeight;
 
         logger.info("restoring saved reading position", {
           chapterIndex: progress.chapterIndex,
           scrollFraction: progress.scrollFraction,
+          usedAnchor: !!anchorEl,
           targetY,
         });
 

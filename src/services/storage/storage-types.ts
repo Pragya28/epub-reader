@@ -6,6 +6,16 @@ export interface ReadingProgress {
   /** 0-1 scroll position within the chapterIndex section (clamped). */
   scrollFraction: number;
   /**
+   * Path of child indices from the chapter section down to the content
+   * block (paragraph, heading, list item, ...) the reader was at, used to
+   * restore position by element instead of raw scroll fraction — survives
+   * reflow (viewport/font changes) that would otherwise shift a pixel-based
+   * restore. Null when no suitable block was found; absent entirely on
+   * progress saved before this field existed. scrollFraction is the
+   * fallback in both cases. See scroll-anchor.ts.
+   */
+  anchorPath?: number[] | null;
+  /**
    * True when win.scrollY + viewport had reached the bottom of the
    * currently mounted document at save time. ONLY meaningful as a
    * "reached the end of the book" signal when chapterIndex is the last

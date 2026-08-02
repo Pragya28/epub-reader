@@ -32,7 +32,7 @@ All four done:
 
 1. ❌ **Lazy/async book parsing** — `src/services/epub/epub-parser.ts` eagerly parses ALL chapters and mints every asset blob URL on open, on the main thread, before first paint. Biggest open-flow and memory gap.
 2. ✅ **Restore retry** — `restoreInitialPosition()` in `use-reader-engine.ts` silently drops the restore if the target section isn't mounted yet; no `readyState` fallback if the iframe `load` event fires before the effect attaches. _(done 2026-08-01)_
-3. 🟡 **Scroll-fraction drift** — restore multiplies stored fraction by `scrollHeight`; font/viewport changes between sessions shift the position. No element-anchor (CFI-like) fallback.
+3. ✅ **Scroll-fraction drift** — restore multiplies stored fraction by `scrollHeight`; font/viewport changes between sessions shift the position. No element-anchor (CFI-like) fallback. _(done 2026-08-02)_
 
 ## Day 2 — Navigation Refinements
 
