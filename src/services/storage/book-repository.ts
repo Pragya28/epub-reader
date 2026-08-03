@@ -1,5 +1,9 @@
 import * as bookFiles from "./book-files";
-import { cacheCoverUrl, getCachedCoverUrl } from "./cover-cache";
+import {
+  cacheCoverUrl,
+  getCachedCoverUrl,
+  revokeCoverUrl,
+} from "./cover-cache";
 import { db } from "./db";
 import type { ReadingProgress, StoredBook } from "./storage-types";
 
@@ -123,4 +127,19 @@ export async function resetBookProgress(bookId: string): Promise<void> {
     progress: undefined,
     manualStatus: undefined,
   });
+}
+
+/**
+ * Removes a book entirely: EPUB file (OPFS or IndexedDB fallback), cover
+ * blob, and the `books` row itself — which also carries `progress`/
+ * `manualStatus`, so no separate "delete progress" step is needed.
+ */
+export async function deleteBook(bookId: string): Promise<void> {
+  revokeCoverUrl(bookId);
+
+  await Promise.all([
+    bookFiles.deleteBookFile(bookId),
+    db.bookCovers.delete(bookId),
+    db.books.delete(bookId),
+  ]);
 }

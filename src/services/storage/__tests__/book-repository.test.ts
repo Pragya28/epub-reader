@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  deleteBook,
   getAllBooks,
   getBookCover,
   getBookCoverUrl,
@@ -209,5 +210,39 @@ describe("book repository", () => {
     expect(second).toBe("blob:test");
 
     expect(createSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("deletes a book's file, cover, and metadata", async () => {
+    const file = new Blob(["epub"]);
+    const cover = new Blob(["cover"]);
+
+    await saveImportedBook({
+      metadata: {
+        id: "1",
+        title: "Test Book",
+        createdAt: 1,
+        fileHash: "hash-1",
+      },
+      file,
+      cover,
+    });
+
+    await deleteBook("1");
+
+    expect(await getBookFile("1")).toBeUndefined();
+    expect(await getBookCover("1")).toBeUndefined();
+    expect(await getAllBooks()).toHaveLength(0);
+  });
+
+  it("deleting a book with no cover doesn't throw", async () => {
+    await saveBookMetadata({
+      id: "1",
+      title: "Test Book",
+      createdAt: 1,
+      fileHash: "hash-1",
+    });
+
+    await expect(deleteBook("1")).resolves.not.toThrow();
+    expect(await getAllBooks()).toHaveLength(0);
   });
 });

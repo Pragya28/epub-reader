@@ -6,6 +6,7 @@ export interface LibraryStore {
   error: string | null;
   setBooks: (books: StoredBook[]) => void;
   addBook: (book: StoredBook) => void;
+  removeBook: (bookId: string) => void;
   setLoading: (value: boolean) => void;
   setError: (value: string | null) => void;
 }

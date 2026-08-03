@@ -8,16 +8,24 @@ import {
   markBookUnread,
   startBookAtBeginning,
 } from "../actions/mark-book-status";
+import { deleteBook } from "../actions/delete-book";
 
 export type BookCardMenuEntry =
   | { type: "separator"; id: string }
-  | { type: "item"; id: string; label: string; onClick: () => void };
+  | {
+      type: "item";
+      id: string;
+      label: string;
+      onClick: () => void;
+      variant?: "destructive";
+    };
 
 /** Dropdown actions and derived status text behind a single BookCard. */
 export function useBookCard(book: BookWithProgress) {
   const { id, isFinished, isReading, progress } = book;
   const navigate = useNavigate();
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const statusText = isFinished
     ? "Finished"
@@ -30,6 +38,8 @@ export function useBookCard(book: BookWithProgress) {
   const markUnread = () => void markBookUnread(id);
   const startAtBeginning = () => void startBookAtBeginning(id);
   const openAboutSheet = () => setAboutOpen(true);
+  const openDeleteConfirm = () => setDeleteOpen(true);
+  const confirmDelete = () => void deleteBook(id);
 
   const menuItems: BookCardMenuEntry[] = [
     { type: "item", id: "open", label: "Open", onClick: openInReader },
@@ -71,12 +81,23 @@ export function useBookCard(book: BookWithProgress) {
       label: "About Book",
       onClick: openAboutSheet,
     },
+    { type: "separator", id: "sep-3" },
+    {
+      type: "item",
+      id: "delete",
+      label: "Delete",
+      onClick: openDeleteConfirm,
+      variant: "destructive",
+    },
   ];
 
   return {
     statusText,
     aboutOpen,
     setAboutOpen,
+    deleteOpen,
+    setDeleteOpen,
+    confirmDelete,
     menuItems,
   };
 }

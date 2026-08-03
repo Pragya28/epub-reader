@@ -13,10 +13,19 @@ import {
 import { EllipsisVertical } from "lucide-react";
 import { AboutBookSheet } from "../about-book-sheet";
 import { useBookCard } from "../../hooks/use-book-card";
+import { DeleteBookDialog } from "./delete-book-dialog";
 
 export const BookCard: FC<BookWithProgress> = (book) => {
   const { id, isNew, isFinished, author, title } = book;
-  const { statusText, aboutOpen, setAboutOpen, menuItems } = useBookCard(book);
+  const {
+    statusText,
+    aboutOpen,
+    setAboutOpen,
+    deleteOpen,
+    setDeleteOpen,
+    confirmDelete,
+    menuItems,
+  } = useBookCard(book);
 
   return (
     <div className="group relative z-0 flex flex-col gap-2.5">
@@ -75,7 +84,11 @@ export const BookCard: FC<BookWithProgress> = (book) => {
                 entry.type === "separator" ? (
                   <DropdownMenuSeparator key={entry.id} />
                 ) : (
-                  <DropdownMenuItem key={entry.id} onClick={entry.onClick}>
+                  <DropdownMenuItem
+                    key={entry.id}
+                    variant={entry.variant}
+                    onClick={entry.onClick}
+                  >
                     {entry.label}
                   </DropdownMenuItem>
                 ),
@@ -101,6 +114,13 @@ export const BookCard: FC<BookWithProgress> = (book) => {
         book={book}
         open={aboutOpen}
         onOpenChange={setAboutOpen}
+      />
+
+      <DeleteBookDialog
+        open={deleteOpen}
+        title={title}
+        onConfirm={confirmDelete}
+        onOpenChange={setDeleteOpen}
       />
     </div>
   );

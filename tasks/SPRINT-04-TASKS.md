@@ -48,10 +48,10 @@ Everything below Sprint 4 actually asks for is **missing** — this sprint hasn'
 
 ## Day 5 — Book Management
 
-14. ❌ **Centralized delete service** — no `delete-book.ts` action; nothing calls `bookFiles`/`bookCovers`/`books` deletes together.
-15. ❌ **Delete EPUB / metadata / cover / progress** — `progress` and `manualStatus` live embedded on the `books` row (no separate table), so "delete progress" is a partial update, not a row delete — worth confirming the delete service handles that correctly rather than only clearing `bookFiles`/`bookCovers`.
-16. ❌ **Delete search index** — N/A until #9 exists; if search stays an in-memory filter (recommended per #10), there's no persisted index to clean up.
-17. ❌ **Destructive-action confirmation UI** — `book-card.tsx` has a dropdown menu (mark finished/unread/restart) but no delete entry or confirm dialog.
+14. ✅ **Centralized delete service** — `deleteBook()` in `services/storage/book-repository.ts` removes the EPUB file (`bookFiles.deleteBookFile`, already handled OPFS + IndexedDB fallback), the cover blob (`db.bookCovers.delete` + `revokeCoverUrl`), and the `books` row, in parallel. `features/library/actions/delete-book.ts` wraps it and syncs `libraryStore` via a new `removeBook` action. _(done 2026-08-03)_
+15. ✅ **Delete EPUB / metadata / cover / progress** — `progress`/`manualStatus` live embedded on the `books` row, so deleting that row deletes them too; no separate step needed. Covered by a repository test (`book-repository.test.ts`: "deletes a book's file, cover, and metadata"). _(done 2026-08-03)_
+16. ✅ **Delete search index** — confirmed N/A, as anticipated: search stays an in-memory filter (#10), nothing persisted to clean up. _(done 2026-08-03)_
+17. ✅ **Destructive-action confirmation UI** — new `Delete` entry (destructive-styled, via `DropdownMenuItem`'s existing `variant="destructive"`) added to `book-card.tsx`'s dropdown, opening a new `DeleteBookDialog` component (`AlertDialog`, matches the existing `ExternalLinkDialog` pattern). Verified live: imported a throwaway fixture book, deleted it via the dropdown, confirmed via IndexedDB inspection that its `books`/`bookCovers`/`bookFiles` rows were all gone while the other book was untouched. _(done 2026-08-03)_
 
 ## Day 6 — Library UI Polish
 

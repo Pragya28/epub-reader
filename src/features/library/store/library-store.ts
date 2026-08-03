@@ -20,6 +20,15 @@ export const libraryStore = create<LibraryStore>()(
           "library/addBook",
         ),
 
+      removeBook: (bookId) =>
+        set(
+          (state) => ({
+            books: state.books.filter((b) => b.id !== bookId),
+          }),
+          false,
+          "library/removeBook",
+        ),
+
       setLoading: (value) =>
         set({ isLoading: value }, false, "library/setLoading"),
 
