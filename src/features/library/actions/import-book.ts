@@ -9,9 +9,11 @@ export async function importBook(file: File) {
   const store = libraryStore.getState();
   const parser = new EpubParser();
 
+  // Import failures surface via the caller's toast (use-import-book-fab.ts),
+  // not the library-level `error` field — that's reserved for loadLibrary()
+  // failures, which blank the whole grid; a failed import shouldn't.
   try {
     store.setLoading(true);
-    store.setError(null);
 
     // 2. Parse book
     const parsed = await parser.parseLibraryBook(file);
@@ -59,12 +61,6 @@ export async function importBook(file: File) {
       id: bookId,
       metadata: metadata,
     };
-  } catch (error) {
-    store.setError(
-      error instanceof Error ? error.message : "Failed to import book",
-    );
-
-    throw error;
   } finally {
     store.setLoading(false);
   }

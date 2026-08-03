@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 export const LibraryScreen: FC = () => {
   const {
     isLoading,
+    error,
     currentBook,
     visibleBooks,
     isSearching,
@@ -87,13 +88,14 @@ export const LibraryScreen: FC = () => {
             className="input-folio w-full text-ui text-foreground mb-5 py-2 placeholder:text-muted-foreground"
           />
         ) : (
-          <div className="text-[22px] font-heading font-semibold text-foreground mb-5 leading-tight">
+          <h1 className="section-title font-semibold text-foreground mb-5 leading-tight">
             Your Personal Collection
-          </div>
+          </h1>
         )}
         <BookGrid
           isLoading={isLoading}
           isSearch={isSearching || isFiltering}
+          error={error}
           books={visibleBooks}
         />
       </main>

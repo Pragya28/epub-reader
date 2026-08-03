@@ -13,9 +13,12 @@ export const BookCover: FC<BookWithProgress> = ({
 
   if (coverBg) {
     return (
-      <div
-        className="w-full h-full bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${coverBg})` }}
+      <img
+        src={coverBg}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        className="w-full h-full object-cover"
       />
     );
   }

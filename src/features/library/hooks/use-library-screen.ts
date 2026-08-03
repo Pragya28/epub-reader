@@ -22,7 +22,7 @@ import { sortBooks } from "../utils/sort-books";
  * Kept separate from LibraryScreen so that component stays presentational.
  */
 export function useLibraryScreen() {
-  const { books, isLoading } = libraryStore();
+  const { books, isLoading, error } = libraryStore();
   const {
     query,
     sortBy,
@@ -91,6 +91,7 @@ export function useLibraryScreen() {
 
   return {
     isLoading,
+    error,
     currentBook,
     visibleBooks,
     isSearching,

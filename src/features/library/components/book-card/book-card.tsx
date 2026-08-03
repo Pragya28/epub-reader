@@ -28,7 +28,7 @@ export const BookCard: FC<BookWithProgress> = (book) => {
   } = useBookCard(book);
 
   return (
-    <div className="group relative z-0 flex flex-col gap-2.5">
+    <div className="group relative z-0 flex flex-col gap-2">
       {/* Stretched link: covers the whole card so any non-interactive area
           navigates to the reader, without nesting the dropdown's <button>
           inside an <a> (invalid HTML). The dropdown trigger below sits in
@@ -41,7 +41,7 @@ export const BookCard: FC<BookWithProgress> = (book) => {
       <div
         className="
           relative
-          aspect-2/3
+          aspect-3/4
           overflow-hidden
           rounded-xl
           border border-border/40
