@@ -1,18 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { libraryStore } from "../store/library-store";
+import { libraryFilterStore } from "../store/library-filter-store";
 import { loadLibrary } from "../actions/load-library";
 import {
   enrichBookWithProgress,
   pickCurrentlyReadingBook,
 } from "../utils/derive-book-status";
 import {
-  DEFAULT_LIBRARY_FILTERS,
   filterBooksByCriteria,
   filterBooksByQuery,
   hasActiveFilters,
 } from "../utils/filter-books";
-import { DEFAULT_SORT, sortBooks } from "../utils/sort-books";
+import { sortBooks } from "../utils/sort-books";
 
 /**
  * All non-visual state/derivation behind the library screen: loading the
@@ -22,11 +23,27 @@ import { DEFAULT_SORT, sortBooks } from "../utils/sort-books";
  */
 export function useLibraryScreen() {
   const { books, isLoading } = libraryStore();
+  const {
+    query,
+    sortBy,
+    filters,
+    setQuery,
+    setSortBy,
+    setFilters,
+    resetFilters,
+  } = libraryFilterStore(
+    useShallow((state) => ({
+      query: state.query,
+      sortBy: state.sortBy,
+      filters: state.filters,
+      setQuery: state.setQuery,
+      setSortBy: state.setSortBy,
+      setFilters: state.setFilters,
+      resetFilters: state.resetFilters,
+    })),
+  );
   const [searchOpen, setSearchOpen] = useState(false);
-  const [query, setQuery] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
-  const [sortBy, setSortBy] = useState(DEFAULT_SORT);
-  const [filters, setFilters] = useState(DEFAULT_LIBRARY_FILTERS);
 
   const closeSearch = () => {
     setSearchOpen(false);
@@ -59,13 +76,9 @@ export function useLibraryScreen() {
   // user currently has filtered/searched down to.
   const currentBook = pickCurrentlyReadingBook(enriched);
 
-  const languages = useMemo(
-    () =>
-      Array.from(
-        new Set(enriched.map((book) => book.language).filter(Boolean)),
-      ) as string[],
-    [enriched],
-  );
+  const languages = Array.from(
+    new Set(enriched.map((book) => book.language).filter(Boolean)),
+  ) as string[];
 
   const isFiltering = hasActiveFilters(filters);
   const isSearching = searchOpen && query.trim() !== "";
@@ -95,7 +108,7 @@ export function useLibraryScreen() {
     setSortBy,
     filters,
     setFilters,
-    resetFilters: () => setFilters(DEFAULT_LIBRARY_FILTERS),
+    resetFilters,
     languages,
   };
 }
