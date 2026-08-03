@@ -1,5 +1,5 @@
 import { ROUTES } from "@/utils/routes";
-import { useEffect, useState, type FC } from "react";
+import { useEffect, useMemo, useState, type FC } from "react";
 import { Link } from "react-router-dom";
 import { libraryStore } from "@/features/library/store/library-store";
 import { loadLibrary } from "@/features/library/actions/load-library";
@@ -7,8 +7,15 @@ import {
   enrichBookWithProgress,
   pickCurrentlyReadingBook,
 } from "@/features/library/utils/derive-book-status";
-import { filterBooksByQuery } from "@/features/library/utils/filter-books";
+import {
+  DEFAULT_LIBRARY_FILTERS,
+  filterBooksByCriteria,
+  filterBooksByQuery,
+  hasActiveFilters,
+} from "@/features/library/utils/filter-books";
+import { DEFAULT_SORT, sortBooks } from "@/features/library/utils/sort-books";
 import { BookGrid } from "@/features/library/components/book-grid";
+import { LibraryFilterSheet } from "@/features/library/components/library-filter-sheet";
 import { ContinueReadingBanner } from "@/features/library/components/continue-reading-banner";
 import { ImportBookFab } from "@/features/library/components/import-book-fab";
 import { Search, Settings, SlidersHorizontal, X } from "lucide-react";
@@ -19,6 +26,9 @@ export const LibraryScreen: FC = () => {
   const { books, isLoading } = libraryStore();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [sortBy, setSortBy] = useState(DEFAULT_SORT);
+  const [filters, setFilters] = useState(DEFAULT_LIBRARY_FILTERS);
 
   const closeSearch = () => {
     setSearchOpen(false);
@@ -47,16 +57,33 @@ export const LibraryScreen: FC = () => {
 
   const enriched = books.map(enrichBookWithProgress);
 
-  const ordered = [
-    ...enriched.filter((book) => !book.isFinished),
-    ...enriched.filter((book) => book.isFinished),
-  ];
+  // Continue-reading always reflects the whole library, not whatever the
+  // user currently has filtered/searched down to.
+  const currentBook = pickCurrentlyReadingBook(enriched);
 
-  const currentBook = pickCurrentlyReadingBook(ordered);
+  const languages = useMemo(
+    () =>
+      Array.from(
+        new Set(enriched.map((book) => book.language).filter(Boolean)),
+      ) as string[],
+    [enriched],
+  );
+  const authors = useMemo(
+    () =>
+      Array.from(
+        new Set(enriched.map((book) => book.author).filter(Boolean)),
+      ) as string[],
+    [enriched],
+  );
+
+  const isFiltering = hasActiveFilters(filters);
   const isSearching = searchOpen && query.trim() !== "";
+
+  const sorted = sortBooks(enriched, sortBy);
+  const filtered = filterBooksByCriteria(sorted, filters);
   const visibleBooks = isSearching
-    ? filterBooksByQuery(ordered, query)
-    : ordered;
+    ? filterBooksByQuery(filtered, query)
+    : filtered;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -76,8 +103,17 @@ export const LibraryScreen: FC = () => {
               <Search strokeWidth={1.5} className="size-5" />
             )}
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Filter">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Sort and filter"
+            onClick={() => setFilterOpen(true)}
+            className="relative"
+          >
             <SlidersHorizontal strokeWidth={1.5} className="size-5" />
+            {isFiltering && (
+              <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-primary" />
+            )}
           </Button>
           <Button
             variant="ghost"
@@ -110,7 +146,7 @@ export const LibraryScreen: FC = () => {
         )}
         <BookGrid
           isLoading={isLoading}
-          isSearch={isSearching}
+          isSearch={isSearching || isFiltering}
           books={visibleBooks}
         />
       </main>
@@ -120,6 +156,18 @@ export const LibraryScreen: FC = () => {
 
       {/* ── FAB — fixed bottom-right ─────────────────────────────────────── */}
       <ImportBookFab />
+
+      <LibraryFilterSheet
+        open={filterOpen}
+        onOpenChange={setFilterOpen}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
+        filters={filters}
+        onFiltersChange={setFilters}
+        onReset={() => setFilters(DEFAULT_LIBRARY_FILTERS)}
+        languages={languages}
+        authors={authors}
+      />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import type { BookWithProgress } from "../types/library.types";
+import type { BookWithProgress, ReadingStatus } from "../types/library.types";
 
 /** Case-insensitive match across title, author and description. */
 export function filterBooksByQuery(
@@ -14,4 +14,63 @@ export function filterBooksByQuery(
       field?.toLowerCase().includes(normalized),
     ),
   );
+}
+
+/**
+ * Book-length buckets from docs/07 - Gaps/Library-01 Sort and Filter.md —
+ * word count is the chosen size metric (chapter count varies too much
+ * across publishers, page count isn't stable across screen/font sizes).
+ */
+export type LengthBucket = "short" | "medium" | "long" | "epic";
+
+export function getLengthBucket(
+  wordCount: number | undefined,
+): LengthBucket | null {
+  if (wordCount == null) return null;
+  if (wordCount < 20_000) return "short";
+  if (wordCount < 80_000) return "medium";
+  if (wordCount < 150_000) return "long";
+  return "epic";
+}
+
+export interface LibraryFilters {
+  status: ReadingStatus | "all";
+  language: string | "all";
+  author: string | "all";
+  length: LengthBucket | "all";
+}
+
+export const DEFAULT_LIBRARY_FILTERS: LibraryFilters = {
+  status: "all",
+  language: "all",
+  author: "all",
+  length: "all",
+};
+
+export function hasActiveFilters(filters: LibraryFilters): boolean {
+  return Object.values(filters).some((value) => value !== "all");
+}
+
+export function filterBooksByCriteria(
+  books: BookWithProgress[],
+  filters: LibraryFilters,
+): BookWithProgress[] {
+  return books.filter((book) => {
+    if (filters.status !== "all" && book.status !== filters.status) {
+      return false;
+    }
+    if (filters.language !== "all" && book.language !== filters.language) {
+      return false;
+    }
+    if (filters.author !== "all" && book.author !== filters.author) {
+      return false;
+    }
+    if (
+      filters.length !== "all" &&
+      getLengthBucket(book.wordCount) !== filters.length
+    ) {
+      return false;
+    }
+    return true;
+  });
 }
