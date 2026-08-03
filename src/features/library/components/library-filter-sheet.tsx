@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import type { ReadingStatus } from "../types/library.types";
 import {
   hasActiveFilters,
@@ -40,19 +41,14 @@ const LENGTH_OPTIONS: { value: LengthBucket | "all"; label: string }[] = [
   { value: "epic", label: "Epic" },
 ];
 
-interface ChipGroupProps<T extends string> {
+interface ChipGroupProps<T> {
   label: string;
   options: { value: T; label: string }[];
   value: T;
   onChange: (value: T) => void;
 }
 
-function ChipGroup<T extends string>({
-  label,
-  options,
-  value,
-  onChange,
-}: ChipGroupProps<T>) {
+function ChipGroup<T>({ label, options, value, onChange }: ChipGroupProps<T>) {
   return (
     <div className="flex flex-col gap-2">
       <p className="text-meta uppercase tracking-[0.08em] text-muted-foreground">
@@ -61,7 +57,7 @@ function ChipGroup<T extends string>({
       <div className="flex flex-wrap gap-2">
         {options.map((option) => (
           <Button
-            key={option.value}
+            key={String(option.value)}
             type="button"
             variant={value === option.value ? "secondary" : "outline"}
             size="sm"
@@ -85,7 +81,6 @@ interface LibraryFilterSheetProps {
   onFiltersChange: (filters: LibraryFilters) => void;
   onReset: () => void;
   languages: string[];
-  authors: string[];
 }
 
 export const LibraryFilterSheet: FC<LibraryFilterSheetProps> = ({
@@ -97,7 +92,6 @@ export const LibraryFilterSheet: FC<LibraryFilterSheetProps> = ({
   onFiltersChange,
   onReset,
   languages,
-  authors,
 }) => {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -130,6 +124,22 @@ export const LibraryFilterSheet: FC<LibraryFilterSheetProps> = ({
               onChange={(status) => onFiltersChange({ ...filters, status })}
             />
 
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="library-filter-hide-finished"
+                className="text-meta uppercase tracking-[0.08em] text-muted-foreground"
+              >
+                Hide Finished Books
+              </label>
+              <Switch
+                id="library-filter-hide-finished"
+                checked={filters.hideFinished}
+                onCheckedChange={(hideFinished) =>
+                  onFiltersChange({ ...filters, hideFinished })
+                }
+              />
+            </div>
+
             <ChipGroup
               label="Book Length"
               options={LENGTH_OPTIONS}
@@ -157,32 +167,6 @@ export const LibraryFilterSheet: FC<LibraryFilterSheetProps> = ({
                   {languages.map((language) => (
                     <option key={language} value={language}>
                       {language}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {authors.length > 1 && (
-              <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="library-filter-author"
-                  className="text-meta uppercase tracking-[0.08em] text-muted-foreground"
-                >
-                  Author
-                </label>
-                <select
-                  id="library-filter-author"
-                  className="input-folio text-ui text-foreground py-2"
-                  value={filters.author}
-                  onChange={(e) =>
-                    onFiltersChange({ ...filters, author: e.target.value })
-                  }
-                >
-                  <option value="all">All</option>
-                  {authors.map((author) => (
-                    <option key={author} value={author}>
-                      {author}
                     </option>
                   ))}
                 </select>

@@ -95,13 +95,13 @@ describe("getLengthBucket", () => {
 });
 
 describe("hasActiveFilters", () => {
-  it("is false when every filter is 'all'", () => {
+  it("is false at the default filters", () => {
     expect(
       hasActiveFilters({
         status: "all",
         language: "all",
-        author: "all",
         length: "all",
+        hideFinished: true,
       }),
     ).toBe(false);
   });
@@ -111,8 +111,19 @@ describe("hasActiveFilters", () => {
       hasActiveFilters({
         status: "reading",
         language: "all",
-        author: "all",
         length: "all",
+        hideFinished: true,
+      }),
+    ).toBe(true);
+  });
+
+  it("is true when hideFinished is turned off", () => {
+    expect(
+      hasActiveFilters({
+        status: "all",
+        language: "all",
+        length: "all",
+        hideFinished: false,
       }),
     ).toBe(true);
   });
@@ -124,21 +135,18 @@ describe("filterBooksByCriteria", () => {
       id: "1",
       status: "reading",
       language: "en",
-      author: "Author A",
       wordCount: 15_000,
     }),
     makeBook({
       id: "2",
       status: "finished",
       language: "fr",
-      author: "Author B",
       wordCount: 90_000,
     }),
     makeBook({
       id: "3",
       status: "unread",
       language: "en",
-      author: "Author A",
       wordCount: 200_000,
     }),
   ];
@@ -146,8 +154,8 @@ describe("filterBooksByCriteria", () => {
   const allFilters: LibraryFilters = {
     status: "all",
     language: "all",
-    author: "all",
     length: "all",
+    hideFinished: false,
   };
 
   it("returns every book when no filter is active", () => {
@@ -170,14 +178,6 @@ describe("filterBooksByCriteria", () => {
     expect(result.map((b) => b.id)).toEqual(["1", "3"]);
   });
 
-  it("filters by author", () => {
-    const result = filterBooksByCriteria(books, {
-      ...allFilters,
-      author: "Author A",
-    });
-    expect(result.map((b) => b.id)).toEqual(["1", "3"]);
-  });
-
   it("filters by book-length bucket", () => {
     const result = filterBooksByCriteria(books, {
       ...allFilters,
@@ -193,5 +193,22 @@ describe("filterBooksByCriteria", () => {
       status: "unread",
     });
     expect(result.map((b) => b.id)).toEqual(["3"]);
+  });
+
+  it("hides finished books by default when status is 'all'", () => {
+    const result = filterBooksByCriteria(books, {
+      ...allFilters,
+      hideFinished: true,
+    });
+    expect(result.map((b) => b.id)).toEqual(["1", "3"]);
+  });
+
+  it("still shows finished books when explicitly filtering to that status", () => {
+    const result = filterBooksByCriteria(books, {
+      ...allFilters,
+      hideFinished: true,
+      status: "finished",
+    });
+    expect(result.map((b) => b.id)).toEqual(["2"]);
   });
 });

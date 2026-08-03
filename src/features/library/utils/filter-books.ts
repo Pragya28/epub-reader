@@ -36,19 +36,27 @@ export function getLengthBucket(
 export interface LibraryFilters {
   status: ReadingStatus | "all";
   language: string | "all";
-  author: string | "all";
   length: LengthBucket | "all";
+  /** Declutters the default view; ignored when `status` already narrows to
+   * a specific status (e.g. explicitly choosing "Finished" should show
+   * finished books, not fight itself). */
+  hideFinished: boolean;
 }
 
 export const DEFAULT_LIBRARY_FILTERS: LibraryFilters = {
   status: "all",
   language: "all",
-  author: "all",
   length: "all",
+  hideFinished: true,
 };
 
 export function hasActiveFilters(filters: LibraryFilters): boolean {
-  return Object.values(filters).some((value) => value !== "all");
+  return (
+    filters.status !== DEFAULT_LIBRARY_FILTERS.status ||
+    filters.language !== DEFAULT_LIBRARY_FILTERS.language ||
+    filters.length !== DEFAULT_LIBRARY_FILTERS.length ||
+    filters.hideFinished !== DEFAULT_LIBRARY_FILTERS.hideFinished
+  );
 }
 
 export function filterBooksByCriteria(
@@ -59,10 +67,14 @@ export function filterBooksByCriteria(
     if (filters.status !== "all" && book.status !== filters.status) {
       return false;
     }
-    if (filters.language !== "all" && book.language !== filters.language) {
+    if (
+      filters.status === "all" &&
+      filters.hideFinished &&
+      book.status === "finished"
+    ) {
       return false;
     }
-    if (filters.author !== "all" && book.author !== filters.author) {
+    if (filters.language !== "all" && book.language !== filters.language) {
       return false;
     }
     if (

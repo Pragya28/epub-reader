@@ -66,13 +66,6 @@ export function useLibraryScreen() {
       ) as string[],
     [enriched],
   );
-  const authors = useMemo(
-    () =>
-      Array.from(
-        new Set(enriched.map((book) => book.author).filter(Boolean)),
-      ) as string[],
-    [enriched],
-  );
 
   const isFiltering = hasActiveFilters(filters);
   const isSearching = searchOpen && query.trim() !== "";
@@ -104,6 +97,5 @@ export function useLibraryScreen() {
     setFilters,
     resetFilters: () => setFilters(DEFAULT_LIBRARY_FILTERS),
     languages,
-    authors,
   };
 }

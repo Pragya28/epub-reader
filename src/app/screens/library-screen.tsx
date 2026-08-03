@@ -30,7 +30,6 @@ export const LibraryScreen: FC = () => {
     setFilters,
     resetFilters,
     languages,
-    authors,
   } = useLibraryScreen();
 
   return (
@@ -114,7 +113,6 @@ export const LibraryScreen: FC = () => {
         onFiltersChange={setFilters}
         onReset={resetFilters}
         languages={languages}
-        authors={authors}
       />
     </div>
   );
