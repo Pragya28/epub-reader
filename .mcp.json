@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "code-review-graph": {
+      "command": "/Users/pragyajha/Library/Application Support/pipx/venvs/code-review-graph/bin/python",
+      "args": ["-m", "code_review_graph", "serve"],
+      "cwd": "/Users/pragyajha/Personal/epub-reader",
+      "type": "stdio"
+    }
+  }
+}

@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Working style
+
+Always work in ponytail mode (full intensity) in this repo — favor the simplest solution that works, stdlib/native/existing-dependency first, no speculative abstractions.
+
 ## Project
 
 Librune — a local-first EPUB reader PWA (React 19 + TypeScript + Vite). All book data (files, covers, reading progress) lives in IndexedDB; nothing is uploaded to a server.
@@ -91,3 +95,43 @@ When kicking off work on a new sprint, follow this process:
    - If a finding overlaps a task already in the list (e.g. a dead button that's really an unbuilt feature), cross-reference it there instead of duplicating.
    - If a finding is in-scope for this sprint's surfaces/days but not yet listed, add it as a new task under the relevant day.
    - If a finding is out of scope (project-wide, or squarely belongs to a later sprint's stated focus), add it to a "Deferred" section with a one-line reason.
+
+<!-- code-review-graph MCP tools -->
+
+## MCP Tools: code-review-graph
+
+**IMPORTANT: This project has a knowledge graph. ALWAYS use the
+code-review-graph MCP tools BEFORE using Grep/Glob/Read to explore
+the codebase.** The graph is faster, cheaper (fewer tokens), and gives
+you structural context (callers, dependents, test coverage) that file
+scanning cannot.
+
+### When to use graph tools FIRST
+
+- **Exploring code**: `semantic_search_nodes_tool` or `query_graph_tool` instead of Grep
+- **Understanding impact**: `get_impact_radius_tool` instead of manually tracing imports
+- **Code review**: `detect_changes_tool` + `get_review_context_tool` instead of reading entire files
+- **Finding relationships**: `query_graph_tool` with callers_of/callees_of/imports_of/tests_for
+- **Architecture questions**: `get_architecture_overview_tool` + `list_communities_tool`
+
+Fall back to Grep/Glob/Read **only** when the graph doesn't cover what you need.
+
+### Key Tools
+
+| Tool                             | Use when                                               |
+| -------------------------------- | ------------------------------------------------------ |
+| `detect_changes_tool`            | Reviewing code changes — gives risk-scored analysis    |
+| `get_review_context_tool`        | Need source snippets for review — token-efficient      |
+| `get_impact_radius_tool`         | Understanding blast radius of a change                 |
+| `get_affected_flows_tool`        | Finding which execution paths are impacted             |
+| `query_graph_tool`               | Tracing callers, callees, imports, tests, dependencies |
+| `semantic_search_nodes_tool`     | Finding functions/classes by name or keyword           |
+| `get_architecture_overview_tool` | Understanding high-level codebase structure            |
+| `refactor_tool`                  | Planning renames, finding dead code                    |
+
+### Workflow
+
+1. The graph auto-updates on file changes (via hooks).
+2. Use `detect_changes_tool` for code review.
+3. Use `get_affected_flows_tool` to understand impact.
+4. Use `query_graph_tool` pattern="tests_for" to check coverage.

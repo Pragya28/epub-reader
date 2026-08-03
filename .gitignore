@@ -29,3 +29,5 @@ src/tests/dev/*
 # Symlink
 docs
 UI_REPORT.md
+# Added by code-review-graph
+.code-review-graph/
