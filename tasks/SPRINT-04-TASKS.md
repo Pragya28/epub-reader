@@ -63,12 +63,13 @@ Everything below Sprint 4 actually asks for is **missing** — this sprint hasn'
 24. ❌ **`aria-live`/`role="status"` on loading & error states** — folded in from `AUDIT_REPORT.md` [P2]; build this as part of #21/#22 rather than as a separate pass, since it's the same components.
 25. ❌ **Lazy-load real book cover images** — folded in from `AUDIT_REPORT.md` [P2]; `book-cover.tsx:16-20` renders covers as CSS `background-image` with no `loading="lazy"`. Natural to do alongside #18 (card sizing/spacing pass).
 26. ❌ **Library title as a semantic heading** — folded in from `AUDIT_REPORT.md` [P3]; `library-screen.tsx:75` "Your Personal Collection" is a `<div>`, should be `<h1>`/`<h2>`. One-line fix, same screen as the rest of this day.
+27. ❌ **"More by Author"** — new discovery feature, not in the original sprint doc; added per user request. Adds a "More by Author" action to `book-card.tsx`'s dropdown menu and `about-book-sheet.tsx`, opening a new route `/library/author/:author` (not a bottom sheet — scales better for authors with many books, leaves room to add sort/filter within the author's books, and fits the same navigation model a future Series/Collections or "Browse by Language" feature would use). Reuses `BookGrid`/`BookCard` and `filterBooksByCriteria`-style filtering rather than a bespoke list. Hide/disable the action when the author has only one book in the library.
 
 ## Day 7 — Integration & Hardening
 
-27. ❌ **Full library regression pass** — blocked on Days 1–6.
-28. ❌ **Large-library performance testing** — no fixture/benchmark analogous to the reader's `large-book.epub` perf test for a large _library_ (many books).
-29. ❌ **Import → Read → Delete workflow test** — `import-book.test.ts` and `load-library.test.ts` exist; no end-to-end workflow test, and delete doesn't exist yet to test.
+28. ❌ **Full library regression pass** — blocked on Days 1–6.
+29. ❌ **Large-library performance testing** — no fixture/benchmark analogous to the reader's `large-book.epub` perf test for a large _library_ (many books).
+30. ❌ **Import → Read → Delete workflow test** — `import-book.test.ts` and `load-library.test.ts` exist; no end-to-end workflow test, and delete doesn't exist yet to test.
 
 ---
 
