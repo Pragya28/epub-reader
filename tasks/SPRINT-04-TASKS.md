@@ -34,8 +34,8 @@ Everything below Sprint 4 actually asks for is **missing** — this sprint hasn'
 
 ## Day 3 — Library Search
 
-9. ❌ **Metadata search (title/author/description)** — no search input or filtering logic anywhere in `src/features/library/`. Also closes the `AUDIT_REPORT.md` [P1] "dead Search button" finding — the header button has no `onClick` because this feature doesn't exist yet; wire it up as part of building this, don't stub it separately.
-10. ❌ **Search performance work** — moot until search exists; watch for a naive `Array.filter` over the full library being fine at expected scale (don't add an index prematurely).
+9. ✅ **Metadata search (title/author/description)** — clicking the header Search button now reveals an inline search input (`library-screen.tsx`), filtering via `filterBooksByQuery()` (`src/features/library/utils/filter-books.ts`), case-insensitive across title/author/description. Closes the `AUDIT_REPORT.md` [P1] "dead Search button" finding — the button now toggles the input and swaps to a close icon while open. `BookGrid`'s existing (previously unused) `isSearch` prop now drives the "No books found" empty state. _(done 2026-08-03)_
+10. ✅ **Search performance** — plain `Array.filter`/`.includes()` over the in-memory library, no index added — appropriate at personal-library scale, matches the "don't add an index prematurely" call from the original gap analysis. _(done 2026-08-03)_
 
 ## Day 4 — Sorting & Filtering
 
