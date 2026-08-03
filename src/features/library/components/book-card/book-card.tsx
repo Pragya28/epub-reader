@@ -1,7 +1,7 @@
-import { type FC, useState } from "react";
+import { type FC } from "react";
 import type { BookWithProgress } from "../../types/library.types";
 import { BookCover } from "./book-cover";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ROUTES } from "@/utils/routes";
 import {
   DropdownMenu,
@@ -11,23 +11,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVertical } from "lucide-react";
-import {
-  markBookFinished,
-  markBookUnread,
-  startBookAtBeginning,
-} from "../../actions/mark-book-status";
 import { AboutBookSheet } from "../about-book-sheet";
+import { useBookCard } from "../../hooks/use-book-card";
 
 export const BookCard: FC<BookWithProgress> = (book) => {
-  const { id, isNew, isFinished, isReading, author, title, progress } = book;
-  const navigate = useNavigate();
-  const [aboutOpen, setAboutOpen] = useState(false);
-
-  const statusText = isFinished
-    ? "Finished"
-    : isReading && progress !== undefined
-      ? `${progress}% read`
-      : null;
+  const { id, isNew, isFinished, author, title } = book;
+  const { statusText, aboutOpen, setAboutOpen, menuItems } = useBookCard(book);
 
   return (
     <div className="group relative z-0 flex flex-col gap-2.5">
@@ -82,37 +71,15 @@ export const BookCard: FC<BookWithProgress> = (book) => {
               align="end"
               onClick={(e) => e.stopPropagation()}
             >
-              <DropdownMenuItem
-                onClick={() => navigate(ROUTES.READER.replace(":bookId", id))}
-              >
-                Open
-              </DropdownMenuItem>
-
-              <DropdownMenuSeparator />
-
-              {!isFinished && (
-                <DropdownMenuItem onClick={() => void markBookFinished(id)}>
-                  Mark as Finished
-                </DropdownMenuItem>
+              {menuItems.map((entry) =>
+                entry.type === "separator" ? (
+                  <DropdownMenuSeparator key={entry.id} />
+                ) : (
+                  <DropdownMenuItem key={entry.id} onClick={entry.onClick}>
+                    {entry.label}
+                  </DropdownMenuItem>
+                ),
               )}
-
-              {(isFinished || isReading) && (
-                <DropdownMenuItem onClick={() => void markBookUnread(id)}>
-                  Mark as Unread
-                </DropdownMenuItem>
-              )}
-
-              {(isReading || isFinished) && (
-                <DropdownMenuItem onClick={() => void startBookAtBeginning(id)}>
-                  Start at Beginning
-                </DropdownMenuItem>
-              )}
-
-              <DropdownMenuSeparator />
-
-              <DropdownMenuItem onClick={() => setAboutOpen(true)}>
-                About Book
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

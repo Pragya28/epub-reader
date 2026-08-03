@@ -1,125 +1,40 @@
-import { useEffect, useRef, useState, useCallback, type FC } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { loadReaderBook } from "@/features/reader/actions/load-reader-book";
-import { jumpToTocItem } from "@/features/reader/actions/jump-to-toc-item";
+import type { FC } from "react";
+import { useReaderScreen } from "@/features/reader/hooks/use-reader-screen";
 import { ReaderFrame } from "@/features/reader/components/reader-frame";
-import { useReaderEngine } from "@/features/reader/hooks/use-reader-engine";
-import { readerStore } from "@/features/reader/store/reader-store";
-import type { TocItem } from "@/services/epub/epub-types";
 import { TocDrawer } from "@/features/reader/components/toc-drawer";
 import { ReaderToolbar } from "@/features/reader/components/reader-toolbar";
 import { ExternalLinkDialog } from "@/features/reader/components/external-link-dialog";
 import { ChevronLeft, ChevronRight, Undo2 } from "lucide-react";
 import { Progress, ProgressValue } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { ROUTES } from "@/utils/routes";
-import { getBookCoverUrl } from "@/services/storage/book-repository";
 import { getBookCoverVisual } from "@/shared/ornaments";
 
 export const ReaderScreen: FC = () => {
-  const navigate = useNavigate();
-  const { bookId } = useParams();
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [pendingExternalHref, setPendingExternalHref] = useState<string | null>(
-    null,
-  );
-
   const {
+    bookId,
+    iframeRef,
     readerDocument,
     parsedBook,
     isLoading,
     error,
     currentChapterIndex,
     progressPercent,
-  } = readerStore();
-  const hasFootnoteBackPosition = readerStore(
-    (state) => state.footnoteBackStack.length > 0,
-  );
-  const isJumping = readerStore((state) => state.isJumping);
-
-  const totalChapters = parsedBook?.chapters.length ?? 0;
-
-  const toc = parsedBook?.toc ?? [];
-
-  const [coverUrl, setCoverUrl] = useState<string | undefined>(undefined);
-  const [coverChecked, setCoverChecked] = useState(false);
-
-  useEffect(() => {
-    if (!bookId) return;
-
-    let cancelled = false;
-    void getBookCoverUrl(bookId).then((url) => {
-      if (cancelled) return;
-      setCoverUrl(url);
-      setCoverChecked(true);
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [bookId]);
-
-  useEffect(() => {
-    if (!bookId) return;
-
-    void loadReaderBook(bookId).catch(() => {
-      // errors are already captured in store.error by loadReaderBook
-    });
-
-    return () => {
-      // Revoke all chapter asset blob URLs (images, fonts) before clearing
-      // the store. Without this, every asset in the full book accumulates as
-      // leaked object URLs for the lifetime of the browser tab.
-      const { parsedBook } = readerStore.getState();
-      if (parsedBook) {
-        for (const chapter of parsedBook.chapters) {
-          for (const blobUrl of chapter.assetMap.values()) {
-            URL.revokeObjectURL(blobUrl);
-          }
-        }
-      }
-      readerStore.getState().reset();
-    };
-  }, [bookId]);
-
-  const handleTocItemClick = useCallback(
-    (item: TocItem) => {
-      const iframe = iframeRef.current;
-      if (!iframe?.contentDocument || !iframe.contentWindow || !parsedBook) {
-        return;
-      }
-      void jumpToTocItem(
-        item,
-        iframe.contentDocument,
-        iframe.contentWindow,
-        parsedBook,
-      );
-    },
-    [parsedBook],
-  );
-
-  const handleChapterNav = useCallback(
-    (direction: 1 | -1) => {
-      // Read the live store value rather than the closed-over currentChapterIndex —
-      // a second click before React re-renders would otherwise recompute the same
-      // target as the first, silently dropping the increment.
-      handleTocItemClick({
-        label: "",
-        href: "",
-        chapterIndex: readerStore.getState().currentChapterIndex + direction,
-        children: [],
-      });
-    },
-    [handleTocItemClick],
-  );
-
-  const { jumpBack } = useReaderEngine({
-    iframeRef,
-    parsedBook,
-    bookId,
-    initialProgress: readerDocument?.book.progress ?? null,
-    onExternalLink: setPendingExternalHref,
-  });
+    hasFootnoteBackPosition,
+    isJumping,
+    totalChapters,
+    toc,
+    coverUrl,
+    coverChecked,
+    pendingExternalHref,
+    setPendingExternalHref,
+    confirmExternalLink,
+    handleTocItemClick,
+    handleChapterNav,
+    jumpBack,
+    goBack,
+    goToLibrary,
+    retryLoad,
+  } = useReaderScreen();
 
   if (isLoading) {
     const { palette, OrnamentComponent } = bookId
@@ -173,15 +88,10 @@ export const ReaderScreen: FC = () => {
           <p className="text-muted-foreground text-sm">{error}</p>
 
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => bookId && void loadReaderBook(bookId)}
-            >
+            <Button variant="outline" onClick={retryLoad}>
               Try again
             </Button>
-            <Button onClick={() => navigate(ROUTES.LIBRARY)}>
-              Back to library
-            </Button>
+            <Button onClick={goToLibrary}>Back to library</Button>
           </div>
         </div>
       </div>
@@ -204,7 +114,7 @@ export const ReaderScreen: FC = () => {
           variant="ghost"
           size="icon"
           aria-label="Go back"
-          onClick={() => navigate(-1)}
+          onClick={goBack}
         >
           <ChevronLeft className="size-8" strokeWidth={1} />
         </Button>
@@ -287,12 +197,7 @@ export const ReaderScreen: FC = () => {
       <ExternalLinkDialog
         open={pendingExternalHref !== null}
         href={pendingExternalHref ?? ""}
-        onConfirm={() => {
-          if (!pendingExternalHref) return;
-
-          window.open(pendingExternalHref, "_blank", "noopener,noreferrer");
-          setPendingExternalHref(null);
-        }}
+        onConfirm={confirmExternalLink}
         onOpenChange={(open) => {
           if (!open) {
             setPendingExternalHref(null);

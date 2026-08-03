@@ -1,19 +1,7 @@
 import { ROUTES } from "@/utils/routes";
-import { useEffect, useMemo, useState, type FC } from "react";
+import type { FC } from "react";
 import { Link } from "react-router-dom";
-import { libraryStore } from "@/features/library/store/library-store";
-import { loadLibrary } from "@/features/library/actions/load-library";
-import {
-  enrichBookWithProgress,
-  pickCurrentlyReadingBook,
-} from "@/features/library/utils/derive-book-status";
-import {
-  DEFAULT_LIBRARY_FILTERS,
-  filterBooksByCriteria,
-  filterBooksByQuery,
-  hasActiveFilters,
-} from "@/features/library/utils/filter-books";
-import { DEFAULT_SORT, sortBooks } from "@/features/library/utils/sort-books";
+import { useLibraryScreen } from "@/features/library/hooks/use-library-screen";
 import { BookGrid } from "@/features/library/components/book-grid";
 import { LibraryFilterSheet } from "@/features/library/components/library-filter-sheet";
 import { ContinueReadingBanner } from "@/features/library/components/continue-reading-banner";
@@ -23,67 +11,27 @@ import { WordMark } from "@/assets/word-mark";
 import { Button } from "@/components/ui/button";
 
 export const LibraryScreen: FC = () => {
-  const { books, isLoading } = libraryStore();
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [sortBy, setSortBy] = useState(DEFAULT_SORT);
-  const [filters, setFilters] = useState(DEFAULT_LIBRARY_FILTERS);
-
-  const closeSearch = () => {
-    setSearchOpen(false);
-    setQuery("");
-  };
-
-  useEffect(() => {
-    void loadLibrary();
-
-    // When the user navigates back from the reader, the reader's cleanup
-    // flushes the final progress save to the DB. We listen for the page
-    // becoming visible again so we re-fetch after that write has settled,
-    // ensuring the progress bar and continue-reading banner reflect the
-    // session that just ended.
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        void loadLibrary();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
-
-  const enriched = books.map(enrichBookWithProgress);
-
-  // Continue-reading always reflects the whole library, not whatever the
-  // user currently has filtered/searched down to.
-  const currentBook = pickCurrentlyReadingBook(enriched);
-
-  const languages = useMemo(
-    () =>
-      Array.from(
-        new Set(enriched.map((book) => book.language).filter(Boolean)),
-      ) as string[],
-    [enriched],
-  );
-  const authors = useMemo(
-    () =>
-      Array.from(
-        new Set(enriched.map((book) => book.author).filter(Boolean)),
-      ) as string[],
-    [enriched],
-  );
-
-  const isFiltering = hasActiveFilters(filters);
-  const isSearching = searchOpen && query.trim() !== "";
-
-  const sorted = sortBooks(enriched, sortBy);
-  const filtered = filterBooksByCriteria(sorted, filters);
-  const visibleBooks = isSearching
-    ? filterBooksByQuery(filtered, query)
-    : filtered;
+  const {
+    isLoading,
+    currentBook,
+    visibleBooks,
+    isSearching,
+    isFiltering,
+    searchOpen,
+    query,
+    setQuery,
+    openSearch,
+    closeSearch,
+    filterOpen,
+    setFilterOpen,
+    sortBy,
+    setSortBy,
+    filters,
+    setFilters,
+    resetFilters,
+    languages,
+    authors,
+  } = useLibraryScreen();
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -95,7 +43,7 @@ export const LibraryScreen: FC = () => {
             variant="ghost"
             size="icon"
             aria-label={searchOpen ? "Close search" : "Search"}
-            onClick={() => (searchOpen ? closeSearch() : setSearchOpen(true))}
+            onClick={() => (searchOpen ? closeSearch() : openSearch())}
           >
             {searchOpen ? (
               <X strokeWidth={1.5} className="size-5" />
@@ -164,7 +112,7 @@ export const LibraryScreen: FC = () => {
         onSortByChange={setSortBy}
         filters={filters}
         onFiltersChange={setFilters}
-        onReset={() => setFilters(DEFAULT_LIBRARY_FILTERS)}
+        onReset={resetFilters}
         languages={languages}
         authors={authors}
       />
