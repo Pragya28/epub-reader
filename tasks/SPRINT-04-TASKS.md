@@ -69,9 +69,9 @@ Everything below Sprint 4 actually asks for is **missing** — this sprint hasn'
 
 ## Day 7 — Integration & Hardening
 
-28. ❌ **Full library regression pass** — blocked on Days 1–6.
-29. ❌ **Large-library performance testing** — no fixture/benchmark analogous to the reader's `large-book.epub` perf test for a large _library_ (many books).
-30. ❌ **Import → Read → Delete workflow test** — `import-book.test.ts` and `load-library.test.ts` exist; no end-to-end workflow test, and delete doesn't exist yet to test.
+28. ✅ **Full library regression pass** — full suite (`pnpm test:run`: 420/420 passing, up from 417 with this day's 3 new tests), `pnpm lint` (0 errors, same 6 pre-existing unrelated warnings), `pnpm exec tsc -b` (clean), and `pnpm build` all pass. Combined with the live browser verification already done per-feature throughout Days 1–6 (search/sort/filter persistence, delete, More by Author, error/loading states, mobile density) rather than re-running a single manual click-through now — no gaps found. _(done 2026-08-04)_
+29. ✅ **Large-library performance testing** — `load-library.perf.test.ts`, mirrors `epub-parser.perf.test.ts`'s "regression guard, not a tight gate" pattern but for library scale (many books) instead of book scale (many chapters). Seeds 2,000 synthetic `StoredBook` rows directly via `db.books.bulkPut` (no need to round-trip real EPUB files/covers — this test targets `loadLibrary()` and the sort/filter/search pipeline, not parsing), asserts `loadLibrary()` completes within 5s and the sort→filter→search pipeline within 500ms. Both pass in well under 1s combined on a dev machine — 2,000 is intentionally far beyond a realistic personal library, giving the guard real margin. _(done 2026-08-04)_
+30. ✅ **Import → Read → Delete workflow test** — `book-lifecycle.test.ts`: imports a real fixture via `importBook()`, records reading progress via `updateBookProgress()` (simulating the reader engine's save), then calls `deleteBook()` and asserts the book row, file, and cover are all gone and `libraryStore` reflects each state change. _(done 2026-08-04)_
 
 ---
 
