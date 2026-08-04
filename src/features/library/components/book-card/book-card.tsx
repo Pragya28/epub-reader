@@ -24,6 +24,8 @@ export const BookCard: FC<BookWithProgress> = (book) => {
     deleteOpen,
     setDeleteOpen,
     confirmDelete,
+    hasMoreByAuthor,
+    openMoreByAuthor,
     menuItems,
   } = useBookCard(book);
 
@@ -114,6 +116,8 @@ export const BookCard: FC<BookWithProgress> = (book) => {
         book={book}
         open={aboutOpen}
         onOpenChange={setAboutOpen}
+        hasMoreByAuthor={hasMoreByAuthor}
+        onMoreByAuthor={openMoreByAuthor}
       />
 
       <DeleteBookDialog

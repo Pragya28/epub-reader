@@ -16,6 +16,13 @@ export function filterBooksByQuery(
   );
 }
 
+export function filterBooksByAuthor(
+  books: BookWithProgress[],
+  author: string,
+): BookWithProgress[] {
+  return books.filter((book) => book.author === author);
+}
+
 /**
  * Book-length buckets from docs/07 - Gaps/Library-01 Sort and Filter.md —
  * word count is the chosen size metric (chapter count varies too much

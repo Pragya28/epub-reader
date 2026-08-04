@@ -1,7 +1,8 @@
 import { type FC } from "react";
-import { BookOpenIcon, ClockIcon } from "@phosphor-icons/react";
+import { BookOpenIcon, ClockIcon, UsersIcon } from "@phosphor-icons/react";
 
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 import type { BookWithProgress } from "../types/library.types";
 import { BookCover } from "./book-card/book-cover";
 import {
@@ -13,12 +14,16 @@ interface AboutBookSheetProps {
   book: BookWithProgress;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  hasMoreByAuthor: boolean;
+  onMoreByAuthor: () => void;
 }
 
 export const AboutBookSheet: FC<AboutBookSheetProps> = ({
   book,
   open,
   onOpenChange,
+  hasMoreByAuthor,
+  onMoreByAuthor,
 }) => {
   const progressText = formatReadingProgress(book);
   const readingTimeText = book.readingTimeMinutes
@@ -69,6 +74,22 @@ export const AboutBookSheet: FC<AboutBookSheetProps> = ({
           <p className="border-t border-divider pt-4 text-ui text-foreground/80 leading-relaxed whitespace-normal">
             {book.description}
           </p>
+        )}
+
+        {hasMoreByAuthor && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="self-start"
+            onClick={() => {
+              onOpenChange(false);
+              onMoreByAuthor();
+            }}
+          >
+            <UsersIcon size={16} />
+            More by {book.author}
+          </Button>
         )}
       </SheetContent>
     </Sheet>
