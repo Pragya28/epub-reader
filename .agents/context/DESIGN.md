@@ -33,6 +33,10 @@ typography:
     fontFamily: "Literata, serif"
     fontSize: "17px"
     lineHeight: 1.6
+  title-sm:
+    fontFamily: "Cinzel, serif"
+    fontSize: "15px"
+    letterSpacing: "0.06em"
   ui:
     fontFamily: "Plus Jakarta Sans, sans-serif"
     fontSize: "14px"
@@ -128,8 +132,9 @@ A single warm parchment-and-ink palette that inverts cleanly between a cream lig
 - **Display** (Cinzel, 48px / 32px mobile, 0.08em tracking): screen-level titles.
 - **Headline** (Cinzel, 24px, 0.05em tracking, `.section-title`): section headers within screens.
 - **Reading Large/Medium** (Literata, 20px / 17px, 1.6 line-height): chapter body text inside the reader iframe; max width 68ch (`--reading-max-width`).
+- **Title Small** (Cinzel, 15px, 0.06em tracking, `text-title-sm`): compact display titles on small surfaces where the full Headline size (24px) would overwhelm the container — book-cover placeholder titles, the Continue Reading banner's book title.
 - **UI** (Plus Jakarta Sans, 14px / 12px small): buttons, labels, nav, controls.
-- **Meta** (Plus Jakarta Sans, 11px, 0.05em tracking, uppercase, `.metadata`): timestamps, byline-style metadata, badges.
+- **Meta** (Plus Jakarta Sans, 11px, 0.05em tracking, uppercase, `.metadata`, `text-meta`): timestamps, byline-style metadata, badges, cover-placeholder author labels.
 
 ### Named Rules
 

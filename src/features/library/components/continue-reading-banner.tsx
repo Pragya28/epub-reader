@@ -32,16 +32,16 @@ export const ContinueReadingBanner: FC<ContinueReadingBannerProps> = ({
 
       {/* Text block */}
       <div className="flex flex-col flex-1 min-w-0 gap-1">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-cover-gold leading-none mb-1 font-reading">
+        <p className="text-meta font-semibold uppercase tracking-[0.14em] text-cover-gold leading-none mb-1 font-reading">
           Continue Reading
         </p>
-        <p className="text-[15px] font-semibold text-background leading-snug truncate">
+        <p className="text-title-sm font-semibold text-background leading-snug truncate">
           {book.title}
         </p>
         {/* Sub-line: chapter + progress bar */}
         <div className="mt-1.5 flex items-center gap-2">
           <Progress value={book.progress ?? 0} className="flex-1" />
-          <span className="shrink-0 whitespace-nowrap text-[10px] text-background/60">
+          <span className="shrink-0 whitespace-nowrap text-meta text-background/60">
             {chapter} · {book.progress ?? 0}%
           </span>
         </div>

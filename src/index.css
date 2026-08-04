@@ -73,6 +73,7 @@
   --text-headline: 24px;
   --text-reading-lg: 20px;
   --text-reading-md: 17px;
+  --text-title-sm: 15px;
   --text-ui: 14px;
   --text-ui-sm: 12px;
   --text-meta: 11px;
@@ -323,5 +324,18 @@
 
   .body-display {
     font-family: var(--font-display);
+  }
+}
+
+/* State changes (color, final position) still render immediately — only the
+   motion itself is removed, so feedback and hierarchy are preserved. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
   }
 }

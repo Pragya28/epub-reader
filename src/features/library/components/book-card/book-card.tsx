@@ -54,7 +54,7 @@ export const BookCard: FC<BookWithProgress> = (book) => {
       >
         <BookCover {...book} />
         {isNew && (
-          <div className="absolute top-0 right-0 bg-background/95 text-foreground text-[10px] font-bold uppercase tracking-[0.8px] px-2.5 py-1 rounded-bl-xl">
+          <div className="absolute top-0 right-0 bg-background/95 text-foreground text-meta font-bold uppercase tracking-[0.8px] px-2.5 py-1 rounded-bl-xl">
             NEW
           </div>
         )}
