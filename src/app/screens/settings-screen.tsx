@@ -5,7 +5,16 @@ import { ChevronLeft, Sun, CaseSensitive } from "lucide-react";
 import { ROUTES } from "@/utils/routes";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { preferencesStore } from "@/features/preferences/store/preferences-store";
+import { StepperRow } from "@/components/ui/stepper-row";
+import {
+  FONT_SCALE_MAX,
+  FONT_SCALE_MIN,
+  FONT_SCALE_STEP,
+  LINE_HEIGHT_MAX,
+  LINE_HEIGHT_MIN,
+  LINE_HEIGHT_STEP,
+  preferencesStore,
+} from "@/features/preferences/store/preferences-store";
 import { ThemeSelector } from "@/features/preferences/components/theme-selector";
 import { FontSelector } from "@/features/preferences/components/font-selector";
 
@@ -20,6 +29,8 @@ export const SettingsScreen: FC = () => {
     setTheme,
     setApplyThemeToReader,
     setReaderFont,
+    setFontScale,
+    setLineHeight,
   } = preferencesStore();
 
   return (
@@ -83,12 +94,33 @@ export const SettingsScreen: FC = () => {
               <h2 className="metadata">Reading</h2>
             </div>
 
+            <StepperRow
+              label="Font size"
+              value={fontScale}
+              format={{ style: "percent" }}
+              min={FONT_SCALE_MIN}
+              max={FONT_SCALE_MAX}
+              step={FONT_SCALE_STEP}
+              onChange={setFontScale}
+            />
+
+            <StepperRow
+              label="Line height"
+              value={lineHeight}
+              format={{ minimumFractionDigits: 1, maximumFractionDigits: 1 }}
+              min={LINE_HEIGHT_MIN}
+              max={LINE_HEIGHT_MAX}
+              step={LINE_HEIGHT_STEP}
+              onChange={setLineHeight}
+            />
+
             <FontSelector
               value={readerFont}
               onChange={setReaderFont}
               fontScale={fontScale}
               lineHeight={lineHeight}
               paragraphSpacing={paragraphSpacing}
+              collapsible
             />
           </section>
         </div>

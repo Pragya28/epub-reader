@@ -56,7 +56,8 @@ export const ReaderToolbar: FC = () => {
       />
       <SheetContent
         side="bottom"
-        className="flex max-h-[85dvh] flex-col gap-6 overflow-y-auto rounded-t-3xl border-t bg-card p-0 pb-6"
+        className="flex h-[40dvh] flex-col gap-6 overflow-y-auto rounded-t-3xl border-t bg-card p-0 pb-6"
+        overlayClassName="supports-backdrop-filter:backdrop-blur-none"
         showCloseButton={false}
       >
         <SheetHeader className="border-b border-border px-6 pt-3 pb-5">
@@ -121,9 +122,7 @@ export const ReaderToolbar: FC = () => {
           <FontSelector
             value={readerFont}
             onChange={setReaderFont}
-            fontScale={fontScale}
-            lineHeight={lineHeight}
-            paragraphSpacing={paragraphSpacing}
+            showPreview={false}
           />
         </div>
       </SheetContent>

@@ -72,7 +72,7 @@ describe("ReaderToolbar", () => {
     );
     await user.click(screen.getByRole("button", { name: "Increase margins" }));
 
-    expect(preferencesStore.getState().margins).toBe(24);
+    expect(preferencesStore.getState().margins).toBe(20);
   });
 
   it("decreases paragraph spacing and updates the store", async () => {

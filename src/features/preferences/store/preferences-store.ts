@@ -12,7 +12,7 @@ export const LINE_HEIGHT_STEP = 0.1;
 
 export const MARGIN_MIN = 8;
 export const MARGIN_MAX = 48;
-export const MARGIN_STEP = 8;
+export const MARGIN_STEP = 4;
 
 export const PARAGRAPH_SPACING_MIN = 0;
 export const PARAGRAPH_SPACING_MAX = 24;
