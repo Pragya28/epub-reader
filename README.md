@@ -1,73 +1,59 @@
-# React + TypeScript + Vite
+# Librune
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A local-first EPUB reader PWA. Books, covers, and reading progress live entirely in IndexedDB on your device — nothing is uploaded to a server, and the app works fully offline once installed.
 
-Currently, two official plugins are available:
+Built with React 19 + TypeScript + Vite, with a hand-built windowed iframe rendering engine instead of epub.js.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## React Compiler
+- Import and read EPUB files entirely client-side (parsed with JSZip + native `DOMParser`, no epub.js)
+- Library with search, sort, filtering, and per-book reading progress
+- Windowed chapter rendering — only a handful of chapters are ever mounted at once, so large books stay fast
+- Installable as a PWA; the app shell is precached for offline use
+- Light/dark theming and reader typography preferences (font, size, line height)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Getting started
 
-## Expanding the ESLint configuration
+Requires [pnpm](https://pnpm.io) (pinned via `packageManager` in `package.json` — don't use npm/yarn).
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm install
+pnpm dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Commands
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm dev            # start dev server
+pnpm build          # tsc -b && vite build
+pnpm lint           # eslint .
+pnpm test           # vitest (watch mode)
+pnpm test:run       # vitest run (single pass, use in CI/scripts)
+pnpm test:ui        # vitest with UI
+pnpm coverage       # vitest run --coverage
 ```
+
+Run a single test file:
+
+```bash
+pnpm test:run src/features/reader/engine/windowing/__tests__/chapter-window.test.ts
+```
+
+Git hooks (husky) enforce quality gates on every commit and push:
+
+- `pre-commit`: `lint-staged` (eslint --fix + prettier on staged files) then `pnpm test`
+- `pre-push`: `pnpm build` then `pnpm test`
+
+## Architecture
+
+- `src/app/` — routing shell only (`router.tsx`, three screens: library / reader / settings)
+- `src/features/{library,reader,preferences}/` — vertical slices, each with `store/`, `actions/`, `components/`, `types/`
+- `src/services/{epub,storage}/` — framework-agnostic infra: `epub/` parses EPUB files, `storage/` wraps Dexie/IndexedDB
+- `src/components/` — shadcn/ui primitives plus cross-cutting toast/error-boundary components
+- `src/shared/` — cross-feature utilities (logging, decorative ornaments)
+
+See [CLAUDE.md](./CLAUDE.md) for the full architecture reference, including the reader's windowed rendering pipeline, the iframe's token-mirroring constraint, and the Dexie storage schema.
+
+## Tech stack
+
+React 19 · TypeScript · Vite · Tailwind CSS v4 · Zustand · Dexie (IndexedDB) · JSZip · react-router-dom · Vitest
