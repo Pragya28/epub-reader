@@ -1,5 +1,98 @@
 import type { FC } from "react";
+import { Link } from "react-router-dom";
+import { ChevronLeft, Sun, CaseSensitive } from "lucide-react";
+
+import { ROUTES } from "@/utils/routes";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { preferencesStore } from "@/features/preferences/store/preferences-store";
+import { ThemeSelector } from "@/features/preferences/components/theme-selector";
+import { FontSelector } from "@/features/preferences/components/font-selector";
 
 export const SettingsScreen: FC = () => {
-  return <div>Settings Screen</div>;
+  const {
+    theme,
+    applyThemeToReader,
+    readerFont,
+    fontScale,
+    lineHeight,
+    paragraphSpacing,
+    setTheme,
+    setApplyThemeToReader,
+    setReaderFont,
+  } = preferencesStore();
+
+  return (
+    <div className="min-h-screen flex flex-col bg-background">
+      <header className="folio-header sticky top-0 z-50 px-5 flex items-center">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Back to library"
+          render={<Link to={ROUTES.LIBRARY} />}
+        >
+          <ChevronLeft strokeWidth={1.5} className="size-6" />
+        </Button>
+      </header>
+
+      <main className="flex-1 px-4 pt-5 pb-10">
+        <h1 className="section-title font-semibold text-foreground mb-1 leading-tight">
+          Settings
+        </h1>
+        <p className="text-ui-sm text-muted-foreground mb-6">
+          Customize your reading environment.
+        </p>
+
+        <div className="flex flex-col gap-6">
+          <section className="flex flex-col gap-6 rounded-sm border border-border bg-card p-6">
+            <div className="flex items-center gap-2">
+              <Sun className="size-4 text-muted-foreground" strokeWidth={1.5} />
+              <h2 className="metadata">Appearance</h2>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <span className="text-ui-sm font-semibold text-muted-foreground">
+                Visual Theme
+              </span>
+              <ThemeSelector value={theme} onChange={setTheme} />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col">
+                <span className="text-ui font-semibold text-foreground">
+                  Apply to Reader
+                </span>
+                <span className="text-ui-sm text-muted-foreground">
+                  Use this theme while reading too
+                </span>
+              </div>
+              <Switch
+                checked={applyThemeToReader}
+                onCheckedChange={setApplyThemeToReader}
+                aria-label="Apply theme to reader"
+              />
+            </div>
+          </section>
+
+          <section className="flex flex-col gap-6 rounded-sm border border-border bg-card p-6">
+            <div className="flex items-center gap-2">
+              <CaseSensitive
+                className="size-4 text-muted-foreground"
+                strokeWidth={1.5}
+              />
+              <h2 className="metadata">Reading</h2>
+            </div>
+
+            <FontSelector
+              value={readerFont}
+              onChange={setReaderFont}
+              fontScale={fontScale}
+              lineHeight={lineHeight}
+              paragraphSpacing={paragraphSpacing}
+            />
+          </section>
+        </div>
+      </main>
+    </div>
+  );
 };

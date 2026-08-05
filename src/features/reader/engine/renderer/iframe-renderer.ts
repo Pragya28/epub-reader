@@ -1,15 +1,34 @@
 import { deriveOrnamentId, ORNAMENT_SVG_STRINGS } from "@/shared/ornaments";
-import type { ReaderTheme } from "../../store/reader-preferences-store";
+import type {
+  AppTheme,
+  ReaderFontId,
+} from "@/features/preferences/types/preferences.types";
+import { getReaderFont } from "@/features/preferences/constants/reader-fonts";
+import {
+  READER_BASE_STYLE,
+  READER_FONTS_STYLE,
+  SEPARATOR_COLOR_DARK,
+  SEPARATOR_COLOR_LIGHT,
+} from "@/constants/reader-iframe-styles";
 
 /**
- * Applies live font-scale/line-height/theme preferences to an already
- * -initialized iframe document by setting CSS custom properties and a
- * data-theme attribute, instead of rewriting srcdoc (which would drop
- * mounted chapters and scroll position).
+ * Applies live reading preferences to an already-initialized iframe
+ * document by setting CSS custom properties and a data-theme attribute,
+ * instead of rewriting srcdoc (which would drop mounted chapters and
+ * scroll position). `theme` here is already the *effective* theme
+ * (resolved from `applyThemeToReader` by the caller), not the raw store
+ * field.
  */
 export function applyReaderPreferences(
   iframeDoc: Document,
-  preferences: { fontScale: number; lineHeight: number; theme: ReaderTheme },
+  preferences: {
+    fontScale: number;
+    lineHeight: number;
+    theme: AppTheme;
+    font: ReaderFontId;
+    margins: number;
+    paragraphSpacing: number;
+  },
 ): void {
   const root = iframeDoc.documentElement;
 
@@ -17,6 +36,15 @@ export function applyReaderPreferences(
   root.style.setProperty(
     "--reading-line-height",
     String(preferences.lineHeight),
+  );
+  root.style.setProperty(
+    "--reading-font-family",
+    getReaderFont(preferences.font).cssFontFamily,
+  );
+  root.style.setProperty("--reading-margin", `${preferences.margins}px`);
+  root.style.setProperty(
+    "--reading-paragraph-spacing",
+    `${preferences.paragraphSpacing}px`,
   );
 
   if (preferences.theme === "system") {
@@ -33,129 +61,9 @@ function sanitizeStylesheet(css: string): string {
     .replace(/@import[^;]+;/gi, "");
 }
 
-/**
- * The iframe is a separate document (written via srcdoc), so it does
- * NOT inherit the parent app's index.css custom properties — those only
- * apply to the outer document. Those values have to be re-declared here.
- *
- * These values are hand-mirrored from the `--color-*` / `--font-reading`
- * / `--reading-line-height` tokens in src/index.css (light + the
- * `prefers-color-scheme: dark` override block). If those tokens change,
- * update this constant too.
- *
- * Fonts are self-hosted (public/fonts/literata/, see the README there)
- * rather than loaded from the Google Fonts CDN: a CDN @font-face only
- * gets cached by the service worker's runtime-caching rule the first
- * time it's actually fetched, so a book opened offline before the reader
- * was ever opened online would fall back to system serif. Self-hosted
- * files under public/ are part of the app-shell precache manifest, so
- * they're guaranteed available from the very first offline read.
- */
-const READER_FONTS_STYLE = `
-  @font-face {
-    font-family: "Literata";
-    font-style: normal;
-    font-display: swap;
-    font-weight: 200 900;
-    src: url("/fonts/literata/literata-latin-wght-normal.woff2") format("woff2-variations");
-    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
-  }
-  @font-face {
-    font-family: "Literata";
-    font-style: normal;
-    font-display: swap;
-    font-weight: 200 900;
-    src: url("/fonts/literata/literata-latin-ext-wght-normal.woff2") format("woff2-variations");
-    unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
-  }
-  @font-face {
-    font-family: "Literata";
-    font-style: italic;
-    font-display: swap;
-    font-weight: 200 900;
-    src: url("/fonts/literata/literata-latin-wght-italic.woff2") format("woff2-variations");
-    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
-  }
-  @font-face {
-    font-family: "Literata";
-    font-style: italic;
-    font-display: swap;
-    font-weight: 200 900;
-    src: url("/fonts/literata/literata-latin-ext-wght-italic.woff2") format("woff2-variations");
-    unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
-  }
-`;
-
 function buildReaderBaseStyle(bookId?: string): string {
-  const baseStyle = `
-  :root {
-    color-scheme: light dark;
-    --sep-ink:  #695d4a;
-    --sep-fade: #fff9ee;
-    --sep-text: #1f1c0f;
-    --reading-font-scale: 1;
-    --reading-line-height: 1.6;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --sep-ink:  #cbb98e;
-      --sep-fade: #141210;
-      --sep-text: #f2ead8;
-    }
-  }
-
-  /* Explicit theme choice wins over the OS-level prefers-color-scheme. */
-  :root[data-theme="light"] {
-    --sep-ink:  #695d4a;
-    --sep-fade: #fff9ee;
-    --sep-text: #1f1c0f;
-  }
-
-  :root[data-theme="dark"] {
-    --sep-ink:  #cbb98e;
-    --sep-fade: #141210;
-    --sep-text: #f2ead8;
-  }
-
-  html, body {
-    overflow-x: hidden;
-  }
-
-  body {
-    margin: 0 !important;
-    font-family: "Literata", serif !important;
-    font-size: calc(1rem * var(--reading-font-scale)) !important;
-    line-height: var(--reading-line-height);
-    background: var(--sep-fade);
-    color: var(--sep-text) !important;
-    padding: 0 16px;
-    box-sizing: border-box;
-    overflow-wrap: break-word;
-  }
-
-  body * {
-    font-family: "Literata", serif !important;
-    color: var(--sep-text) !important;
-  }
-
-  img, svg {
-    max-width: 100%;
-    height: auto;
-  }
-
-  /* overflow-x: hidden on body clips wide content instead of letting the
-     page scroll sideways — but that would silently hide the overflowing
-     part of a wide code block entirely. Give it its own local horizontal
-     scroll instead so nothing is lost, just contained. */
-  pre {
-    max-width: 100%;
-    overflow-x: auto;
-  }
-`;
-
   if (!bookId) {
-    return baseStyle;
+    return READER_BASE_STYLE;
   }
 
   // Derive ornament SVG from bookId
@@ -163,8 +71,14 @@ function buildReaderBaseStyle(bookId?: string): string {
   const chapterSeparatorSvg = ORNAMENT_SVG_STRINGS[ornamentId];
 
   // Create light and dark versions of the SVG by replacing currentColor with theme-specific colors
-  const lightSvg = chapterSeparatorSvg.replace(/currentColor/g, "#695d4a");
-  const darkSvg = chapterSeparatorSvg.replace(/currentColor/g, "#cbb98e");
+  const lightSvg = chapterSeparatorSvg.replace(
+    /currentColor/g,
+    SEPARATOR_COLOR_LIGHT,
+  );
+  const darkSvg = chapterSeparatorSvg.replace(
+    /currentColor/g,
+    SEPARATOR_COLOR_DARK,
+  );
 
   // Encode both versions as data URIs
   const encodedLightSvg = encodeURIComponent(lightSvg);
@@ -192,7 +106,7 @@ function buildReaderBaseStyle(bookId?: string): string {
   }
 `;
 
-  return baseStyle + separatorStyle;
+  return READER_BASE_STYLE + separatorStyle;
 }
 
 /**

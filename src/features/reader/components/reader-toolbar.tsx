@@ -1,6 +1,7 @@
 import { useState, type FC } from "react";
-import { CaseSensitive, Minus, Plus } from "lucide-react";
+import { CaseSensitive } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { StepperRow } from "@/components/ui/stepper-row";
 import {
   Sheet,
   SheetContent,
@@ -15,26 +16,34 @@ import {
   LINE_HEIGHT_MAX,
   LINE_HEIGHT_MIN,
   LINE_HEIGHT_STEP,
-  readerPreferencesStore,
-  type ReaderTheme,
-} from "../store/reader-preferences-store";
-
-const THEME_OPTIONS: { value: ReaderTheme; label: string }[] = [
-  { value: "system", label: "System" },
-  { value: "light", label: "Light" },
-  { value: "dark", label: "Dark" },
-];
+  MARGIN_MAX,
+  MARGIN_MIN,
+  MARGIN_STEP,
+  PARAGRAPH_SPACING_MAX,
+  PARAGRAPH_SPACING_MIN,
+  PARAGRAPH_SPACING_STEP,
+  preferencesStore,
+} from "@/features/preferences/store/preferences-store";
+import { ThemeSelector } from "@/features/preferences/components/theme-selector";
+import { FontSelector } from "@/features/preferences/components/font-selector";
 
 export const ReaderToolbar: FC = () => {
   const [open, setOpen] = useState(false);
   const {
     fontScale,
     lineHeight,
-    theme,
+    margins,
+    paragraphSpacing,
+    readerFont,
+    readerTheme,
+    applyThemeToReader,
     setFontScale,
     setLineHeight,
-    setTheme,
-  } = readerPreferencesStore();
+    setMargins,
+    setParagraphSpacing,
+    setReaderFont,
+    setReaderTheme,
+  } = preferencesStore();
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -47,7 +56,7 @@ export const ReaderToolbar: FC = () => {
       />
       <SheetContent
         side="bottom"
-        className="flex max-h-[85dvh] flex-col gap-6 rounded-t-3xl border-t bg-card p-0 pb-6"
+        className="flex max-h-[85dvh] flex-col gap-6 overflow-y-auto rounded-t-3xl border-t bg-card p-0 pb-6"
         showCloseButton={false}
       >
         <SheetHeader className="border-b border-border px-6 pt-3 pb-5">
@@ -59,76 +68,63 @@ export const ReaderToolbar: FC = () => {
         </SheetHeader>
 
         <div className="flex flex-col gap-6 px-6">
-          <div className="flex items-center justify-between">
-            <span className="metadata">Font size</span>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="icon-sm"
-                aria-label="Decrease font size"
-                disabled={fontScale <= FONT_SCALE_MIN}
-                onClick={() => setFontScale(fontScale - FONT_SCALE_STEP)}
-              >
-                <Minus className="size-3.5" strokeWidth={1.5} />
-              </Button>
-              <span className="w-10 text-center text-sm tabular-nums">
-                {Math.round(fontScale * 100)}%
-              </span>
-              <Button
-                variant="outline"
-                size="icon-sm"
-                aria-label="Increase font size"
-                disabled={fontScale >= FONT_SCALE_MAX}
-                onClick={() => setFontScale(fontScale + FONT_SCALE_STEP)}
-              >
-                <Plus className="size-3.5" strokeWidth={1.5} />
-              </Button>
-            </div>
-          </div>
+          <StepperRow
+            label="Font size"
+            value={fontScale}
+            format={{ style: "percent" }}
+            min={FONT_SCALE_MIN}
+            max={FONT_SCALE_MAX}
+            step={FONT_SCALE_STEP}
+            onChange={setFontScale}
+          />
 
-          <div className="flex items-center justify-between">
-            <span className="metadata">Line height</span>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="icon-sm"
-                aria-label="Decrease line height"
-                disabled={lineHeight <= LINE_HEIGHT_MIN}
-                onClick={() => setLineHeight(lineHeight - LINE_HEIGHT_STEP)}
-              >
-                <Minus className="size-3.5" strokeWidth={1.5} />
-              </Button>
-              <span className="w-10 text-center text-sm tabular-nums">
-                {lineHeight.toFixed(1)}
-              </span>
-              <Button
-                variant="outline"
-                size="icon-sm"
-                aria-label="Increase line height"
-                disabled={lineHeight >= LINE_HEIGHT_MAX}
-                onClick={() => setLineHeight(lineHeight + LINE_HEIGHT_STEP)}
-              >
-                <Plus className="size-3.5" strokeWidth={1.5} />
-              </Button>
-            </div>
-          </div>
+          <StepperRow
+            label="Line height"
+            value={lineHeight}
+            format={{ minimumFractionDigits: 1, maximumFractionDigits: 1 }}
+            min={LINE_HEIGHT_MIN}
+            max={LINE_HEIGHT_MAX}
+            step={LINE_HEIGHT_STEP}
+            onChange={setLineHeight}
+          />
 
-          <div className="flex items-center justify-between">
-            <span className="metadata">Theme</span>
-            <div className="flex gap-1">
-              {THEME_OPTIONS.map((option) => (
-                <Button
-                  key={option.value}
-                  variant={theme === option.value ? "secondary" : "outline"}
-                  size="sm"
-                  aria-pressed={theme === option.value}
-                  onClick={() => setTheme(option.value)}
-                >
-                  {option.label}
-                </Button>
-              ))}
+          <StepperRow
+            label="Margins"
+            value={margins}
+            suffix="px"
+            min={MARGIN_MIN}
+            max={MARGIN_MAX}
+            step={MARGIN_STEP}
+            onChange={setMargins}
+          />
+
+          <StepperRow
+            label="Paragraph spacing"
+            value={paragraphSpacing}
+            suffix="px"
+            min={PARAGRAPH_SPACING_MIN}
+            max={PARAGRAPH_SPACING_MAX}
+            step={PARAGRAPH_SPACING_STEP}
+            onChange={setParagraphSpacing}
+          />
+
+          {/* Theme is a user-level (Settings) preference by default — only
+              shown here when the user has opted the reader out of following
+              it, per the "apply theme to reader" switch. */}
+          {!applyThemeToReader && (
+            <div className="flex items-center justify-between">
+              <span className="metadata">Theme</span>
+              <ThemeSelector value={readerTheme} onChange={setReaderTheme} />
             </div>
-          </div>
+          )}
+
+          <FontSelector
+            value={readerFont}
+            onChange={setReaderFont}
+            fontScale={fontScale}
+            lineHeight={lineHeight}
+            paragraphSpacing={paragraphSpacing}
+          />
         </div>
       </SheetContent>
     </Sheet>

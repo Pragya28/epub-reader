@@ -2,14 +2,18 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, beforeEach } from "vitest";
 import { ReaderToolbar } from "../reader-toolbar";
-import { readerPreferencesStore } from "../../store/reader-preferences-store";
+import { preferencesStore } from "@/features/preferences/store/preferences-store";
 
 describe("ReaderToolbar", () => {
   beforeEach(() => {
-    readerPreferencesStore.setState({
+    preferencesStore.setState({
       fontScale: 1,
       lineHeight: 1.6,
-      theme: "system",
+      margins: 16,
+      paragraphSpacing: 8,
+      readerFont: "literata",
+      readerTheme: "system",
+      applyThemeToReader: true,
     });
   });
 
@@ -22,8 +26,12 @@ describe("ReaderToolbar", () => {
     );
 
     expect(screen.getByText("Reading Preferences")).toBeInTheDocument();
-    expect(screen.getByText("100%")).toBeInTheDocument();
-    expect(screen.getByText("1.6")).toBeInTheDocument();
+    expect(screen.getByTestId("stepper-input-Font size")).toHaveValue("100%");
+    expect(screen.getByTestId("stepper-input-Line height")).toHaveValue("1.6");
+    expect(screen.getByTestId("stepper-input-Margins")).toHaveValue("16");
+    expect(screen.getByTestId("stepper-input-Paragraph spacing")).toHaveValue(
+      "8",
+    );
   });
 
   it("increases font size and updates the store", async () => {
@@ -37,8 +45,8 @@ describe("ReaderToolbar", () => {
       screen.getByRole("button", { name: "Increase font size" }),
     );
 
-    expect(readerPreferencesStore.getState().fontScale).toBeCloseTo(1.1);
-    expect(screen.getByText("110%")).toBeInTheDocument();
+    expect(preferencesStore.getState().fontScale).toBeCloseTo(1.1);
+    expect(screen.getByTestId("stepper-input-Font size")).toHaveValue("110%");
   });
 
   it("decreases line height and updates the store", async () => {
@@ -52,18 +60,71 @@ describe("ReaderToolbar", () => {
       screen.getByRole("button", { name: "Decrease line height" }),
     );
 
-    expect(readerPreferencesStore.getState().lineHeight).toBeCloseTo(1.5);
+    expect(preferencesStore.getState().lineHeight).toBeCloseTo(1.5);
   });
 
-  it("switches theme when a theme button is clicked", async () => {
+  it("increases margins and updates the store", async () => {
     const user = userEvent.setup();
     render(<ReaderToolbar />);
 
     await user.click(
       screen.getByRole("button", { name: "Reading preferences" }),
     );
+    await user.click(screen.getByRole("button", { name: "Increase margins" }));
+
+    expect(preferencesStore.getState().margins).toBe(24);
+  });
+
+  it("decreases paragraph spacing and updates the store", async () => {
+    const user = userEvent.setup();
+    render(<ReaderToolbar />);
+
+    await user.click(
+      screen.getByRole("button", { name: "Reading preferences" }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Decrease paragraph spacing" }),
+    );
+
+    expect(preferencesStore.getState().paragraphSpacing).toBe(4);
+  });
+
+  it("hides the theme control when applyThemeToReader is true", async () => {
+    const user = userEvent.setup();
+    render(<ReaderToolbar />);
+
+    await user.click(
+      screen.getByRole("button", { name: "Reading preferences" }),
+    );
+
+    expect(screen.queryByText("Theme")).not.toBeInTheDocument();
+  });
+
+  it("shows and switches the reader theme when applyThemeToReader is false", async () => {
+    preferencesStore.setState({ applyThemeToReader: false });
+
+    const user = userEvent.setup();
+    render(<ReaderToolbar />);
+
+    await user.click(
+      screen.getByRole("button", { name: "Reading preferences" }),
+    );
+    expect(screen.getByText("Theme")).toBeInTheDocument();
+
     await user.click(screen.getByRole("button", { name: "Dark" }));
 
-    expect(readerPreferencesStore.getState().theme).toBe("dark");
+    expect(preferencesStore.getState().readerTheme).toBe("dark");
+  });
+
+  it("switches the shared reader font", async () => {
+    const user = userEvent.setup();
+    render(<ReaderToolbar />);
+
+    await user.click(
+      screen.getByRole("button", { name: "Reading preferences" }),
+    );
+    await user.click(screen.getByRole("radio", { name: "Lora" }));
+
+    expect(preferencesStore.getState().readerFont).toBe("lora");
   });
 });

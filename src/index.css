@@ -155,8 +155,13 @@
   --shadow-floating: 0 8px 40px rgba(0, 0, 0, 0.5);
 }
 
+/*
+ * OS-driven dark mode — only applies when the user hasn't made an explicit
+ * choice. `useApplyTheme()` (features/preferences) toggles a "dark"/"light"
+ * class on <html> for an explicit choice; :not() here lets that always win.
+ */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light):not(.dark) {
     --background: #141210;
     --foreground: #f2ead8;
 
@@ -213,6 +218,70 @@
     --shadow-floating: 0 8px 40px rgba(0, 0, 0, 0.65);
   }
 }
+
+/* Explicit "Dark" choice — wins over prefers-color-scheme in either direction. */
+.dark {
+  --background: #141210;
+  --foreground: #f2ead8;
+
+  --surface-low: #1a1713;
+  --card: #211d16;
+  --card-foreground: #f2ead8;
+  --surface-high: #292319;
+  --surface-highest: #322b1e;
+
+  --popover: #1a1713;
+  --popover-foreground: #f2ead8;
+
+  --primary: #f5f2ea;
+  --primary-foreground: #141210;
+  --primary-container: #2c2a24;
+
+  --secondary: #3a3220;
+  --secondary-foreground: #cbb98e;
+
+  --muted: #292319;
+  --muted-foreground: #b3ada0;
+
+  --accent: #3a3220;
+  --accent-foreground: #f2ead8;
+
+  --destructive: #f2b8b5;
+  --destructive-foreground: #141210;
+
+  --border: #3d3a34;
+  --input: #3d3a34;
+  --ring: #cbb98e;
+  --divider: #2c2820;
+
+  --cover-dark: #2b241c;
+  --cover-gold: #c9a84c;
+
+  --chart-1: #cbb98e;
+  --chart-2: #c9a84c;
+  --chart-3: #f2ead8;
+  --chart-4: #a08a5e;
+  --chart-5: #b3ada0;
+
+  --sidebar: #1a1713;
+  --sidebar-foreground: #f2ead8;
+  --sidebar-primary: #f5f2ea;
+  --sidebar-primary-foreground: #141210;
+  --sidebar-accent: #3a3220;
+  --sidebar-accent-foreground: #f2ead8;
+  --sidebar-border: #2c2820;
+  --sidebar-ring: #cbb98e;
+
+  --header-bg: rgb(20 18 16 / 85%);
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-floating: 0 8px 40px rgba(0, 0, 0, 0.65);
+}
+
+/*
+ * Explicit "Light" choice needs no value overrides — :root's defaults are
+ * already light — the .light class only needs to exist so the :not(.light)
+ * guard above blocks the OS dark override when the OS prefers dark.
+ */
 
 @layer base {
   html {

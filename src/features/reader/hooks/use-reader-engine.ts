@@ -2,7 +2,10 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { RefObject } from "react";
 import type { ParsedBook } from "@/services/epub/epub-types";
 import { readerStore } from "../store/reader-store";
-import { readerPreferencesStore } from "../store/reader-preferences-store";
+import {
+  preferencesStore,
+  selectEffectiveReaderPreferences,
+} from "@/features/preferences/store/preferences-store";
 import { ChapterLoader } from "../engine/loader/chapter-loader";
 import {
   getChapterSections,
@@ -136,10 +139,16 @@ export function useReaderEngine({
         readyState: iframeDoc.readyState,
       });
 
-      applyReaderPreferences(iframeDoc, readerPreferencesStore.getState());
+      applyReaderPreferences(
+        iframeDoc,
+        selectEffectiveReaderPreferences(preferencesStore.getState()),
+      );
 
-      const unsubscribePreferences = readerPreferencesStore.subscribe(
-        (preferences) => applyReaderPreferences(iframeDoc, preferences),
+      const unsubscribePreferences = preferencesStore.subscribe((state) =>
+        applyReaderPreferences(
+          iframeDoc,
+          selectEffectiveReaderPreferences(state),
+        ),
       );
       preferenceCleanup = unsubscribePreferences;
 

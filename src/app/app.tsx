@@ -6,8 +6,11 @@ import { clearCoverCache } from "@/services/storage/cover-cache";
 import { useRegisterSW } from "virtual:pwa-register/react";
 import { Toaster } from "@/components/toast/toaster";
 import { notify } from "@/components/toast/toast";
+import { useApplyTheme } from "@/features/preferences/hooks/use-apply-theme";
 
 const App: FC = () => {
+  useApplyTheme();
+
   useEffect(() => {
     return () => {
       clearCoverCache();

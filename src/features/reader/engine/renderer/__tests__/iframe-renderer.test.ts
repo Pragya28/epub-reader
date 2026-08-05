@@ -294,6 +294,9 @@ describe("iframe-renderer", () => {
         fontScale: 1.2,
         lineHeight: 1.8,
         theme: "system",
+        font: "literata",
+        margins: 16,
+        paragraphSpacing: 8,
       });
 
       expect(
@@ -304,11 +307,49 @@ describe("iframe-renderer", () => {
       ).toBe("1.8");
     });
 
+    it("sets the font-family custom property from the selected reader font", () => {
+      applyReaderPreferences(doc, {
+        fontScale: 1,
+        lineHeight: 1.6,
+        theme: "system",
+        font: "lora",
+        margins: 16,
+        paragraphSpacing: 8,
+      });
+
+      expect(
+        doc.documentElement.style.getPropertyValue("--reading-font-family"),
+      ).toBe('"Lora", serif');
+    });
+
+    it("sets the margin and paragraph-spacing custom properties", () => {
+      applyReaderPreferences(doc, {
+        fontScale: 1,
+        lineHeight: 1.6,
+        theme: "system",
+        font: "literata",
+        margins: 24,
+        paragraphSpacing: 12,
+      });
+
+      expect(
+        doc.documentElement.style.getPropertyValue("--reading-margin"),
+      ).toBe("24px");
+      expect(
+        doc.documentElement.style.getPropertyValue(
+          "--reading-paragraph-spacing",
+        ),
+      ).toBe("12px");
+    });
+
     it("sets data-theme when an explicit theme is chosen", () => {
       applyReaderPreferences(doc, {
         fontScale: 1,
         lineHeight: 1.6,
         theme: "dark",
+        font: "literata",
+        margins: 16,
+        paragraphSpacing: 8,
       });
 
       expect(doc.documentElement.getAttribute("data-theme")).toBe("dark");
@@ -321,6 +362,9 @@ describe("iframe-renderer", () => {
         fontScale: 1,
         lineHeight: 1.6,
         theme: "system",
+        font: "literata",
+        margins: 16,
+        paragraphSpacing: 8,
       });
 
       expect(doc.documentElement.hasAttribute("data-theme")).toBe(false);

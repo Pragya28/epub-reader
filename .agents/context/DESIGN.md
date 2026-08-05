@@ -127,6 +127,8 @@ A single warm parchment-and-ink palette that inverts cleanly between a cream lig
 
 **Character:** Cinzel's engraved, wide-tracked capitals give titles and section headers a bookplate/spine-lettering feel; Literata is a warm, screen-optimized reading serif tuned for long-form text; Plus Jakarta Sans stays deliberately neutral so UI chrome never competes with either serif.
 
+**Reader Fonts (user-selectable, book text only):** Literata (default), **Lora** (serif alternative), **DM Sans** (general-purpose reading sans), **Atkinson Hyperlegible** (accessibility-oriented sans, disambiguates similar characters). Deliberately _not_ Cinzel/Jakarta — those are the app's identity fonts, not reading fonts, and stay reserved for UI chrome/titles per the Serif-For-Content rule below. All four self-hosted under `public/fonts/`, selectable via Settings → Reading or the reader toolbar (`features/preferences`), applied only inside the reader iframe via `--reading-font-family`.
+
 ### Hierarchy
 
 - **Display** (Cinzel, 48px / 32px mobile, 0.08em tracking): screen-level titles.
