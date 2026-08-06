@@ -162,7 +162,7 @@ export const READER_BASE_STYLE = `
     line-height: var(--reading-line-height);
     background: var(--sep-fade);
     color: var(--sep-text) !important;
-    padding: 0 var(--reading-margin);
+    padding: 120px var(--reading-margin);
     box-sizing: border-box;
     overflow-wrap: break-word;
   }
