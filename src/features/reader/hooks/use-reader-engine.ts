@@ -29,6 +29,7 @@ import type { ReadingProgress } from "@/services/storage/storage-types";
 import { jumpToTocItem } from "../actions/jump-to-toc-item";
 
 const SCROLL_PREFETCH_THRESHOLD_PX = 300;
+const SCROLL_DIRECTION_THRESHOLD_PX = 10;
 const ENGINE_START_MAX_ATTEMPTS = 120;
 const RESTORE_RETRY_MAX_ATTEMPTS = 10;
 const PROGRESS_SAVE_DEBOUNCE_MS = 1500;
@@ -46,6 +47,10 @@ interface UseReaderEngineProps {
   onExternalLink?: (href: string) => void;
   /** Called on a horizontal swipe gesture; direction is 1 (forward) or -1 (back). */
   onSwipeChapter?: (direction: 1 | -1) => void;
+  /** Called when the user scrolls the reading content, for chrome show/hide. */
+  onScrollDirection?: (direction: "up" | "down") => void;
+  /** Called on a plain tap on the reading content (not a link, image, or text selection). */
+  onContentTap?: () => void;
 }
 
 export function useReaderEngine({
@@ -55,6 +60,8 @@ export function useReaderEngine({
   initialProgress,
   onExternalLink,
   onSwipeChapter,
+  onScrollDirection,
+  onContentTap,
 }: UseReaderEngineProps) {
   const chapterLoader = useMemo(() => new ChapterLoader(), []);
   const restoreRef = useRef<
@@ -152,10 +159,18 @@ export function useReaderEngine({
       );
       preferenceCleanup = unsubscribePreferences;
 
+      let lastScrollY = win.scrollY;
+
       const handleScroll = () => {
         const store = readerStore.getState();
 
         if (store.isJumping) return;
+
+        const scrollY = win.scrollY;
+        if (Math.abs(scrollY - lastScrollY) > SCROLL_DIRECTION_THRESHOLD_PX) {
+          onScrollDirection?.(scrollY > lastScrollY ? "down" : "up");
+          lastScrollY = scrollY;
+        }
 
         const sections = getChapterSections(iframeDoc);
         if (sections.length === 0) return;
@@ -440,7 +455,18 @@ export function useReaderEngine({
 
       const onLinkClick = (e: MouseEvent) => {
         const anchor = (e.target as Element).closest("a");
-        if (!anchor) return;
+        if (!anchor) {
+          // Not a link — a candidate tap-to-toggle-chrome, unless it's on an
+          // image (reserved for future image interaction) or the tail end of
+          // a text-selection drag (selection is already committed by the
+          // time 'click' fires after mouseup).
+          const target = e.target as Element;
+          const hasSelection = (win.getSelection()?.toString().length ?? 0) > 0;
+          if (target.tagName !== "IMG" && !hasSelection) {
+            onContentTap?.();
+          }
+          return;
+        }
 
         const href = anchor.getAttribute("href");
         if (!href) return;
@@ -764,6 +790,8 @@ export function useReaderEngine({
     initialProgress,
     onExternalLink,
     onSwipeChapter,
+    onScrollDirection,
+    onContentTap,
   ]);
 
   return { jumpBack };

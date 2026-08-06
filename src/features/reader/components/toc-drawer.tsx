@@ -16,18 +16,25 @@ interface TocDrawerProps {
   toc: TocItem[];
   currentChapterIndex: number;
   onItemClick: (item: TocItem) => void;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export const TocDrawer = memo(function TocDrawer({
   toc,
   currentChapterIndex,
   onItemClick,
+  onOpenChange,
 }: TocDrawerProps) {
   const flatItems = useMemo(() => flattenToc(toc, 0), [toc]);
   const [open, setOpen] = useState(false);
 
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    onOpenChange?.(next);
+  };
+
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger
         render={
           <Button
@@ -69,7 +76,7 @@ export const TocDrawer = memo(function TocDrawer({
                   onClick={() => {
                     if (!isNavigable) return;
                     onItemClick(item);
-                    setOpen(false);
+                    handleOpenChange(false);
                   }}
                   aria-current={isActive ? "true" : undefined}
                 >

@@ -27,8 +27,18 @@ import {
 import { ThemeSelector } from "@/features/preferences/components/theme-selector";
 import { FontSelector } from "@/features/preferences/components/font-selector";
 
-export const ReaderToolbar: FC = () => {
+interface ReaderToolbarProps {
+  onOpenChange?: (open: boolean) => void;
+}
+
+export const ReaderToolbar: FC<ReaderToolbarProps> = ({ onOpenChange }) => {
   const [open, setOpen] = useState(false);
+
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    onOpenChange?.(next);
+  };
+
   const {
     fontScale,
     lineHeight,
@@ -46,7 +56,7 @@ export const ReaderToolbar: FC = () => {
   } = preferencesStore();
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger
         render={
           <Button variant="ghost" size="icon" aria-label="Reading preferences">
@@ -56,7 +66,7 @@ export const ReaderToolbar: FC = () => {
       />
       <SheetContent
         side="bottom"
-        className="flex h-[40dvh] flex-col gap-6 overflow-y-auto rounded-t-3xl border-t bg-card p-0 pb-6"
+        className="flex flex-col gap-6 overflow-y-auto rounded-t-3xl border-t bg-card p-0 pb-6 data-[side=bottom]:h-[40dvh]"
         overlayClassName="supports-backdrop-filter:backdrop-blur-none"
         showCloseButton={false}
       >

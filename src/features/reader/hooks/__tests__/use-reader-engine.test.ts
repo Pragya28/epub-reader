@@ -86,6 +86,7 @@ describe("useReaderEngine", () => {
       scrollBy: vi.fn(),
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
+      getSelection: () => ({ toString: () => "" }),
       requestAnimationFrame: (cb: FrameRequestCallback) => {
         cb(0);
         return 1;
@@ -445,6 +446,135 @@ describe("useReaderEngine", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(detectSpy).not.toHaveBeenCalled();
+    });
+
+    // These trigger a scroll via the listener captured after mount. That
+    // listener's internal requestAnimationFrame call is the real global one
+    // (not the synchronous win.requestAnimationFrame mock), so it's stubbed
+    // to run synchronously for the duration of each test.
+    describe("scroll direction", () => {
+      beforeEach(() => {
+        vi.spyOn(
+          getChapterSectionsModule,
+          "getChapterSections",
+        ).mockReturnValue(
+          Array.from({ length: 2 }, (_, i) => {
+            const section = mockIframeDoc.createElement("section");
+            section.setAttribute("data-chapter", String(i));
+            return section as HTMLElement;
+          }),
+        );
+        vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+          cb(0);
+          return 1;
+        });
+      });
+
+      afterEach(() => {
+        vi.unstubAllGlobals();
+      });
+
+      it("calls onScrollDirection('down') when scrolling down past the threshold", async () => {
+        const onScrollDirection = vi.fn();
+
+        renderHook(() =>
+          useReaderEngine({
+            iframeRef,
+            parsedBook: mockParsedBook,
+            onScrollDirection,
+          }),
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        onScrollDirection.mockClear();
+
+        const mockWin = iframeRef.current?.contentWindow as any;
+        const onScroll = mockWin.addEventListener.mock.calls.find(
+          ([event]: [string]) => event === "scroll",
+        )?.[1];
+
+        mockWin.scrollY = 200;
+        onScroll();
+
+        expect(onScrollDirection).toHaveBeenCalledWith("down");
+      });
+
+      it("calls onScrollDirection('up') when scrolling up past the threshold", async () => {
+        const onScrollDirection = vi.fn();
+        const mockWin = iframeRef.current?.contentWindow as any;
+        mockWin.scrollY = 200;
+
+        renderHook(() =>
+          useReaderEngine({
+            iframeRef,
+            parsedBook: mockParsedBook,
+            onScrollDirection,
+          }),
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        onScrollDirection.mockClear();
+
+        const onScroll = mockWin.addEventListener.mock.calls.find(
+          ([event]: [string]) => event === "scroll",
+        )?.[1];
+
+        mockWin.scrollY = 0;
+        onScroll();
+
+        expect(onScrollDirection).toHaveBeenCalledWith("up");
+      });
+
+      it("does not call onScrollDirection for a sub-threshold scroll", async () => {
+        const onScrollDirection = vi.fn();
+
+        renderHook(() =>
+          useReaderEngine({
+            iframeRef,
+            parsedBook: mockParsedBook,
+            onScrollDirection,
+          }),
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        onScrollDirection.mockClear();
+
+        const mockWin = iframeRef.current?.contentWindow as any;
+        const onScroll = mockWin.addEventListener.mock.calls.find(
+          ([event]: [string]) => event === "scroll",
+        )?.[1];
+
+        mockWin.scrollY = 5;
+        onScroll();
+
+        expect(onScrollDirection).not.toHaveBeenCalled();
+      });
+
+      it("does not call onScrollDirection while jumping", async () => {
+        const onScrollDirection = vi.fn();
+
+        renderHook(() =>
+          useReaderEngine({
+            iframeRef,
+            parsedBook: mockParsedBook,
+            onScrollDirection,
+          }),
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        onScrollDirection.mockClear();
+
+        const mockWin = iframeRef.current?.contentWindow as any;
+        const onScroll = mockWin.addEventListener.mock.calls.find(
+          ([event]: [string]) => event === "scroll",
+        )?.[1];
+
+        readerStore.getState().setIsJumping(true);
+        mockWin.scrollY = 200;
+        onScroll();
+
+        expect(onScrollDirection).not.toHaveBeenCalled();
+      });
     });
   });
 
@@ -1211,6 +1341,100 @@ describe("useReaderEngine", () => {
       );
 
       expect(onExternalLink).not.toHaveBeenCalled();
+    });
+
+    it("calls onContentTap for a plain tap on the content, not a link or image", async () => {
+      await setupWithSections();
+      const onContentTap = vi.fn();
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          onContentTap,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const p = mockIframeDoc.createElement("p");
+      p.textContent = "plain text";
+      mockIframeDoc.body.appendChild(p);
+      p.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+
+      expect(onContentTap).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not call onContentTap for a tap on an image", async () => {
+      await setupWithSections();
+      const onContentTap = vi.fn();
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          onContentTap,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const img = mockIframeDoc.createElement("img");
+      mockIframeDoc.body.appendChild(img);
+      img.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+
+      expect(onContentTap).not.toHaveBeenCalled();
+    });
+
+    it("does not call onContentTap when the click follows a text selection", async () => {
+      await setupWithSections();
+      const onContentTap = vi.fn();
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          onContentTap,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const mockWin = iframeRef.current?.contentWindow as any;
+      mockWin.getSelection = () => ({ toString: () => "selected text" });
+
+      const p = mockIframeDoc.createElement("p");
+      p.textContent = "plain text";
+      mockIframeDoc.body.appendChild(p);
+      p.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+
+      expect(onContentTap).not.toHaveBeenCalled();
+    });
+
+    it("does not call onContentTap for a link click", async () => {
+      await setupWithSections();
+      const onContentTap = vi.fn();
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+          onContentTap,
+          onExternalLink: vi.fn(),
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      fireClick("https://example.com");
+
+      expect(onContentTap).not.toHaveBeenCalled();
     });
 
     it("removes click listener on cleanup", async () => {

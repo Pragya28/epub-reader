@@ -28,6 +28,8 @@ export const ReaderScreen: FC = () => {
     pendingExternalHref,
     setPendingExternalHref,
     confirmExternalLink,
+    chromeVisible,
+    setChromeOverlay,
     handleTocItemClick,
     handleChapterNav,
     jumpBack,
@@ -107,9 +109,15 @@ export const ReaderScreen: FC = () => {
   }
 
   return (
-    <div className="relative flex h-dvh flex-col overflow-hidden bg-background">
+    <div className="relative h-dvh overflow-hidden bg-background">
       {/* Header */}
-      <header className="folio-header flex items-center justify-between">
+      <header
+        className={`folio-header absolute inset-x-0 top-0 z-20 flex items-center justify-between transition-[transform,opacity] duration-300 ease-out ${
+          chromeVisible
+            ? "translate-y-0 opacity-100"
+            : "-translate-y-full opacity-0 pointer-events-none"
+        }`}
+      >
         <Button
           variant="ghost"
           size="icon"
@@ -128,11 +136,11 @@ export const ReaderScreen: FC = () => {
           </p>
         </div>
 
-        <ReaderToolbar />
+        <ReaderToolbar onOpenChange={setChromeOverlay} />
       </header>
 
       {/* Reader Content */}
-      <main className="relative flex flex-1 overflow-hidden px-2">
+      <main className="absolute inset-0 flex overflow-hidden px-2">
         <ReaderFrame ref={iframeRef} />
 
         {hasFootnoteBackPosition && (
@@ -150,7 +158,13 @@ export const ReaderScreen: FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="folio-header flex flex-col gap-2">
+      <footer
+        className={`folio-header absolute inset-x-0 bottom-0 z-20 flex flex-col gap-2 transition-[transform,opacity] duration-300 ease-out ${
+          chromeVisible
+            ? "translate-y-0 opacity-100"
+            : "translate-y-full opacity-0 pointer-events-none"
+        }`}
+      >
         {/* Progress bar */}
         <Progress value={progressPercent} className="px-2 gap-1">
           <ProgressValue />
@@ -163,6 +177,7 @@ export const ReaderScreen: FC = () => {
             toc={toc}
             currentChapterIndex={currentChapterIndex}
             onItemClick={handleTocItemClick}
+            onOpenChange={setChromeOverlay}
           />
           <div className="flex items-center gap-2">
             <Button
@@ -201,6 +216,7 @@ export const ReaderScreen: FC = () => {
         onOpenChange={(open) => {
           if (!open) {
             setPendingExternalHref(null);
+            setChromeOverlay(false);
           }
         }}
       />

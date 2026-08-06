@@ -8,6 +8,7 @@ import { loadReaderBook } from "../actions/load-reader-book";
 import { jumpToTocItem } from "../actions/jump-to-toc-item";
 import { readerStore } from "../store/reader-store";
 import { useReaderEngine } from "./use-reader-engine";
+import { useReaderChrome } from "./use-reader-chrome";
 
 /**
  * All non-visual state behind ReaderScreen: loading the book and its cover,
@@ -111,18 +112,43 @@ export function useReaderScreen() {
     [handleTocItemClick],
   );
 
+  // Destructured (not kept as one `chrome` object) — useReaderChrome returns
+  // a fresh object every render, so referencing the whole object anywhere
+  // deps-tracked (like handleExternalLink below) would give that callback a
+  // new identity every render too, re-triggering useReaderEngine's effect
+  // (which depends on onExternalLink) on every render and repeatedly
+  // wiping/remounting the reader iframe. The individual functions themselves
+  // are stable across renders.
+  const {
+    visible: chromeVisible,
+    handleScrollDirection,
+    toggle: toggleChrome,
+    setOverlay: setChromeOverlay,
+  } = useReaderChrome();
+
+  const handleExternalLink = useCallback(
+    (href: string) => {
+      setChromeOverlay(true);
+      setPendingExternalHref(href);
+    },
+    [setChromeOverlay],
+  );
+
   const { jumpBack } = useReaderEngine({
     iframeRef,
     parsedBook,
     bookId,
     initialProgress: readerDocument?.book.progress ?? null,
-    onExternalLink: setPendingExternalHref,
+    onExternalLink: handleExternalLink,
+    onScrollDirection: handleScrollDirection,
+    onContentTap: toggleChrome,
   });
 
   const confirmExternalLink = () => {
     if (!pendingExternalHref) return;
     window.open(pendingExternalHref, "_blank", "noopener,noreferrer");
     setPendingExternalHref(null);
+    setChromeOverlay(false);
   };
 
   return {
@@ -146,6 +172,9 @@ export function useReaderScreen() {
     pendingExternalHref,
     setPendingExternalHref,
     confirmExternalLink,
+
+    chromeVisible,
+    setChromeOverlay,
 
     handleTocItemClick,
     handleChapterNav,
