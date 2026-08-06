@@ -20,6 +20,10 @@ colors:
   divider-parchment: "#eae2ce"
   cover-dark: "#2b241c"
   cover-gold: "#c9a84c"
+  warm-accent: "#a67c00"
+  warm-accent-foreground: "#1a1200"
+  selected: "#b8862e"
+  selected-foreground: "#fff9ee"
 typography:
   display:
     fontFamily: "Cinzel, serif"
@@ -47,7 +51,7 @@ typography:
   mono:
     fontFamily: "JetBrains Mono, monospace"
 rounded:
-  none: "0px"
+  sm: "0.225rem"
   md: "0.3rem"
   xl: "0.525rem"
   3xl: "1.05rem"
@@ -59,14 +63,14 @@ components:
   button-primary:
     backgroundColor: "{colors.primary-onyx}"
     textColor: "{colors.primary-onyx-foreground}"
-    rounded: "{rounded.none}"
+    rounded: "{rounded.sm}"
     padding: "0 10px"
   button-primary-hover:
     backgroundColor: "{colors.primary-onyx}"
   button-ghost:
     backgroundColor: "transparent"
     textColor: "{colors.ink-black}"
-    rounded: "{rounded.none}"
+    rounded: "{rounded.sm}"
   book-card:
     backgroundColor: "{colors.surface-parchment}"
     rounded: "{rounded.xl}"
@@ -81,20 +85,20 @@ components:
 
 **Creative North Star: "The Bound Folio"**
 
-Librune reads like a physical folio: warm cream paper, an ink-black spine of UI chrome, and a gold-on-dark cover accent that echoes traditional bookbinding. The reading surface is set in serif type on soft parchment tones, while the architectural chrome around it — buttons, toolbars, the sticky header — stays crisp, sharp-cornered, and quiet, so it never competes with the page. Book covers, bottom sheets, and panels are the "paper objects" of the system: they get soft rounded corners and a consistent gentle lift, as if resting slightly above the surface beneath them. Depth is soft and consistent rather than occasional — every card-like surface carries the same low ambient shadow at rest, not just on hover, reinforcing the sense of physical layered pages.
+Librune reads like a physical folio: warm cream paper, an ink-black spine of UI chrome, and a gold-on-dark cover accent that echoes traditional bookbinding. The reading surface is set in serif type on soft parchment tones, while the architectural chrome around it — buttons, toolbars, the sticky header — stays quiet and disciplined, so it never competes with the page. Book covers, bottom sheets, and panels are the "paper objects" of the system: they get more generous rounded corners and a consistent gentle lift, as if resting slightly above the surface beneath them. Depth is soft and consistent rather than occasional — every card-like surface carries the same low ambient shadow at rest, not just on hover, reinforcing the sense of physical layered pages.
 
-The system rejects flat, hard-edged material-design card language for controls (no rounded buttons) while embracing it for content objects (rounded covers and sheets) — the split is deliberate: controls are tools, content is the book.
+Corners are soft everywhere, but graduated by role rather than uniform: controls (buttons, menus, dialogs) take a small, disciplined radius that keeps them feeling like precise tools; content objects (book covers, bottom sheets) take a larger radius that reads as a physically rounded paper object. The split is in degree, not in kind — nothing in the system is hard-edged.
 
 **Key Characteristics:**
 
 - Warm parchment palette in light mode, near-black ink in dark mode — never a cold neutral gray.
 - Serif display (Cinzel, wide letter-spacing) for titles; serif body (Literata) for reading; sans (Plus Jakarta Sans) for UI chrome only.
-- Sharp rectangular controls (buttons: `rounded-none`) against soft rounded content objects (covers, sheets: `rounded-xl`/`rounded-3xl`).
+- Softly rounded throughout, graduated by role: controls (buttons, menus: `rounded-sm`) read as precise tools; content objects (covers, sheets: `rounded-xl`/`rounded-3xl`) read as rounded paper.
 - Consistent soft ambient shadow as a resting-state signature, not just a hover effect.
 
 ## Colors
 
-A single warm parchment-and-ink palette that inverts cleanly between a cream light mode and a near-black dark mode; there is no secondary or tertiary hue family — accent duty is carried by tone and weight, not new colors.
+A warm parchment-and-ink palette that inverts cleanly between a cream light mode and a near-black dark mode, plus one amber accent hue reserved exclusively for selection/status signaling — everything else is tone and weight, not new colors.
 
 ### Primary
 
@@ -103,6 +107,11 @@ A single warm parchment-and-ink palette that inverts cleanly between a cream lig
 ### Secondary
 
 - **Secondary Sand** (`#f2e0c8` light / `#3a3220` dark): secondary button fill, selected list items in sheets (TOC drawer, toolbar).
+
+### Accent
+
+- **Warm Accent — Antique Gold** (`#a67c00` bg / `#1a1200` fg, fixed — does not change with theme): the continue-reading banner and import-book FAB. Deliberately theme-independent so these two floating call-to-action surfaces read as a consistent gold tile regardless of light/dark mode, rather than the primary-onyx ink/paper inversion used everywhere else. Foreground is a near-black brown, darker than a literal ink-black, chosen to clear 4.5:1 body-text contrast against this particular gold.
+- **Selected** (`#b8862e` bg light / `#e0ac52` bg dark, tuned per theme for contrast): the one color used to mark "this option is active" — switch checked-track, radio-row selected ring + checkmark, active-filter status dot. Distinct from Cover Gold so an amber accent never gets mistaken for "this is a book object."
 
 ### Neutral
 
@@ -117,6 +126,8 @@ A single warm parchment-and-ink palette that inverts cleanly between a cream lig
 **The Cover Accent Rule.** `cover-dark` (`#2b241c`) and `cover-gold` (`#c9a84c`) are reserved for book-cover placeholder gradients and never used as UI chrome colors — they signal "this is a book object," not "this is a control."
 
 **The Ink Inversion Rule.** Primary is never a fixed hex — it's always the current theme's ink-on-paper extreme (near-black on cream, near-white on near-black). Never hardcode a mid-tone primary; use the `--primary` token so dark mode inverts correctly.
+
+**The Selection Accent Rule.** `selected` is the only color that means "this is the active choice" — it must not be reused for hover states, emphasis, or decoration, or the signal dilutes. It is intentionally a different hue relationship from `cover-gold` (tuned per theme, not fixed) so the two never get confused despite both being amber-family.
 
 ## Typography
 
@@ -161,17 +172,17 @@ Librune leans on soft ambient shadow as a constant resting-state signature rathe
 
 ## Shapes
 
-Two coexisting corner languages by role. **Controls are sharp**: all button variants use `rounded-none` — a deliberate rejection of the soft-rounded button default, giving the UI chrome a drafting-table, architectural precision. **Content objects are soft**: book covers use `rounded-xl` (0.525rem), bottom sheets use `rounded-t-3xl` (1.05rem) on their top edge only, and popovers/dropdowns inherit the base `--radius` (0.375rem) scale. Borders are hairline (`border`, `0.5px` on the sticky header) in `border-mist`/`divider-parchment`, never heavy.
+One corner language, graduated by role. **Controls take the small end of the scale**: buttons, dropdown/context menus, and dialogs use `rounded-sm` (0.225rem) — a disciplined, tool-like rounding, never sharp but never as generous as a content object. **Content objects take the large end**: book covers use `rounded-xl` (0.525rem), bottom sheets use `rounded-t-3xl` (1.05rem) on their top edge only. Borders are hairline (`border`, `0.5px` on the sticky header) in `border-mist`/`divider-parchment`, never heavy.
 
 ### Named Rules
 
-**The Object/Control Split.** If it's something the user reads or holds (a book cover, a sheet, a popover), round it. If it's something the user presses (a button, a chip-like control), keep it square. Never round a button to match a card's radius.
+**The Object/Control Split.** If it's something the user reads or holds (a book cover, a sheet, a popover), round it generously. If it's something the user presses (a button, a menu, a dialog), round it modestly. Both are always softly rounded — the split is in degree, not sharp-vs-round.
 
 ## Components
 
 ### Buttons
 
-- **Shape:** square corners (`rounded-none`, 0px), regardless of size variant.
+- **Shape:** `rounded-sm` (0.225rem), regardless of size variant — modest, not sharp.
 - **Primary:** `bg-primary` / `text-primary-foreground`, hover `bg-primary/80`; heights range `h-6` (xs) to `h-9` (lg), horizontal padding ~10px.
 - **Secondary:** `bg-secondary` / `text-secondary-foreground`, hover mixes 5% foreground into the secondary color via `color-mix(in oklch, ...)`.
 - **Outline / Ghost / Destructive / Link:** outline uses `border-border` with a transparent fill; ghost is borderless with a muted hover fill; destructive uses a low-opacity destructive tint (`bg-destructive/10`) rather than a solid fill; link is text-only with underline-on-hover.
@@ -201,15 +212,17 @@ Two coexisting corner languages by role. **Controls are sharp**: all button vari
 
 ### Do:
 
-- **Do** keep all button/control corners square (`rounded-none`) — never introduce a rounded button variant.
-- **Do** give content objects (covers, sheets, popovers) a rounded, soft-lifted treatment (`.elevated-soft` + `rounded-xl`/`rounded-3xl`).
+- **Do** keep controls at the modest end of the radius scale (`rounded-sm`) — never sharp, never as generous as a content object's radius.
+- **Do** give content objects (covers, sheets) a rounded, soft-lifted treatment (`.elevated-soft` + `rounded-xl`/`rounded-3xl`).
 - **Do** pair serif type (Cinzel/Literata) with anything the user reads, and sans (Plus Jakarta Sans) with anything the user operates.
 - **Do** use the `--primary` token (never a hardcoded hex) for anything meant to invert correctly between light and dark mode.
 - **Do** reserve `cover-dark`/`cover-gold` strictly for book-cover-related surfaces.
+- **Do** use `selected` only to mark active/checked state (switches, radio rows, active-filter indicator) — never as a hover tint or decoration.
 
 ### Don't:
 
-- **Don't** round a button or chip to match card radius — it breaks the control/content split.
+- **Don't** round a button or chip to match a content object's larger radius — it breaks the control/content split.
 - **Don't** add a drop shadow to bottom sheets; their elevation cue is the top border + rounded-top-corners + slide animation, not shadow.
 - **Don't** introduce a cold neutral gray; all neutrals in this system are warm parchment/ink tones.
 - **Don't** use the sans UI font for reading-surface body text, or the serif reading font for buttons/nav labels.
+- **Don't** use `warm-accent` or `selected` interchangeably with `cover-gold` — they're deliberately distinct hues so "book object," "CTA tile," and "active selection" stay three separate signals.
