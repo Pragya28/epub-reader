@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { useChromeVisibility } from "@/shared/hooks/use-chrome-visibility";
 import { libraryStore } from "../store/library-store";
 import { libraryFilterStore } from "../store/library-filter-store";
 import { loadLibrary } from "../actions/load-library";
@@ -50,6 +51,28 @@ export function useLibraryScreen() {
     setQuery("");
   };
 
+  const {
+    visible: headerVisible,
+    handleScrollDirection,
+    setOverlay,
+  } = useChromeVisibility();
+
+  useEffect(() => setOverlay(filterOpen), [filterOpen, setOverlay]);
+
+  const lastScrollY = useRef(0);
+  useEffect(() => {
+    const handleScroll = () => {
+      const y = window.scrollY;
+      if (y <= 0) handleScrollDirection("up");
+      else if (y !== lastScrollY.current) {
+        handleScrollDirection(y > lastScrollY.current ? "down" : "up");
+      }
+      lastScrollY.current = y;
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScrollDirection]);
+
   useEffect(() => {
     void loadLibrary();
 
@@ -96,6 +119,7 @@ export function useLibraryScreen() {
     visibleBooks,
     isSearching,
     isFiltering,
+    headerVisible,
 
     searchOpen,
     query,

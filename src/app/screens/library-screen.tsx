@@ -18,6 +18,7 @@ export const LibraryScreen: FC = () => {
     visibleBooks,
     isSearching,
     isFiltering,
+    headerVisible,
     searchOpen,
     query,
     setQuery,
@@ -36,43 +37,52 @@ export const LibraryScreen: FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* ── Header ────────────────────────────────────────────────────────── */}
-      <header className="folio-header sticky top-0 z-50 px-5 flex items-center">
-        <WordMark className="mr-auto h-16 w-auto" />
-        <nav className="flex items-center gap-1 text-foreground">
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={searchOpen ? "Close search" : "Search"}
-            onClick={() => (searchOpen ? closeSearch() : openSearch())}
-          >
-            {searchOpen ? (
-              <X strokeWidth={1.5} className="size-5" />
-            ) : (
-              <Search strokeWidth={1.5} className="size-5" />
-            )}
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Sort and filter"
-            onClick={() => setFilterOpen(true)}
-            className="relative"
-          >
-            <SlidersHorizontal strokeWidth={1.5} className="size-5" />
-            {isFiltering && (
-              <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-primary" />
-            )}
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Settings"
-            render={<Link to={ROUTES.SETTINGS} />}
-          >
-            <Settings strokeWidth={1.5} className="size-5" />
-          </Button>
-        </nav>
-      </header>
+      {/* Grid-rows trick collapses the sticky header to zero height on
+          scroll-down instead of just hiding it, so it doesn't leave dead
+          space in the flow (see reader chrome — Sprint 5 Day 3). */}
+      <div
+        className={`sticky top-0 z-50 grid transition-[grid-template-rows] duration-300 ease-out ${
+          headerVisible ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        }`}
+      >
+        <header className="folio-header overflow-hidden min-h-0 px-5 flex items-center">
+          <WordMark className="mr-auto h-16 w-auto shrink-0" />
+          <nav className="flex items-center gap-1 text-foreground">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={searchOpen ? "Close search" : "Search"}
+              onClick={() => (searchOpen ? closeSearch() : openSearch())}
+            >
+              {searchOpen ? (
+                <X strokeWidth={1.5} className="size-5" />
+              ) : (
+                <Search strokeWidth={1.5} className="size-5" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Sort and filter"
+              onClick={() => setFilterOpen(true)}
+              className="relative"
+            >
+              <SlidersHorizontal strokeWidth={1.5} className="size-5" />
+              {isFiltering && (
+                <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-primary" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Settings"
+              render={<Link to={ROUTES.SETTINGS} />}
+            >
+              <Settings strokeWidth={1.5} className="size-5" />
+            </Button>
+          </nav>
+        </header>
+      </div>
 
       {/* ── Main ──────────────────────────────────────────────────────────── */}
       {/* Extra bottom padding keeps content clear of the fixed bottom bar */}

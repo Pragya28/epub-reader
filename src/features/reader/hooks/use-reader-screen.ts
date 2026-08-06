@@ -8,7 +8,7 @@ import { loadReaderBook } from "../actions/load-reader-book";
 import { jumpToTocItem } from "../actions/jump-to-toc-item";
 import { readerStore } from "../store/reader-store";
 import { useReaderEngine } from "./use-reader-engine";
-import { useReaderChrome } from "./use-reader-chrome";
+import { useChromeVisibility } from "@/shared/hooks/use-chrome-visibility";
 
 /**
  * All non-visual state behind ReaderScreen: loading the book and its cover,
@@ -112,7 +112,7 @@ export function useReaderScreen() {
     [handleTocItemClick],
   );
 
-  // Destructured (not kept as one `chrome` object) — useReaderChrome returns
+  // Destructured (not kept as one `chrome` object) — useChromeVisibility returns
   // a fresh object every render, so referencing the whole object anywhere
   // deps-tracked (like handleExternalLink below) would give that callback a
   // new identity every render too, re-triggering useReaderEngine's effect
@@ -124,7 +124,7 @@ export function useReaderScreen() {
     handleScrollDirection,
     toggle: toggleChrome,
     setOverlay: setChromeOverlay,
-  } = useReaderChrome();
+  } = useChromeVisibility();
 
   const handleExternalLink = useCallback(
     (href: string) => {

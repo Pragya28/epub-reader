@@ -69,10 +69,12 @@ Legend: ✅ done · 🟡 partial · ❌ missing
 
 ## Day 4 — Library Chrome Behaviour
 
-18. ❌ **Hide header while scrolling down / reveal on scroll up** — `library-screen.tsx`'s `<header>` is `sticky top-0`, always visible; no scroll listener.
-19. ✅ **Preserve search/sort/filter state** — already done in Sprint 4 (`library-filter-store.ts`, Zustand `persist`), unaffected by this day's scroll work as long as the header logic doesn't touch that store.
-20. 🟡 **Integrate with bottom sheets/dialogs** — `LibraryFilterSheet` already exists and works independently of header visibility; needs verifying once scroll-hide is added that the sheet still opens correctly with a hidden header.
-21. ❌ **Smooth transitions** — n/a until scroll-hide state exists.
+18. ✅ **Hide header while scrolling down / reveal on scroll up** — `use-library-screen.ts` adds a `window` scroll listener (passive) that calls `handleScrollDirection` from the shared chrome hook; always reveals at `scrollY <= 0`. _(done 2026-08-06)_
+19. ✅ **Preserve search/sort/filter state** — already done in Sprint 4 (`library-filter-store.ts`, Zustand `persist`); confirmed unaffected — the scroll listener only touches the new chrome-visibility state, no interaction with the filter store.
+20. ✅ **Integrate with bottom sheets/dialogs** — `LibraryFilterSheet`'s `open` state is wired into `setOverlay`, forcing the header visible and freezing scroll-driven hides while the sheet is open (same "overlay forces visible" contract as Day 3's reader chrome). _(done 2026-08-06)_
+21. ✅ **Smooth transitions** — header wrapped in a CSS grid-rows accordion (`grid-rows-[1fr]` ↔ `grid-rows-[0fr]`, `transition-[grid-template-rows] duration-300 ease-out`) instead of Day 3's translate/opacity approach. Chosen because the library header is `sticky` in a normally-scrolling page (not an absolutely-positioned overlay over a fixed-height iframe like the reader): translating it off-screen would leave the same "dead space in the flow" problem Day 3 hit and then fixed by switching to `absolute` — the grid-rows collapse sidesteps that by shrinking the header's actual layout height to zero, so content reflows up cleanly with no gap. Verified live by toggling the collapsed class directly on the running dev server and confirming the header's `getBoundingClientRect().height` drops from 81px to 17px (border only) with no leftover gap. _(done 2026-08-06)_
+
+**Implementation note:** the visible/toggle/overlay state machine was identical to Day 3's `useReaderChrome`, so it was promoted out of `features/reader/hooks/` into `src/shared/hooks/use-chrome-visibility.ts` (renamed `useChromeVisibility`) rather than duplicated — both `use-reader-screen.ts` and `use-library-screen.ts` now import the same hook. Library doesn't use its `toggle` (tap-to-toggle) — only reader has tap-driven content — so that part of the returned API is unused here, which is fine since it's a small, already-generic hook rather than reader-specific logic. 464/464 tests passing (test file moved to `shared/hooks/__tests__/use-chrome-visibility.test.ts`, no behavior change), `tsc`/`lint` clean (same 6 pre-existing warnings, unrelated).
 
 ## Day 5 — UI Polish
 
@@ -84,7 +86,7 @@ Legend: ✅ done · 🟡 partial · ❌ missing
 
 25. ✅ **Integrate theme and preference systems** — Days 1–2 landed together (see above); theme and reading preferences share one store and one Settings screen. _(done 2026-08-05)_
 26. 🟡 **Focus states / contrast consistency** — no dedicated contrast-audit pass has been run yet; Day 1's theme system (previously blocking this) is now done, so this is unblocked but not yet started. **`AUDIT_REPORT.md` [P1]** (2026-08-04 run) ✅ fixed: added a global `@media (prefers-reduced-motion: reduce)` override in `src/index.css` (1ms animation/transition durations, `scroll-behavior: auto`) — covers `button.tsx` press/hover, `import-book-fab.tsx`, pulse loaders, `book-card.tsx` shadow transitions, and `tw-animate-css` sheet slide-ins uniformly. State changes (color, final position) still render immediately since only duration is zeroed, not the end state — satisfies the audit's warning against a "kill that destroys useful feedback." _(done 2026-08-04)_
-27. 🟡 **Validate preference interactions across Reader and Library** — Day 1/2 (theme + reading preferences) verified live: theme change propagates library ↔ settings, `applyThemeToReader` correctly gates the reader's own theme control. Still blocked on Day 4 (library chrome) for the full cross-surface pass this item originally scoped.
+27. 🟡 **Validate preference interactions across Reader and Library** — Day 1/2 (theme + reading preferences) verified live: theme change propagates library ↔ settings, `applyThemeToReader` correctly gates the reader's own theme control. Day 4 (library chrome) has now landed, unblocking the full cross-surface pass this item originally scoped — not yet run.
 
 ## Day 7 — Hardening
 

@@ -1,12 +1,12 @@
 import { useCallback, useState } from "react";
 
 /**
- * Reader header/footer visibility: shown by default, hidden on scroll-down,
- * revealed on scroll-up or a tap on the reading content. An open overlay
- * (reader toolbar, TOC drawer, external-link dialog) forces it back visible
- * and suspends scroll/tap-driven changes until closed.
+ * Header/footer chrome visibility: shown by default, hidden on scroll-down,
+ * revealed on scroll-up or a tap on the content. An open overlay (a sheet,
+ * drawer, or dialog) forces it back visible and suspends scroll/tap-driven
+ * changes until closed.
  */
-export function useReaderChrome() {
+export function useChromeVisibility() {
   const [visible, setVisible] = useState(true);
   const [overlayOpen, setOverlayOpen] = useState(false);
 

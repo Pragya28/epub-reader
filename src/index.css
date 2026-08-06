@@ -58,6 +58,8 @@
   --color-divider: var(--divider);
   --color-cover-dark: var(--cover-dark);
   --color-cover-gold: var(--cover-gold);
+  --color-warm-accent: var(--warm-accent);
+  --color-warm-accent-foreground: var(--warm-accent-foreground);
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -125,6 +127,12 @@
 
   --cover-dark: #2b241c;
   --cover-gold: #c9a84c;
+
+  /* Fixed regardless of light/dark theme — a soft, warm tone for
+     floating UI (continue-reading banner, import FAB) that reads
+     the same way on either page background rather than inverting. */
+  --warm-accent: #d9b48f;
+  --warm-accent-foreground: #4a3423;
 
   --chart-1: #695d4a;
   --chart-2: #c9a84c;
