@@ -140,8 +140,11 @@
 
   /* Theme-tuned amber — distinct from cover-gold (reserved for book
      objects) — used only to mark selection/active state (switches,
-     radio rows, active-filter indicator) across the app chrome. */
-  --selected: #b8862e;
+     radio rows, active-filter indicator) across the app chrome.
+     Darkened from an earlier #b8862e, which measured 2.65-2.77:1
+     against card/surface-high — below WCAG 1.4.11's 3:1 minimum for
+     non-text UI indicators. This value clears 3.5-3.7:1. */
+  --selected: #9c7226;
   --selected-foreground: #fff9ee;
 
   --chart-1: #695d4a;
