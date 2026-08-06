@@ -37,56 +37,62 @@ export const LibraryScreen: FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* ── Header ────────────────────────────────────────────────────────── */}
-      {/* Grid-rows trick collapses the sticky header to zero height on
-          scroll-down instead of just hiding it, so it doesn't leave dead
-          space in the flow (see reader chrome — Sprint 5 Day 3). */}
-      <div
-        className={`sticky top-0 z-50 grid transition-[grid-template-rows] duration-300 ease-out ${
-          headerVisible ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+      {/* Fixed + transform/opacity only (matches the reader's chrome,
+          Sprint 5 Day 3) — deliberately NOT animating height/grid-rows:
+          an in-flow element whose own height is driven by scroll position
+          fights the browser's scroll-anchoring (which "corrects" scrollY
+          when layout above the viewport changes size), and mid-transition
+          heights visibly squeeze the logo/icons. Taking the header out of
+          flow avoids both. `<main>` gets padding-top equal to its height
+          via the shared --header-height var so content starts below it. */}
+      <header
+        className={`folio-header fixed inset-x-0 top-0 z-50 flex items-center px-5 transition-[transform,opacity] duration-300 ease-out ${
+          headerVisible
+            ? "translate-y-0 opacity-100"
+            : "-translate-y-full opacity-0 pointer-events-none"
         }`}
       >
-        <header className="folio-header overflow-hidden min-h-0 px-5 flex items-center">
-          <WordMark className="mr-auto h-16 w-auto shrink-0" />
-          <nav className="flex items-center gap-1 text-foreground">
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={searchOpen ? "Close search" : "Search"}
-              onClick={() => (searchOpen ? closeSearch() : openSearch())}
-            >
-              {searchOpen ? (
-                <X strokeWidth={1.5} className="size-5" />
-              ) : (
-                <Search strokeWidth={1.5} className="size-5" />
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Sort and filter"
-              onClick={() => setFilterOpen(true)}
-              className="relative"
-            >
-              <SlidersHorizontal strokeWidth={1.5} className="size-5" />
-              {isFiltering && (
-                <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-primary" />
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Settings"
-              render={<Link to={ROUTES.SETTINGS} />}
-            >
-              <Settings strokeWidth={1.5} className="size-5" />
-            </Button>
-          </nav>
-        </header>
-      </div>
+        <WordMark className="mr-auto h-16 w-auto shrink-0" />
+        <nav className="flex items-center gap-1 text-foreground">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={searchOpen ? "Close search" : "Search"}
+            onClick={() => (searchOpen ? closeSearch() : openSearch())}
+          >
+            {searchOpen ? (
+              <X strokeWidth={1.5} className="size-5" />
+            ) : (
+              <Search strokeWidth={1.5} className="size-5" />
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Sort and filter"
+            onClick={() => setFilterOpen(true)}
+            className="relative"
+          >
+            <SlidersHorizontal strokeWidth={1.5} className="size-5" />
+            {isFiltering && (
+              <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-selected" />
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Settings"
+            render={<Link to={ROUTES.SETTINGS} />}
+          >
+            <Settings strokeWidth={1.5} className="size-5" />
+          </Button>
+        </nav>
+      </header>
 
       {/* ── Main ──────────────────────────────────────────────────────────── */}
-      {/* Extra bottom padding keeps content clear of the fixed bottom bar */}
-      <main className="flex-1 px-4 pt-5 pb-36">
+      {/* Extra bottom padding keeps content clear of the fixed bottom bar;
+          top padding clears the fixed header above. */}
+      <main className="flex-1 px-4 pt-(--header-height) pb-36">
         {searchOpen ? (
           <input
             autoFocus
