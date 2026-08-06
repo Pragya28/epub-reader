@@ -60,6 +60,8 @@
   --color-cover-gold: var(--cover-gold);
   --color-warm-accent: var(--warm-accent);
   --color-warm-accent-foreground: var(--warm-accent-foreground);
+  --color-selected: var(--selected);
+  --color-selected-foreground: var(--selected-foreground);
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -128,11 +130,19 @@
   --cover-dark: #2b241c;
   --cover-gold: #c9a84c;
 
-  /* Fixed regardless of light/dark theme — a soft, warm tone for
-     floating UI (continue-reading banner, import FAB) that reads
-     the same way on either page background rather than inverting. */
-  --warm-accent: #d9b48f;
-  --warm-accent-foreground: #4a3423;
+  /* Fixed regardless of light/dark theme — Antique Gold for the
+     floating UI (continue-reading banner, import FAB) so these two
+     CTA surfaces read the same way on either page background rather
+     than inverting. Foreground is darkened past Living Folio's own
+     #261a00 pairing to clear 4.5:1 against this background. */
+  --warm-accent: #a67c00;
+  --warm-accent-foreground: #1a1200;
+
+  /* Theme-tuned amber — distinct from cover-gold (reserved for book
+     objects) — used only to mark selection/active state (switches,
+     radio rows, active-filter indicator) across the app chrome. */
+  --selected: #b8862e;
+  --selected-foreground: #fff9ee;
 
   --chart-1: #695d4a;
   --chart-2: #c9a84c;
@@ -206,6 +216,9 @@
     --cover-dark: #2b241c;
     --cover-gold: #c9a84c;
 
+    --selected: #e0ac52;
+    --selected-foreground: #141210;
+
     --chart-1: #cbb98e;
     --chart-2: #c9a84c;
     --chart-3: #f2ead8;
@@ -264,6 +277,9 @@
 
   --cover-dark: #2b241c;
   --cover-gold: #c9a84c;
+
+  --selected: #e0ac52;
+  --selected-foreground: #141210;
 
   --chart-1: #cbb98e;
   --chart-2: #c9a84c;
@@ -357,8 +373,13 @@
   }
 
   /* Header */
+  /* No position here — every caller sets its own (sticky/absolute) via
+     Tailwind classes, and this class living in the same @layer utilities
+     as Tailwind's own utilities meant `position: sticky` here silently
+     beat `absolute` on the same element (same specificity, defined later
+     in the cascade), pinning the reader's footer to the top of the flow
+     instead of the viewport bottom. */
   .folio-header {
-    position: sticky;
     backdrop-filter: blur(var(--header-blur));
     background: var(--header-bg);
     border-bottom: 0.5px solid var(--divider);

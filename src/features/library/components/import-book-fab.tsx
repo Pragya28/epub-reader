@@ -19,8 +19,11 @@ export const ImportBookFab: FC = () => {
         size-16
         rounded-2xl
         bg-warm-accent
+        hover:bg-warm-accent
         text-warm-accent-foreground
         shadow-floating
+        opacity-90
+        hover:opacity-100
         disabled:opacity-60
       "
     >

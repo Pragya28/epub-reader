@@ -103,7 +103,7 @@ export const FontSelector: FC<FontSelectorProps> = ({
                 {font.label}
               </span>
               <RadioGroupRowIndicator>
-                <Check className="size-4 text-foreground" strokeWidth={2} />
+                <Check className="size-4 text-selected" strokeWidth={2} />
               </RadioGroupRowIndicator>
             </RadioGroupRow>
           ))}

@@ -45,7 +45,7 @@ function RadioGroupRow({ className, ...props }: RadioPrimitive.Root.Props) {
     <RadioPrimitive.Root
       data-slot="radio-group-row"
       className={cn(
-        "flex cursor-pointer items-center justify-between px-4 py-4 text-left outline-none data-checked:bg-surface-high data-checked:ring-[1.5px] data-checked:ring-foreground data-checked:ring-inset",
+        "flex cursor-pointer items-center justify-between px-4 py-4 text-left outline-none data-checked:bg-surface-high data-checked:ring-[1.5px] data-checked:ring-selected data-checked:ring-inset",
         className,
       )}
       {...props}
