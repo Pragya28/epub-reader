@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useChromeVisibility } from "@/shared/hooks/use-chrome-visibility";
@@ -103,24 +103,36 @@ export function useLibraryScreen() {
     };
   }, []);
 
-  const enriched = books.map(enrichBookWithProgress);
+  // Recomputing this enrich→sort→filter→search pipeline on every render
+  // was cheap until the header's scroll-driven visibility toggle (Day 4)
+  // started re-rendering LibraryScreen on every ~8px of scroll — now it's
+  // a hot path. Memoized so an unrelated re-render (scroll, chrome state)
+  // doesn't re-derive or reallocate the whole list.
+  const enriched = useMemo(() => books.map(enrichBookWithProgress), [books]);
 
   // Continue-reading always reflects the whole library, not whatever the
   // user currently has filtered/searched down to.
-  const currentBook = pickCurrentlyReadingBook(enriched);
+  const currentBook = useMemo(
+    () => pickCurrentlyReadingBook(enriched),
+    [enriched],
+  );
 
-  const languages = Array.from(
-    new Set(enriched.map((book) => book.language).filter(Boolean)),
-  ) as string[];
+  const languages = useMemo(
+    () =>
+      Array.from(
+        new Set(enriched.map((book) => book.language).filter(Boolean)),
+      ) as string[],
+    [enriched],
+  );
 
   const isFiltering = hasActiveFilters(filters);
   const isSearching = searchOpen && query.trim() !== "";
 
-  const sorted = sortBooks(enriched, sortBy);
-  const filtered = filterBooksByCriteria(sorted, filters);
-  const visibleBooks = isSearching
-    ? filterBooksByQuery(filtered, query)
-    : filtered;
+  const visibleBooks = useMemo(() => {
+    const sorted = sortBooks(enriched, sortBy);
+    const filtered = filterBooksByCriteria(sorted, filters);
+    return isSearching ? filterBooksByQuery(filtered, query) : filtered;
+  }, [enriched, sortBy, filters, isSearching, query]);
 
   return {
     isLoading,

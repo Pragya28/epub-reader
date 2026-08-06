@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import { memo, type FC } from "react";
 import { BookCard } from "./book-card/book-card";
 import type { BookWithProgress } from "../types/library.types";
 import { LibraryBig, TriangleAlert } from "lucide-react";
@@ -10,12 +10,12 @@ interface BookGridProps {
   books: BookWithProgress[];
 }
 
-export const BookGrid: FC<BookGridProps> = ({
+export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
   isLoading,
   isSearch,
   error,
   books,
-}) => {
+}) {
   if (error) {
     return (
       <div
@@ -81,4 +81,4 @@ export const BookGrid: FC<BookGridProps> = ({
       ))}
     </div>
   );
-};
+});

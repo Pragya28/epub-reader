@@ -1,4 +1,4 @@
-import { type FC } from "react";
+import { memo, type FC } from "react";
 import type { BookWithProgress } from "../../types/library.types";
 import { BookCover } from "./book-cover";
 import { Link } from "react-router-dom";
@@ -15,7 +15,12 @@ import { AboutBookSheet } from "../about-book-sheet";
 import { useBookCard } from "../../hooks/use-book-card";
 import { DeleteBookDialog } from "./delete-book-dialog";
 
-export const BookCard: FC<BookWithProgress> = (book) => {
+// Wrapped in memo: BookGrid re-renders on every LibraryScreen update
+// (search input, scroll-driven header toggle, etc.) — without this,
+// every card would re-render even though its own book data didn't
+// change. Effective now that use-library-screen.ts memoizes the list
+// so each book's prop values stay referentially stable across renders.
+export const BookCard: FC<BookWithProgress> = memo(function BookCard(book) {
   const { id, isNew, isFinished, author, title } = book;
   const {
     statusText,
@@ -128,4 +133,4 @@ export const BookCard: FC<BookWithProgress> = (book) => {
       />
     </div>
   );
-};
+});
