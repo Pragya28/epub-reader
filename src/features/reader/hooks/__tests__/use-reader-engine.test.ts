@@ -474,19 +474,19 @@ describe("useReaderEngine", () => {
         vi.unstubAllGlobals();
       });
 
-      it("calls onScrollDirection('down') when scrolling down past the threshold", async () => {
-        const onScrollDirection = vi.fn();
+      it("calls onScrollPosition with the raw scrollY on scroll", async () => {
+        const onScrollPosition = vi.fn();
 
         renderHook(() =>
           useReaderEngine({
             iframeRef,
             parsedBook: mockParsedBook,
-            onScrollDirection,
+            onScrollPosition,
           }),
         );
 
         await new Promise((resolve) => setTimeout(resolve, 50));
-        onScrollDirection.mockClear();
+        onScrollPosition.mockClear();
 
         const mockWin = iframeRef.current?.contentWindow as any;
         const onScroll = mockWin.addEventListener.mock.calls.find(
@@ -496,73 +496,22 @@ describe("useReaderEngine", () => {
         mockWin.scrollY = 200;
         onScroll();
 
-        expect(onScrollDirection).toHaveBeenCalledWith("down");
+        expect(onScrollPosition).toHaveBeenCalledWith(200);
       });
 
-      it("calls onScrollDirection('up') when scrolling up past the threshold", async () => {
-        const onScrollDirection = vi.fn();
-        const mockWin = iframeRef.current?.contentWindow as any;
-        mockWin.scrollY = 200;
+      it("does not call onScrollPosition while jumping", async () => {
+        const onScrollPosition = vi.fn();
 
         renderHook(() =>
           useReaderEngine({
             iframeRef,
             parsedBook: mockParsedBook,
-            onScrollDirection,
+            onScrollPosition,
           }),
         );
 
         await new Promise((resolve) => setTimeout(resolve, 50));
-        onScrollDirection.mockClear();
-
-        const onScroll = mockWin.addEventListener.mock.calls.find(
-          ([event]: [string]) => event === "scroll",
-        )?.[1];
-
-        mockWin.scrollY = 0;
-        onScroll();
-
-        expect(onScrollDirection).toHaveBeenCalledWith("up");
-      });
-
-      it("does not call onScrollDirection for a sub-threshold scroll", async () => {
-        const onScrollDirection = vi.fn();
-
-        renderHook(() =>
-          useReaderEngine({
-            iframeRef,
-            parsedBook: mockParsedBook,
-            onScrollDirection,
-          }),
-        );
-
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        onScrollDirection.mockClear();
-
-        const mockWin = iframeRef.current?.contentWindow as any;
-        const onScroll = mockWin.addEventListener.mock.calls.find(
-          ([event]: [string]) => event === "scroll",
-        )?.[1];
-
-        mockWin.scrollY = 5;
-        onScroll();
-
-        expect(onScrollDirection).not.toHaveBeenCalled();
-      });
-
-      it("does not call onScrollDirection while jumping", async () => {
-        const onScrollDirection = vi.fn();
-
-        renderHook(() =>
-          useReaderEngine({
-            iframeRef,
-            parsedBook: mockParsedBook,
-            onScrollDirection,
-          }),
-        );
-
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        onScrollDirection.mockClear();
+        onScrollPosition.mockClear();
 
         const mockWin = iframeRef.current?.contentWindow as any;
         const onScroll = mockWin.addEventListener.mock.calls.find(
@@ -573,7 +522,7 @@ describe("useReaderEngine", () => {
         mockWin.scrollY = 200;
         onScroll();
 
-        expect(onScrollDirection).not.toHaveBeenCalled();
+        expect(onScrollPosition).not.toHaveBeenCalled();
       });
     });
   });

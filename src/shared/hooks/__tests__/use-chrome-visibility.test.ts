@@ -8,13 +8,20 @@ describe("useChromeVisibility", () => {
     expect(result.current.visible).toBe(true);
   });
 
-  it("hides on scroll down and reveals on scroll up", () => {
+  it("hides on scroll down and reveals on scroll up past the threshold", () => {
     const { result } = renderHook(() => useChromeVisibility());
 
-    act(() => result.current.handleScrollDirection("down"));
+    act(() => result.current.handleScroll(200));
     expect(result.current.visible).toBe(false);
 
-    act(() => result.current.handleScrollDirection("up"));
+    act(() => result.current.handleScroll(0));
+    expect(result.current.visible).toBe(true);
+  });
+
+  it("ignores a sub-threshold scroll delta", () => {
+    const { result } = renderHook(() => useChromeVisibility());
+
+    act(() => result.current.handleScroll(5));
     expect(result.current.visible).toBe(true);
   });
 
@@ -31,13 +38,13 @@ describe("useChromeVisibility", () => {
   it("forces visible and ignores scroll/tap while an overlay is open", () => {
     const { result } = renderHook(() => useChromeVisibility());
 
-    act(() => result.current.handleScrollDirection("down"));
+    act(() => result.current.handleScroll(200));
     expect(result.current.visible).toBe(false);
 
     act(() => result.current.setOverlay(true));
     expect(result.current.visible).toBe(true);
 
-    act(() => result.current.handleScrollDirection("down"));
+    act(() => result.current.handleScroll(400));
     expect(result.current.visible).toBe(true);
 
     act(() => result.current.toggle());
@@ -49,7 +56,7 @@ describe("useChromeVisibility", () => {
 
     act(() => result.current.setOverlay(true));
     act(() => result.current.setOverlay(false));
-    act(() => result.current.handleScrollDirection("down"));
+    act(() => result.current.handleScroll(200));
 
     expect(result.current.visible).toBe(false);
   });
@@ -63,9 +70,7 @@ describe("useChromeVisibility", () => {
     act(() => result.current.setOverlay(true));
     act(() => result.current.setOverlay(false));
 
-    expect(result.current.handleScrollDirection).toBe(
-      before.handleScrollDirection,
-    );
+    expect(result.current.handleScroll).toBe(before.handleScroll);
     expect(result.current.toggle).toBe(before.toggle);
     expect(result.current.setOverlay).toBe(before.setOverlay);
   });

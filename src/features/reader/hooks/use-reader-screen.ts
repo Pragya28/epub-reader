@@ -121,7 +121,7 @@ export function useReaderScreen() {
   // are stable across renders.
   const {
     visible: chromeVisible,
-    handleScrollDirection,
+    handleScroll: handleChromeScroll,
     toggle: toggleChrome,
     setOverlay: setChromeOverlay,
   } = useChromeVisibility();
@@ -140,7 +140,7 @@ export function useReaderScreen() {
     bookId,
     initialProgress: readerDocument?.book.progress ?? null,
     onExternalLink: handleExternalLink,
-    onScrollDirection: handleScrollDirection,
+    onScrollPosition: handleChromeScroll,
     onContentTap: toggleChrome,
   });
 

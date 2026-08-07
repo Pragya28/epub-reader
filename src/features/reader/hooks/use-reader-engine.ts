@@ -29,7 +29,6 @@ import type { ReadingProgress } from "@/services/storage/storage-types";
 import { jumpToTocItem } from "../actions/jump-to-toc-item";
 
 const SCROLL_PREFETCH_THRESHOLD_PX = 300;
-const SCROLL_DIRECTION_THRESHOLD_PX = 10;
 const ENGINE_START_MAX_ATTEMPTS = 120;
 const RESTORE_RETRY_MAX_ATTEMPTS = 10;
 const PROGRESS_SAVE_DEBOUNCE_MS = 1500;
@@ -47,8 +46,8 @@ interface UseReaderEngineProps {
   onExternalLink?: (href: string) => void;
   /** Called on a horizontal swipe gesture; direction is 1 (forward) or -1 (back). */
   onSwipeChapter?: (direction: 1 | -1) => void;
-  /** Called when the user scrolls the reading content, for chrome show/hide. */
-  onScrollDirection?: (direction: "up" | "down") => void;
+  /** Called with raw scrollY on every scroll of the reading content, for chrome show/hide. */
+  onScrollPosition?: (scrollY: number) => void;
   /** Called on a plain tap on the reading content (not a link, image, or text selection). */
   onContentTap?: () => void;
 }
@@ -60,7 +59,7 @@ export function useReaderEngine({
   initialProgress,
   onExternalLink,
   onSwipeChapter,
-  onScrollDirection,
+  onScrollPosition,
   onContentTap,
 }: UseReaderEngineProps) {
   const chapterLoader = useMemo(() => new ChapterLoader(), []);
@@ -159,18 +158,13 @@ export function useReaderEngine({
       );
       preferenceCleanup = unsubscribePreferences;
 
-      let lastScrollY = win.scrollY;
-
       const handleScroll = () => {
         const store = readerStore.getState();
 
         if (store.isJumping) return;
 
         const scrollY = win.scrollY;
-        if (Math.abs(scrollY - lastScrollY) > SCROLL_DIRECTION_THRESHOLD_PX) {
-          onScrollDirection?.(scrollY > lastScrollY ? "down" : "up");
-          lastScrollY = scrollY;
-        }
+        onScrollPosition?.(scrollY);
 
         const sections = getChapterSections(iframeDoc);
         if (sections.length === 0) return;
@@ -798,7 +792,7 @@ export function useReaderEngine({
     initialProgress,
     onExternalLink,
     onSwipeChapter,
-    onScrollDirection,
+    onScrollPosition,
     onContentTap,
   ]);
 

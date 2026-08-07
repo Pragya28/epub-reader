@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useChromeVisibility } from "@/shared/hooks/use-chrome-visibility";
@@ -53,35 +53,17 @@ export function useLibraryScreen() {
 
   const {
     visible: headerVisible,
-    handleScrollDirection,
+    handleScroll: handleChromeScroll,
     setOverlay,
   } = useChromeVisibility();
 
   useEffect(() => setOverlay(filterOpen), [filterOpen, setOverlay]);
 
-  // Momentum/rubber-band scrolling wobbles scrollY by a pixel or two while
-  // decelerating or bouncing at a boundary — reacting to every such change
-  // flips the header visible/hidden many times a second. A minimum-delta
-  // threshold before honoring a direction change absorbs that jitter.
-  const SCROLL_DIRECTION_THRESHOLD = 8;
-  const lastScrollY = useRef(0);
   useEffect(() => {
-    const handleScroll = () => {
-      const y = Math.max(0, window.scrollY);
-      if (y <= 0) {
-        handleScrollDirection("up");
-      } else if (
-        Math.abs(y - lastScrollY.current) >= SCROLL_DIRECTION_THRESHOLD
-      ) {
-        handleScrollDirection(y > lastScrollY.current ? "down" : "up");
-      } else {
-        return;
-      }
-      lastScrollY.current = y;
-    };
+    const handleScroll = () => handleChromeScroll(window.scrollY);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [handleScrollDirection]);
+  }, [handleChromeScroll]);
 
   useEffect(() => {
     void loadLibrary();
