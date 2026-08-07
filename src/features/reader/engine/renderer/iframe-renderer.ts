@@ -124,6 +124,7 @@ export function initializeReaderDocument(
   iframe: HTMLIFrameElement,
   stylesheets: string[],
   bookId?: string,
+  language?: string | null,
 ): void {
   const bookCss = stylesheets
     .map((sheet) => `<style>${sanitizeStylesheet(sheet)}</style>`)
@@ -131,9 +132,19 @@ export function initializeReaderDocument(
 
   const readerBaseStyle = buildReaderBaseStyle(bookId);
 
+  // The book's own language, so a screen reader pronounces the prose with the
+  // right voice (WCAG 3.1.1). Omitted rather than guessed when the EPUB
+  // doesn't declare one — a wrong lang is worse than none. Metadata is
+  // untrusted, so this is shape-checked against BCP 47 rather than escaped:
+  // anything that isn't a plain language tag is dropped, not sanitized.
+  const langAttr =
+    language && /^[a-z]{2,8}(-[a-z0-9]{1,8})*$/i.test(language)
+      ? ` lang="${language}"`
+      : "";
+
   iframe.srcdoc = `
   <!doctype html>
-  <html>
+  <html${langAttr}>
     <head>
       <style>${READER_FONTS_STYLE}</style>
       <style>${readerBaseStyle}</style>

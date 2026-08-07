@@ -19,6 +19,7 @@ export const LibraryScreen: FC = () => {
     isSearching,
     isFiltering,
     headerVisible,
+    revealHeader,
     searchOpen,
     query,
     setQuery,
@@ -46,6 +47,7 @@ export const LibraryScreen: FC = () => {
           flow avoids both. `<main>` gets padding-top equal to its height
           via the shared --header-height var so content starts below it. */}
       <header
+        onFocusCapture={revealHeader}
         className={`folio-header fixed inset-x-0 top-0 z-50 flex items-center px-5 transition-[transform,opacity] duration-300 ease-out ${
           headerVisible
             ? "translate-y-0 opacity-100"

@@ -30,6 +30,7 @@ export const ReaderScreen: FC = () => {
     confirmExternalLink,
     chromeVisible,
     setChromeOverlay,
+    revealChrome,
     handleTocItemClick,
     handleChapterNav,
     jumpBack,
@@ -112,6 +113,7 @@ export const ReaderScreen: FC = () => {
     <div className="relative h-dvh overflow-hidden bg-background">
       {/* Header */}
       <header
+        onFocusCapture={revealChrome}
         className={`folio-header absolute inset-x-0 top-0 z-20 flex items-center justify-between transition-[transform,opacity] duration-300 ease-out ${
           chromeVisible
             ? "translate-y-0 opacity-100"
@@ -141,7 +143,7 @@ export const ReaderScreen: FC = () => {
 
       {/* Reader Content */}
       <main className="absolute inset-0 flex overflow-hidden px-2">
-        <ReaderFrame ref={iframeRef} />
+        <ReaderFrame ref={iframeRef} title={readerDocument.book.title} />
 
         {hasFootnoteBackPosition && (
           <Button
@@ -159,6 +161,7 @@ export const ReaderScreen: FC = () => {
 
       {/* Footer */}
       <footer
+        onFocusCapture={revealChrome}
         className={`folio-header absolute inset-x-0 bottom-0 z-20 flex flex-col gap-2 transition-[transform,opacity] duration-300 ease-out ${
           chromeVisible
             ? "translate-y-0 opacity-100"

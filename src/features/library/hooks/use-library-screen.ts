@@ -55,6 +55,7 @@ export function useLibraryScreen() {
     visible: headerVisible,
     handleScroll: handleChromeScroll,
     setOverlay,
+    reveal: revealHeader,
   } = useChromeVisibility();
 
   useEffect(() => setOverlay(filterOpen), [filterOpen, setOverlay]);
@@ -124,6 +125,7 @@ export function useLibraryScreen() {
     isSearching,
     isFiltering,
     headerVisible,
+    revealHeader,
 
     searchOpen,
     query,

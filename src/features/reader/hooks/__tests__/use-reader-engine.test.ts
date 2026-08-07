@@ -180,6 +180,7 @@ describe("useReaderEngine", () => {
         iframeRef.current,
         mockParsedBook.stylesheets,
         undefined,
+        mockParsedBook.metadata.language,
       );
     });
 

@@ -104,7 +104,21 @@ Also fixed as part of the same pass: `continue-reading-banner.tsx`'s progress ba
 ## Day 6 — Integration & Accessibility Foundations
 
 26. ✅ **Integrate theme and preference systems** — Days 1–2 landed together (see above); theme and reading preferences share one store and one Settings screen. _(done 2026-08-05)_
-27. 🟡 **Focus states / contrast consistency** — no dedicated contrast-audit pass has been run yet; Day 1's theme system (previously blocking this) is now done, so this is unblocked but not yet started. **`AUDIT_REPORT.md` [P1]** (2026-08-04 run) ✅ fixed: added a global `@media (prefers-reduced-motion: reduce)` override in `src/index.css` (1ms animation/transition durations, `scroll-behavior: auto`) — covers `button.tsx` press/hover, `import-book-fab.tsx`, pulse loaders, `book-card.tsx` shadow transitions, and `tw-animate-css` sheet slide-ins uniformly. State changes (color, final position) still render immediately since only duration is zeroed, not the end state — satisfies the audit's warning against a "kill that destroys useful feedback." _(done 2026-08-04)_
+27. ✅ **Focus states / contrast consistency** — **`AUDIT_REPORT.md` [P1]** (2026-08-04 run) ✅ fixed: added a global `@media (prefers-reduced-motion: reduce)` override in `src/index.css` (1ms animation/transition durations, `scroll-behavior: auto`) — covers `button.tsx` press/hover, `import-book-fab.tsx`, pulse loaders, `book-card.tsx` shadow transitions, and `tw-animate-css` sheet slide-ins uniformly. State changes (color, final position) still render immediately since only duration is zeroed, not the end state — satisfies the audit's warning against a "kill that destroys useful feedback." _(done 2026-08-04)_
+
+    **Full pass 2026-08-07**, against the now-written `.agents/context/ACCESSIBILITY.md` (WCAG 2.2 AA). Contrast measured by computing every rendered token pair's ratio in both themes rather than by eye — 5 real failures, all in non-text UI (1.4.11):
+    - `--input` (control boundaries) sat at **1.62:1 light / 1.65:1 dark**, needing 3:1 — an off switch and an unchecked radio were near-invisible. Retuned to `#7c7e7e` / `#757370`, clearing 3:1 against page, card, and surface-high in both themes.
+    - `button.tsx`'s outline variant used `border-border` (decorative token) for what is actually a control edge — the Settings theme chips and stepper +/− buttons. Switched to `border-input`. Documented as DESIGN.md's new **Boundary vs Decoration Rule**: `--input` = control boundary (3:1 enforced), `--border`/`--divider` = decoration (deliberately soft, so the paper aesthetic survives).
+    - `.input-folio`'s underline used `--divider` at 1.23:1 — it's the only thing marking the search field as an input, so it's a control boundary; now `--input`.
+    - Caught a regression from the above in dark mode: outline buttons rendered as pale filled blocks, because `dark:bg-input/30` derived the _fill_ from the _boundary_ token. Fill now uses `surface-high`/`surface-highest`, independent of boundary contrast.
+    - `--selected-foreground` on `--selected` measures 4.13:1 in light, but that pairing renders nowhere (the light switch thumb is `bg-background`; only dark mode uses it, at 9.07:1). Not a finding — checked before "fixing" it.
+
+    **Focus:** hidden chrome stayed in the tab order. Measured on the library header — focus landed on a control at `y: -56.5`, off-screen, `pointer-events: none` (WCAG 2.4.7 / 2.4.11). `useChromeVisibility` gained `reveal`, wired via `onFocusCapture` on the library header and the reader's header and footer, so focus entering hidden chrome brings it back. Verified live on both surfaces (hidden → visible, `y` −81 → 0).
+
+    **Reader a11y quick wins** flagged in the contract: the iframe `<html>` now carries the book's `lang` (3.1.1, shape-checked against BCP 47, omitted when the EPUB declares none) and the iframe is titled with the book title instead of "reader" (verified live: `lang="en-GB"`, `title="The Nature of a Crime"`).
+
+    **Regression guard:** `src/__tests__/token-contrast.test.ts` — 44 assertions computing every rendered pair in both themes against the documented minimums. 493/493 tests passing.
+
 28. 🟡 **Validate preference interactions across Reader and Library** — Day 1/2 (theme + reading preferences) verified live: theme change propagates library ↔ settings, `applyThemeToReader` correctly gates the reader's own theme control. Day 4 (library chrome) has now landed, unblocking the full cross-surface pass this item originally scoped — not yet run.
 
 ❌ **Related Gap (spec-flagged, not tracked until now): [[Accessibility-01 Accessibility Scope|Accessibility Scope]].** The sprint doc explicitly recommends resolving this doc's open questions (target WCAG conformance level, how the iframe-rendered reader's custom scroll engine affects the accessibility tree, whether reduced-motion/contrast controls are user-facing or fall out of the theme system) _before_ Day 6 begins — "rather than deferring all accessibility decisions to Sprint 8." That recommendation was not followed: `#27`'s contrast/focus-state work (reduced-motion override) shipped without a written scope doc, so there's still no defined target to validate against. Worth writing before closing out Day 6/Sprint 5, not silently deferring to Sprint 8 as originally warned against.
@@ -140,16 +154,16 @@ Days 3 and 4 (reader chrome, library chrome) are both pure scroll/tap-interactio
 
 Numbered tasks:
 
-- `#27` — Day 6 contrast/focus-state audit. The `--selected` light-mode fix (`75d5244`) is one instance; a broad pass hasn't run. Gated on the Accessibility-01 gap below (target conformance level) if that's honoured in order.
 - `#28` — Cross-surface preference-interaction validation (Reader ↔ Library ↔ Settings). Unblocked since Day 4 stabilised.
 - `#29` — Day 7 hardening: performance, cleanup, docs, regression pass. Not started.
+- `#27` ✅ done 2026-08-07 (full contrast + focus pass against ACCESSIBILITY.md — see the item itself)
 - `#22` ✅ done 2026-08-07 · `#24` ✅ covered by the 2026-08-07 `/impeccable audit` (18/20); re-run once `#27`/`#28`/`#29` land if a final clean baseline is wanted.
 
-Spec-flagged gap docs (`docs/07 - Gaps/`) — cross-referenced above, none resolved. The spec's own language is "worth considering," so these are close-out candidates, not blockers:
+Spec-flagged gap docs (`docs/07 - Gaps/`) — cross-referenced above. The spec's own language is "worth considering," so these are close-out candidates, not blockers:
 
 - ✅ **[[Accessibility-01 Accessibility Scope|Accessibility Scope]]** (see Day 6, line ~110) — resolved 2026-08-07: `.agents/context/ACCESSIBILITY.md` written (WCAG 2.2 AA target, standing contrast/focus/motion/target-size rules, the decorative-cover-art exception, and five named reader-engine a11y gaps with the iframe's missing `lang` and generic title flagged as cheap fixes for `#27`/`#29`). `DESIGN.md` now defers to it for contrast minimums. Original ask was: write the short standards doc (target WCAG conformance level, how the iframe reader's custom scroll engine affects the accessibility tree, whether reduced-motion/contrast controls are user-facing). The spec asks for this _before_ `#27`, so it's the one gap with real ordering weight; without it `#27` has no defined target to validate against.
 - ❌ **[[Platform-01 Multi-Tab Concurrency|Multi-Tab Concurrency]]** (see Day 4, line ~86) — `library-filter-store.ts` persists per-tab with no `storage`-event or `BroadcastChannel` sync, so sort/filter set in one tab is invisible to another until reload; same gap applies to reading-progress writes.
 - ❌ **[[Infrastructure-01 Error and Crash Visibility|Error and Crash Visibility]]** (see Day 7, line ~116) — spec asks for "a light look during hardening," full resolution scoped to Sprint 8. Fold into `#29`.
 - ❌ **[[Onboarding-01 First-Run Experience|First-Run Experience]]** (see Day 7, line ~116) — same "light look during hardening" framing. Fold into `#29`.
 
-Suggested order: Accessibility-01 (short doc) → `#27` → `#28` → `#29` with Infrastructure-01/Onboarding-01 folded in. Platform-01 is independent of all of them and can land anywhere, including Sprint 6.
+Suggested order: ~~Accessibility-01~~ → ~~`#27`~~ (both done 2026-08-07) → `#28` → `#29` with Infrastructure-01/Onboarding-01 folded in. Platform-01 is independent of all of them and can land anywhere, including Sprint 6.

@@ -123,7 +123,7 @@
   --destructive-foreground: #fff9ee;
 
   --border: #c4c7c7;
-  --input: #c4c7c7;
+  --input: #7c7e7e;
   --ring: #695d4a;
   --divider: #eae2ce;
 
@@ -212,7 +212,7 @@
     --destructive-foreground: #141210;
 
     --border: #3d3a34;
-    --input: #3d3a34;
+    --input: #757370;
     --ring: #cbb98e;
     --divider: #2c2820;
 
@@ -274,7 +274,7 @@
   --destructive-foreground: #141210;
 
   --border: #3d3a34;
-  --input: #3d3a34;
+  --input: #757370;
   --ring: #cbb98e;
   --divider: #2c2820;
 
@@ -411,7 +411,10 @@
   .input-folio {
     background: transparent;
     border: none;
-    border-bottom: 1px solid var(--divider);
+    /* --input, not --divider: this underline is the only thing that marks the
+       field as a text input, so it's a control boundary (WCAG 1.4.11, 3:1)
+       rather than decoration. */
+    border-bottom: 1px solid var(--input);
     border-radius: 0;
   }
 

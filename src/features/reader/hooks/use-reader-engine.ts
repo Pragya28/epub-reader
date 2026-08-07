@@ -767,6 +767,7 @@ export function useReaderEngine({
       iframe,
       [...new Set(parsedBook.stylesheets)],
       bookId,
+      parsedBook.metadata.language,
     );
     logger.debug("initializeReaderDocument called, waiting for load event");
 

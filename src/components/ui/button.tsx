@@ -10,7 +10,13 @@ const buttonVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/80",
         outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+          // border-input, not border-border: on an outline button the border is
+          // the control's boundary and its hit-target edge (3:1, WCAG 1.4.11),
+          // not decoration — see ACCESSIBILITY.md.
+          // The dark fill is a raised surface, not a tint of the boundary
+          // colour — deriving it from --input meant darkening the boundary for
+          // contrast turned these buttons into pale filled blocks.
+          "border-input bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:bg-surface-high dark:hover:bg-surface-highest",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:

@@ -124,6 +124,7 @@ export function useReaderScreen() {
     handleScroll: handleChromeScroll,
     toggle: toggleChrome,
     setOverlay: setChromeOverlay,
+    reveal: revealChrome,
   } = useChromeVisibility();
 
   const handleExternalLink = useCallback(
@@ -175,6 +176,7 @@ export function useReaderScreen() {
 
     chromeVisible,
     setChromeOverlay,
+    revealChrome,
 
     handleTocItemClick,
     handleChapterNav,

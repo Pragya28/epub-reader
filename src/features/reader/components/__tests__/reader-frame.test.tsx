@@ -5,16 +5,16 @@ import { ReaderFrame } from "../reader-frame";
 
 describe("ReaderFrame", () => {
   it("renders a sandboxed iframe", () => {
-    render(<ReaderFrame />);
+    render(<ReaderFrame title="Moby-Dick" />);
 
-    const iframe = screen.getByTitle("reader");
+    const iframe = screen.getByTitle("Moby-Dick");
     expect(iframe.tagName).toBe("IFRAME");
     expect(iframe).toHaveAttribute("sandbox", "allow-same-origin");
   });
 
   it("forwards the ref to the iframe element", () => {
     const ref = createRef<HTMLIFrameElement>();
-    render(<ReaderFrame ref={ref} />);
+    render(<ReaderFrame ref={ref} title="Moby-Dick" />);
 
     expect(ref.current).toBeInstanceOf(HTMLIFrameElement);
   });

@@ -59,5 +59,10 @@ export function useChromeVisibility() {
     if (open) setVisible(true);
   }, []);
 
-  return { visible, handleScroll, toggle, setOverlay };
+  // Hidden chrome is translated off-screen but stays in the tab order, so a
+  // keyboard user could land on a control they can't see (WCAG 2.4.7 / 2.4.11).
+  // Wire to onFocusCapture on the chrome element: focus entering it reveals it.
+  const reveal = useCallback(() => setVisible(true), []);
+
+  return { visible, handleScroll, toggle, setOverlay, reveal };
 }

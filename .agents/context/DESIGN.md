@@ -125,6 +125,8 @@ A warm parchment-and-ink palette that inverts cleanly between a cream light mode
 
 **Contrast minimums live in `ACCESSIBILITY.md`**, not here — that file is hand-maintained and states the target (WCAG 2.2 AA) plus the one deliberate exception (decorative cover art). Any color decision on this page has to clear it.
 
+**The Boundary vs Decoration Rule.** `--input` is every _control_ boundary — outline-button edges, the switch's off track, radio outlines, the search field's underline — and is held at 3:1 against every surface it sits on. `--border`/`--divider` are _decorative_ container edges and separators (section cards, sheet headers, cover frames) and stay soft on purpose. Never reach for `border-border` on something the user clicks; never darken `--border` to fix a control's legibility.
+
 **The Cover Accent Rule.** `cover-dark` (`#2b241c`) and `cover-gold` (`#c9a84c`) are reserved for book-cover placeholder gradients and never used as UI chrome colors — they signal "this is a book object," not "this is a control."
 
 **The Ink Inversion Rule.** Primary is never a fixed hex — it's always the current theme's ink-on-paper extreme (near-black on cream, near-white on near-black). Never hardcode a mid-tone primary; use the `--primary` token so dark mode inverts correctly.
