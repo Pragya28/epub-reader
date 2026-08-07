@@ -63,7 +63,7 @@ export const ReaderScreen: FC = () => {
 
         {readerDocument ? (
           <div className="flex flex-col items-center gap-1">
-            <p className="font-heading font-semibold text-center text-m tracking-wide">
+            <p className="font-heading font-semibold text-center text-title-sm tracking-wide">
               {readerDocument.book.title}
             </p>
             <p className="text-ui-sm text-muted-foreground">
@@ -128,7 +128,7 @@ export const ReaderScreen: FC = () => {
         </Button>
 
         <div className="flex flex-col items-center gap-1">
-          <h1 className="font-heading font-semibold text-center text-m tracking-wide">
+          <h1 className="font-heading font-semibold text-center text-title-sm tracking-wide">
             {readerDocument.book.title}
           </h1>
           <p className="text-ui-sm text-muted-foreground">
