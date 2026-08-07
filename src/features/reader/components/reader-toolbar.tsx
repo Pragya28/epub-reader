@@ -64,10 +64,12 @@ export const ReaderToolbar: FC<ReaderToolbarProps> = ({ onOpenChange }) => {
           </Button>
         }
       />
+      {/* Fully transparent backdrop: the point of this sheet is previewing
+          type changes, so the page behind it must stay legible. */}
       <SheetContent
         side="bottom"
         className="flex flex-col gap-6 overflow-y-auto rounded-t-3xl border-t bg-card p-0 pb-6 data-[side=bottom]:h-[40dvh]"
-        overlayClassName="supports-backdrop-filter:backdrop-blur-none"
+        overlayClassName="bg-transparent supports-backdrop-filter:backdrop-blur-none"
         showCloseButton={false}
       >
         <SheetHeader className="border-b border-border px-6 pt-3 pb-5">

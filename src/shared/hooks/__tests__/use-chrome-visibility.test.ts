@@ -53,4 +53,20 @@ describe("useChromeVisibility", () => {
 
     expect(result.current.visible).toBe(false);
   });
+
+  it("keeps callback identities stable across overlay open/close", () => {
+    // useReaderEngine's effect depends on these; when they changed identity
+    // on every sheet open/close the engine re-ran and wiped the iframe.
+    const { result } = renderHook(() => useChromeVisibility());
+    const before = result.current;
+
+    act(() => result.current.setOverlay(true));
+    act(() => result.current.setOverlay(false));
+
+    expect(result.current.handleScrollDirection).toBe(
+      before.handleScrollDirection,
+    );
+    expect(result.current.toggle).toBe(before.toggle);
+    expect(result.current.setOverlay).toBe(before.setOverlay);
+  });
 });

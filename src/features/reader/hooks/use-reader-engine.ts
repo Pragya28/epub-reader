@@ -760,6 +760,14 @@ export function useReaderEngine({
     // loading screen forever.
     iframe.addEventListener("load", handleIframeLoad);
 
+    // Rewriting srcdoc below empties the iframe document, so nothing is
+    // mounted any more. If this effect re-runs (a dep changed), the stale
+    // loaded set would make the load plan decide there was nothing to mount
+    // and leave the reader permanently blank.
+    const { loadedChapterIndices, removeLoadedChapterIndex } =
+      readerStore.getState();
+    loadedChapterIndices.forEach(removeLoadedChapterIndex);
+
     initializeChapterDocument(iframe, parsedBook.stylesheets, bookId);
     logger.debug("initializeChapterDocument called, waiting for load event");
 
