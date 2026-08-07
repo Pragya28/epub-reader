@@ -15,11 +15,12 @@ import { detectVisibleChapter } from "../engine/scroll/detect-visible-chapter";
 import { resolveScrollAnchor } from "../engine/scroll/scroll-anchor";
 import { maintainChapterWindow } from "../engine/windowing/chapter-window";
 import {
-  initializeChapterDocument,
-  mountChapter,
-  mountChapterFallback,
-} from "../engine/renderer/chapter-renderer";
-import { applyReaderPreferences } from "../engine/renderer/iframe-renderer";
+  applyReaderPreferences,
+  initializeReaderDocument,
+  mountChapterSection,
+} from "../engine/renderer/iframe-renderer";
+
+const CHAPTER_MOUNT_ERROR_HTML = `<p class="chapter-mount-error">This chapter couldn't be displayed.</p>`;
 import { logger as rootLogger } from "@/shared/logger/logger";
 import {
   computeReaderProgress,
@@ -238,7 +239,7 @@ export function useReaderEngine({
         // The async parse/sanitize/blob-mint work (parsedBook.loadChapter)
         // happens outside the isMountingChapter guard — that flag exists to
         // keep maintainChapterWindow from running mid-DOM-mutation, and the
-        // actual DOM mutation (mountChapter) is still synchronous. Holding
+        // actual DOM mutation (mountChapterSection) is still synchronous. Holding
         // the guard across an await would widen the window for a concurrent
         // jump/prefetch to observe a stuck "mounting" state for no reason.
         try {
@@ -246,7 +247,7 @@ export function useReaderEngine({
 
           store.setIsMountingChapter(true);
           try {
-            mountChapter(iframeDoc, chapter, index);
+            mountChapterSection(iframeDoc, chapter.content, index);
             logger.debug("chapter mounted", { index });
           } finally {
             store.setIsMountingChapter(false);
@@ -258,7 +259,7 @@ export function useReaderEngine({
           // loop retries the same failing mount on every scroll tick.
           store.setIsMountingChapter(true);
           try {
-            mountChapterFallback(iframeDoc, index);
+            mountChapterSection(iframeDoc, CHAPTER_MOUNT_ERROR_HTML, index);
           } finally {
             store.setIsMountingChapter(false);
           }
@@ -762,8 +763,12 @@ export function useReaderEngine({
       readerStore.getState();
     loadedChapterIndices.forEach(removeLoadedChapterIndex);
 
-    initializeChapterDocument(iframe, parsedBook.stylesheets, bookId);
-    logger.debug("initializeChapterDocument called, waiting for load event");
+    initializeReaderDocument(
+      iframe,
+      [...new Set(parsedBook.stylesheets)],
+      bookId,
+    );
+    logger.debug("initializeReaderDocument called, waiting for load event");
 
     return () => {
       logger.info("effect cleanup");

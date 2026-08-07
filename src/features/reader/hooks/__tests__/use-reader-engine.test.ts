@@ -5,7 +5,7 @@ import { readerStore } from "../../store/reader-store";
 import * as getChapterSectionsModule from "../../engine/scroll/get-chapter-sections";
 import * as detectVisibleChapterModule from "../../engine/scroll/detect-visible-chapter";
 import * as maintainChapterWindowModule from "../../engine/windowing/chapter-window";
-import * as chapterRendererModule from "../../engine/renderer/chapter-renderer";
+import * as iframeRendererModule from "../../engine/renderer/iframe-renderer";
 import * as saveProgressModule from "../../actions/save-reader-progress";
 import type { ParsedBook, ParsedChapter } from "@/services/epub/epub-types";
 import type { ReadingProgress } from "@/services/storage/storage-types";
@@ -131,8 +131,8 @@ describe("useReaderEngine", () => {
   describe("initialization", () => {
     it("skips effect when iframe is missing", () => {
       const initSpy = vi.spyOn(
-        chapterRendererModule,
-        "initializeChapterDocument",
+        iframeRendererModule,
+        "initializeReaderDocument",
       );
 
       iframeRef.current = null;
@@ -149,8 +149,8 @@ describe("useReaderEngine", () => {
 
     it("skips effect when parsedBook is missing", () => {
       const initSpy = vi.spyOn(
-        chapterRendererModule,
-        "initializeChapterDocument",
+        iframeRendererModule,
+        "initializeReaderDocument",
       );
 
       renderHook(() =>
@@ -165,8 +165,8 @@ describe("useReaderEngine", () => {
 
     it("initializes chapter document with all chapters", () => {
       const initSpy = vi.spyOn(
-        chapterRendererModule,
-        "initializeChapterDocument",
+        iframeRendererModule,
+        "initializeReaderDocument",
       );
 
       renderHook(() =>
@@ -213,16 +213,16 @@ describe("useReaderEngine", () => {
       );
     });
 
-    it("attaches the load listener before triggering the load (initializeChapterDocument)", () => {
+    it("attaches the load listener before triggering the load (initializeReaderDocument)", () => {
       // A 'load' that fires before the listener is attached would be missed
       // entirely and the reader would hang forever — this ordering is load-bearing.
       const callOrder: string[] = [];
 
       vi.spyOn(
-        chapterRendererModule,
-        "initializeChapterDocument",
+        iframeRendererModule,
+        "initializeReaderDocument",
       ).mockImplementation(() => {
-        callOrder.push("initializeChapterDocument");
+        callOrder.push("initializeReaderDocument");
       });
 
       const iframe = iframeRef.current!;
@@ -244,14 +244,14 @@ describe("useReaderEngine", () => {
 
       expect(callOrder).toEqual([
         "addEventListener(load)",
-        "initializeChapterDocument",
+        "initializeReaderDocument",
       ]);
     });
   });
 
   describe("initial chapter loading", () => {
     it("loads initial chapters on iframe load", async () => {
-      const mountSpy = vi.spyOn(chapterRendererModule, "mountChapter");
+      const mountSpy = vi.spyOn(iframeRendererModule, "mountChapterSection");
 
       vi.spyOn(getChapterSectionsModule, "getChapterSections").mockReturnValue(
         Array.from({ length: 3 }, (_, i) => {
@@ -582,7 +582,13 @@ describe("useReaderEngine", () => {
     });
 
     it("handles mount failures gracefully", async () => {
-      vi.spyOn(chapterRendererModule, "mountChapter").mockImplementation(() => {
+      // Only the primary mount fails — the fallback mount below it in
+      // loadChapter's catch block isn't itself guarded, so making it throw
+      // too would be an unhandled rejection, a separate pre-existing gap.
+      vi.spyOn(
+        iframeRendererModule,
+        "mountChapterSection",
+      ).mockImplementationOnce(() => {
         throw new Error("Mount failed");
       });
 
@@ -631,8 +637,8 @@ describe("useReaderEngine", () => {
 
     it("only runs effect when dependencies change", () => {
       const initSpy = vi.spyOn(
-        chapterRendererModule,
-        "initializeChapterDocument",
+        iframeRendererModule,
+        "initializeReaderDocument",
       );
 
       const { rerender } = renderHook(

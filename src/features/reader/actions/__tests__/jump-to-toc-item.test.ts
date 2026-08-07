@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { jumpToTocItem } from "../jump-to-toc-item";
 import { readerStore } from "../../store/reader-store";
-import * as chapterRendererModule from "../../engine/renderer/chapter-renderer";
+import * as iframeRendererModule from "../../engine/renderer/iframe-renderer";
 import type {
   TocItem,
   ParsedBook,
@@ -19,8 +19,8 @@ vi.mock("@/shared/logger/logger", () => ({
   },
 }));
 
-vi.mock("../../engine/renderer/chapter-renderer", () => ({
-  mountChapter: vi.fn(),
+vi.mock("../../engine/renderer/iframe-renderer", () => ({
+  mountChapterSection: vi.fn(),
 }));
 
 const createChapter = (index: number): ParsedChapter => ({
@@ -131,9 +131,9 @@ describe("jumpToTocItem", () => {
 
       await jumpToTocItem(createTocItem(2), doc, win as any, parsedBook);
 
-      expect(chapterRendererModule.mountChapter).toHaveBeenCalledWith(
+      expect(iframeRendererModule.mountChapterSection).toHaveBeenCalledWith(
         doc,
-        chapters[2],
+        chapters[2].content,
         2,
       );
     });
@@ -152,7 +152,7 @@ describe("jumpToTocItem", () => {
 
       await jumpToTocItem(createTocItem(1), doc, win as any, parsedBook);
 
-      expect(chapterRendererModule.mountChapter).not.toHaveBeenCalled();
+      expect(iframeRendererModule.mountChapterSection).not.toHaveBeenCalled();
     });
 
     it("clears isMountingChapter after a successful mount", async () => {
@@ -294,9 +294,11 @@ describe("jumpToTocItem", () => {
 
   describe("error handling", () => {
     it("releases isJumping when mountChapter throws", async () => {
-      vi.mocked(chapterRendererModule.mountChapter).mockImplementation(() => {
-        throw new Error("mount failed");
-      });
+      vi.mocked(iframeRendererModule.mountChapterSection).mockImplementation(
+        () => {
+          throw new Error("mount failed");
+        },
+      );
 
       // No section in doc — but the throw happens before we reach scrollTo
       await jumpToTocItem(createTocItem(0), doc, win as any, parsedBook);
@@ -305,9 +307,11 @@ describe("jumpToTocItem", () => {
     });
 
     it("does not propagate errors to the caller", async () => {
-      vi.mocked(chapterRendererModule.mountChapter).mockImplementation(() => {
-        throw new Error("mount failed");
-      });
+      vi.mocked(iframeRendererModule.mountChapterSection).mockImplementation(
+        () => {
+          throw new Error("mount failed");
+        },
+      );
 
       await expect(
         jumpToTocItem(createTocItem(0), doc, win as any, parsedBook),
@@ -322,7 +326,7 @@ describe("jumpToTocItem", () => {
       await jumpToTocItem(createTocItem(0), doc, win as any, parsedBook);
 
       expect(readerStore.getState().isJumping).toBe(false);
-      expect(chapterRendererModule.mountChapter).not.toHaveBeenCalled();
+      expect(iframeRendererModule.mountChapterSection).not.toHaveBeenCalled();
     });
   });
 });

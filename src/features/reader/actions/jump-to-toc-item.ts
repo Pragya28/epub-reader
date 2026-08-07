@@ -1,6 +1,6 @@
 import type { ParsedBook, TocItem } from "@/services/epub/epub-types";
 import { readerStore } from "../store/reader-store";
-import { mountChapter } from "../engine/renderer/chapter-renderer";
+import { mountChapterSection } from "../engine/renderer/iframe-renderer";
 import { invalidateChapterSections } from "../engine/scroll/get-chapter-sections";
 import { logger as rootLogger } from "@/shared/logger/logger";
 
@@ -46,7 +46,7 @@ export async function jumpToTocItem(
       const chapter = await parsedBook.loadChapter(chapterIndex);
       store.setIsMountingChapter(true);
       try {
-        mountChapter(iframeDoc, chapter, chapterIndex);
+        mountChapterSection(iframeDoc, chapter.content, chapterIndex);
         invalidateChapterSections(iframeDoc);
         store.addLoadedChapterIndex(chapterIndex);
       } finally {
