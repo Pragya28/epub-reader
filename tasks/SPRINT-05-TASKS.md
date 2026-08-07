@@ -136,4 +136,20 @@ Days 3 and 4 (reader chrome, library chrome) are both pure scroll/tap-interactio
 
 **Day 5 (`#25`, color/shape refinement via `/impeccable colorize`) landed 2026-08-06/07** — ran after Days 1–4 rather than the earlier-suggested "right after Days 1–2" timing, since it touched shared UI primitives (`button.tsx`, `switch.tsx`, `radio-group.tsx`) that Days 3–4 also depend on; doing it after avoided rebasing those surfaces twice. `#22` (typography hierarchy) and the `/impeccable audit` pass itself (`#24`) are still open — worth running now that Days 1–5's color/shape decisions are final, so the audit reviews the sprint's actual end-state rather than an intermediate one.
 
-**Remaining for Sprint close-out:** `#22` (typography hierarchy pass), `#24` (`/impeccable audit` full run), `#27`/`#28` (Day 6 contrast audit + cross-surface validation, both unblocked now that Day 4 is stable), and `#29` (Day 7 hardening pass — full regression, perf check on the new scroll listeners, docs).
+**Remaining for Sprint close-out**
+
+Numbered tasks:
+
+- `#27` — Day 6 contrast/focus-state audit. The `--selected` light-mode fix (`75d5244`) is one instance; a broad pass hasn't run. Gated on the Accessibility-01 gap below (target conformance level) if that's honoured in order.
+- `#28` — Cross-surface preference-interaction validation (Reader ↔ Library ↔ Settings). Unblocked since Day 4 stabilised.
+- `#29` — Day 7 hardening: performance, cleanup, docs, regression pass. Not started.
+- `#22` ✅ done 2026-08-07 · `#24` ✅ covered by the 2026-08-07 `/impeccable audit` (18/20); re-run once `#27`/`#28`/`#29` land if a final clean baseline is wanted.
+
+Spec-flagged gap docs (`docs/07 - Gaps/`) — cross-referenced above, none resolved. The spec's own language is "worth considering," so these are close-out candidates, not blockers:
+
+- ❌ **[[Accessibility-01 Accessibility Scope|Accessibility Scope]]** (see Day 6, line ~110) — write the short standards doc (target WCAG conformance level, how the iframe reader's custom scroll engine affects the accessibility tree, whether reduced-motion/contrast controls are user-facing). The spec asks for this _before_ `#27`, so it's the one gap with real ordering weight; without it `#27` has no defined target to validate against.
+- ❌ **[[Platform-01 Multi-Tab Concurrency|Multi-Tab Concurrency]]** (see Day 4, line ~86) — `library-filter-store.ts` persists per-tab with no `storage`-event or `BroadcastChannel` sync, so sort/filter set in one tab is invisible to another until reload; same gap applies to reading-progress writes.
+- ❌ **[[Infrastructure-01 Error and Crash Visibility|Error and Crash Visibility]]** (see Day 7, line ~116) — spec asks for "a light look during hardening," full resolution scoped to Sprint 8. Fold into `#29`.
+- ❌ **[[Onboarding-01 First-Run Experience|First-Run Experience]]** (see Day 7, line ~116) — same "light look during hardening" framing. Fold into `#29`.
+
+Suggested order: Accessibility-01 (short doc) → `#27` → `#28` → `#29` with Infrastructure-01/Onboarding-01 folded in. Platform-01 is independent of all of them and can land anywhere, including Sprint 6.
