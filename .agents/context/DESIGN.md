@@ -16,6 +16,7 @@ colors:
   muted-taupe-foreground: "#444748"
   destructive-clay: "#b3261e"
   border-mist: "#c4c7c7"
+  control-edge: "#7c7e7e"
   ring-umber: "#695d4a"
   divider-parchment: "#eae2ce"
   cover-dark: "#2b241c"
@@ -119,7 +120,8 @@ A warm parchment-and-ink palette that inverts cleanly between a cream light mode
 - **Parchment Low/Mid/High/Highest** (`#fbf3df` → `#eae2ce` light; `#1a1713` → `#322b1e` dark): a four-step surface ramp for cards, popovers, and layered panels — each step a shade darker (light mode) or lighter (dark mode) than the background.
 - **Ink Black** (`#1f1c0f` light / `#f2ead8` dark): primary text.
 - **Muted Taupe** (`#444748` light / `#b3ada0` dark): secondary/meta text.
-- **Border Mist** (`#c4c7c7` light / `#3d3a34` dark): hairline borders, dividers, inputs.
+- **Border Mist** (`#c4c7c7` light / `#3d3a34` dark): decorative hairlines only — section-card edges, sheet-header rules, cover frames. Deliberately below 3:1; never used on a control.
+- **Control Edge** (`#7c7e7e` light / `#757370` dark, `--input`): every interactive boundary — outline-button edges, the switch's off track, radio outlines, the search underline. Held at ≥3:1 against page, card, and surface-high in both themes (WCAG 1.4.11). See the Boundary vs Decoration Rule.
 
 ### Named Rules
 
