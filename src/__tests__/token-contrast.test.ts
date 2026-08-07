@@ -38,9 +38,53 @@ function blockVars(startPattern: RegExp): Record<string, string> {
 const light = blockVars(/^:root \{/m);
 const dark = { ...light, ...blockVars(/^\.dark \{/m) };
 
+function srgbGamma(c: number): number {
+  const clamped = Math.min(1, Math.max(0, c));
+  const s =
+    clamped <= 0.0031308
+      ? clamped * 12.92
+      : 1.055 * clamped ** (1 / 2.4) - 0.055;
+  return Math.round(s * 255);
+}
+
+// Inverse of the OKLab/OKLCh matrices (Björn Ottosson) — oklch() token -> sRGB channels.
+function oklchToChannels(
+  l: number,
+  c: number,
+  h: number,
+): [number, number, number] {
+  const hRad = (h * Math.PI) / 180;
+  const a = c * Math.cos(hRad);
+  const b = c * Math.sin(hRad);
+
+  const l_ = l + 0.3963377774 * a + 0.2158037573 * b;
+  const m_ = l - 0.1055613458 * a - 0.0638541728 * b;
+  const s_ = l - 0.0894841775 * a - 1.291485548 * b;
+
+  const lc = l_ ** 3;
+  const mc = m_ ** 3;
+  const sc = s_ ** 3;
+
+  const r = 4.0767416621 * lc - 3.3077115913 * mc + 0.2309699292 * sc;
+  const g = -1.2684380046 * lc + 2.6097574011 * mc - 0.3413193965 * sc;
+  const bl = -0.0041960863 * lc - 0.7034186147 * mc + 1.707614701 * sc;
+
+  return [srgbGamma(r), srgbGamma(g), srgbGamma(bl)];
+}
+
 function channels(value: string): [number, number, number] {
+  const oklch = /^oklch\(\s*([\d.]+)%\s+([\d.]+)\s+([\d.]+)\s*\)$/i.exec(value);
+  if (oklch) {
+    return oklchToChannels(
+      Number(oklch[1]) / 100,
+      Number(oklch[2]),
+      Number(oklch[3]),
+    );
+  }
+
   const hex = /^#([0-9a-f]{6})$/i.exec(value);
-  if (!hex) throw new Error(`expected a 6-digit hex token, got: ${value}`);
+  if (!hex)
+    throw new Error(`expected an oklch() or 6-digit hex token, got: ${value}`);
   const n = parseInt(hex[1], 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
