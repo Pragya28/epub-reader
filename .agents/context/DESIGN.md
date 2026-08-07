@@ -123,6 +123,8 @@ A warm parchment-and-ink palette that inverts cleanly between a cream light mode
 
 ### Named Rules
 
+**Contrast minimums live in `ACCESSIBILITY.md`**, not here — that file is hand-maintained and states the target (WCAG 2.2 AA) plus the one deliberate exception (decorative cover art). Any color decision on this page has to clear it.
+
 **The Cover Accent Rule.** `cover-dark` (`#2b241c`) and `cover-gold` (`#c9a84c`) are reserved for book-cover placeholder gradients and never used as UI chrome colors — they signal "this is a book object," not "this is a control."
 
 **The Ink Inversion Rule.** Primary is never a fixed hex — it's always the current theme's ink-on-paper extreme (near-black on cream, near-white on near-black). Never hardcode a mid-tone primary; use the `--primary` token so dark mode inverts correctly.

@@ -38,7 +38,7 @@ Package manager is pnpm (`packageManager` pinned in package.json) — don't use 
 ### Layout
 
 - `src/app/` — routing shell only (`router.tsx`, three screens: library/reader/settings). Thin composition, no business logic.
-- `src/features/{library,reader}/` — vertical slices, each with `store/`, `actions/`, `components/`, `types/`, `utils/`. `reader/` additionally owns `engine/` (custom chapter rendering pipeline) and `hooks/`.
+- `src/features/{library,preferences,reader}/` — vertical slices, each with `store/`, `actions/`, `components/`, `types/`. `reader/` additionally owns `engine/` (custom chapter rendering pipeline), `hooks/`, and `utils/`; `preferences/` additionally owns `hooks/` and `constants/`.
 - `src/services/{epub,storage}/` — framework-agnostic infra. `epub/` parses EPUB files; `storage/` wraps Dexie/IndexedDB.
 - `src/components/` — shadcn/ui primitives (`ui/`) plus cross-cutting `toast/` and `error-boundary/`.
 - `src/shared/` — cross-feature utilities not tied to one layer (`logger/`, `ornaments.ts` — decorative SVGs injected into the reader iframe).
