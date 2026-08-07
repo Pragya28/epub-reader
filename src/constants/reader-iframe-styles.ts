@@ -6,8 +6,8 @@
  */
 
 /** Ink/paper colors for the chapter-separator ornament and --sep-* CSS vars. */
-export const SEPARATOR_COLOR_LIGHT = "#695d4a";
-export const SEPARATOR_COLOR_DARK = "#cbb98e";
+export const SEPARATOR_COLOR_LIGHT = "oklch(48.45% 0.0329 79.18)";
+export const SEPARATOR_COLOR_DARK = "oklch(79.03% 0.0611 87.95)";
 
 /**
  * Fonts are self-hosted (public/fonts/<name>/, see each README) rather
@@ -121,8 +121,8 @@ export const READER_BASE_STYLE = `
   :root {
     color-scheme: light dark;
     --sep-ink:  ${SEPARATOR_COLOR_LIGHT};
-    --sep-fade: #fff9ee;
-    --sep-text: #1f1c0f;
+    --sep-fade: oklch(98.38% 0.0159 82.79);
+    --sep-text: oklch(22.57% 0.0237 96.74);
     --reading-font-scale: 1;
     --reading-line-height: 1.6;
     --reading-font-family: "Literata", serif;
@@ -133,22 +133,22 @@ export const READER_BASE_STYLE = `
   @media (prefers-color-scheme: dark) {
     :root {
       --sep-ink:  ${SEPARATOR_COLOR_DARK};
-      --sep-fade: #141210;
-      --sep-text: #f2ead8;
+      --sep-fade: oklch(18.38% 0.0052 67.5);
+      --sep-text: oklch(93.85% 0.0254 86.87);
     }
   }
 
   /* Explicit theme choice wins over the OS-level prefers-color-scheme. */
   :root[data-theme="light"] {
     --sep-ink:  ${SEPARATOR_COLOR_LIGHT};
-    --sep-fade: #fff9ee;
-    --sep-text: #1f1c0f;
+    --sep-fade: oklch(98.38% 0.0159 82.79);
+    --sep-text: oklch(22.57% 0.0237 96.74);
   }
 
   :root[data-theme="dark"] {
     --sep-ink:  ${SEPARATOR_COLOR_DARK};
-    --sep-fade: #141210;
-    --sep-text: #f2ead8;
+    --sep-fade: oklch(18.38% 0.0052 67.5);
+    --sep-text: oklch(93.85% 0.0254 86.87);
   }
 
   html, body {
