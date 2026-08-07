@@ -66,7 +66,7 @@ export const ReaderScreen: FC = () => {
             <p className="font-heading font-semibold text-center text-m tracking-wide">
               {readerDocument.book.title}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-ui-sm text-muted-foreground">
               {readerDocument.book.author}
             </p>
           </div>
@@ -77,7 +77,7 @@ export const ReaderScreen: FC = () => {
           </div>
         )}
 
-        <p className="text-xs text-muted-foreground">Loading reader...</p>
+        <p className="text-ui-sm text-muted-foreground">Loading reader...</p>
       </div>
     );
   }
@@ -87,7 +87,7 @@ export const ReaderScreen: FC = () => {
       <div className="flex h-dvh items-center justify-center bg-background text-foreground">
         <div className="flex flex-col items-center gap-4 text-center">
           <p className="mb-2 font-semibold">Error loading book</p>
-          <p className="text-muted-foreground text-sm">{error}</p>
+          <p className="text-muted-foreground text-ui">{error}</p>
 
           <div className="flex gap-2">
             <Button variant="outline" onClick={retryLoad}>
@@ -131,7 +131,7 @@ export const ReaderScreen: FC = () => {
           <h1 className="font-heading font-semibold text-center text-m tracking-wide">
             {readerDocument.book.title}
           </h1>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-ui-sm text-muted-foreground">
             {readerDocument.book.author}
           </p>
         </div>

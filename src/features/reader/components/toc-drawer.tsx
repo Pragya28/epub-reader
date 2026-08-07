@@ -55,9 +55,7 @@ export const TocDrawer = memo(function TocDrawer({
         <SheetHeader className="border-b border-border px-6 pt-3 pb-5">
           <div className="mx-auto mb-4 h-1 w-16 rounded-full bg-border" />
 
-          <SheetTitle className="font-heading text-base font-semibold tracking-[0.18em] text-center">
-            Contents
-          </SheetTitle>
+          <SheetTitle className="text-center">Contents</SheetTitle>
         </SheetHeader>
 
         <ScrollArea className="flex-1 overflow-auto">

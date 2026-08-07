@@ -57,10 +57,10 @@ function StepperRow({
                 the visible formatted field from that shadow input in tests. */}
             <NumberField.Input
               data-testid={`stepper-input-${label}`}
-              className="w-full bg-transparent text-center text-sm tabular-nums outline-none"
+              className="w-full bg-transparent text-center text-ui tabular-nums outline-none"
             />
             {suffix && (
-              <span className="text-sm text-muted-foreground">{suffix}</span>
+              <span className="text-ui text-muted-foreground">{suffix}</span>
             )}
           </span>
 

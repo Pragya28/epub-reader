@@ -73,9 +73,7 @@ export const ReaderToolbar: FC<ReaderToolbarProps> = ({ onOpenChange }) => {
         <SheetHeader className="border-b border-border px-6 pt-3 pb-5">
           <div className="mx-auto mb-4 h-1 w-16 rounded-full bg-border" />
 
-          <SheetTitle className="font-heading text-base font-semibold tracking-[0.18em] text-center">
-            Reading Preferences
-          </SheetTitle>
+          <SheetTitle className="text-center">Reading Preferences</SheetTitle>
         </SheetHeader>
 
         <div className="flex flex-col gap-6 px-6">

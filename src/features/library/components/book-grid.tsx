@@ -27,10 +27,10 @@ export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
           strokeWidth={1.5}
           className="text-destructive/60"
         />
-        <p className="text-sm uppercase tracking-[0.15em] text-destructive font-heading">
+        <p className="text-ui uppercase tracking-[0.15em] text-destructive font-heading">
           Couldn't load your library
         </p>
-        <p className="text-xs text-muted-foreground opacity-60">{error}</p>
+        <p className="text-ui-sm text-muted-foreground opacity-60">{error}</p>
       </div>
     );
   }
@@ -40,7 +40,7 @@ export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
       <div
         role="status"
         aria-live="polite"
-        className="flex items-center justify-center py-24 text-sm text-muted-foreground"
+        className="flex items-center justify-center py-24 text-ui text-muted-foreground"
       >
         Loading your library…
       </div>
@@ -59,11 +59,11 @@ export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
           strokeWidth={1.5}
           className="text-muted-foreground/30"
         />
-        <p className="text-sm uppercase tracking-[0.15em] text-muted-foreground font-heading">
+        <p className="text-ui uppercase tracking-[0.15em] text-muted-foreground font-heading">
           {isSearch ? "No books found" : "Your library is empty"}
         </p>
         {!isSearch && (
-          <p className="text-xs text-muted-foreground opacity-60">
+          <p className="text-ui-sm text-muted-foreground opacity-60">
             Tap + to import your first book.
           </p>
         )}

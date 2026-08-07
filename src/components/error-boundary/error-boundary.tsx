@@ -51,7 +51,7 @@ export class ErrorBoundary extends Component<
       <div className="flex h-screen flex-col items-center justify-center gap-4 bg-background px-6 text-center text-foreground">
         <p className="font-semibold">Something went wrong</p>
 
-        <p className="max-w-sm text-sm text-muted-foreground">
+        <p className="max-w-sm text-ui text-muted-foreground">
           {error.message}
         </p>
 

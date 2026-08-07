@@ -145,11 +145,13 @@ A warm parchment-and-ink palette that inverts cleanly between a cream light mode
 - **Display** (Cinzel, 48px / 32px mobile, 0.08em tracking): screen-level titles.
 - **Headline** (Cinzel, 24px, 0.05em tracking, `.section-title`): section headers within screens.
 - **Reading Large/Medium** (Literata, 20px / 17px, 1.6 line-height): chapter body text inside the reader iframe; max width 68ch (`--reading-max-width`).
-- **Title Small** (Cinzel, 15px, 0.06em tracking, `text-title-sm`): compact display titles on small surfaces where the full Headline size (24px) would overwhelm the container — book-cover placeholder titles, the Continue Reading banner's book title.
+- **Title Small** (Cinzel, 15px, 0.06em tracking, `text-title-sm`): compact display titles on small surfaces where the full Headline size (24px) would overwhelm the container — book-cover placeholder titles, the Continue Reading banner's book title, and drawer/sheet titles (`SheetTitle`, which carries this treatment by default at 0.18em tracking).
 - **UI** (Plus Jakarta Sans, 14px / 12px small): buttons, labels, nav, controls.
 - **Meta** (Plus Jakarta Sans, 11px, 0.05em tracking, uppercase, `.metadata`, `text-meta`): timestamps, byline-style metadata, badges, cover-placeholder author labels.
 
 ### Named Rules
+
+**The Ramp-Only Rule.** Every font size comes from the `--text-*` scale (`text-display-lg` … `text-meta`) — never Tailwind's built-in `text-sm`/`text-base`/`text-xs`, even in shadcn-generated primitives, and never a literal px value. `cn()` is configured (`src/utils/cn.ts`) so tailwind-merge classifies these as font sizes; without that, a `cn("text-title-sm", …, "text-foreground")` silently drops the size.
 
 **The Serif-For-Content Rule.** Any text the reader is meant to actually _read_ (titles, chapter text) uses a serif; any text that helps them _operate_ the app (buttons, nav, meta labels) uses the sans. Don't cross the two.
 

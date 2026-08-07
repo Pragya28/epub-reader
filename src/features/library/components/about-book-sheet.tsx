@@ -44,7 +44,7 @@ export const AboutBookSheet: FC<AboutBookSheetProps> = ({
           </div>
 
           <div className="flex min-w-0 flex-col justify-center gap-1">
-            <p className="font-bold text-base leading-tight text-foreground">
+            <p className="font-bold text-title-sm leading-tight text-foreground">
               {book.title}
             </p>
             {book.author && (
