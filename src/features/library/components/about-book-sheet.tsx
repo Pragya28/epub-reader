@@ -71,7 +71,7 @@ export const AboutBookSheet: FC<AboutBookSheetProps> = ({
         )}
 
         {book.description && (
-          <p className="border-t border-divider pt-4 text-ui text-foreground/80 leading-relaxed whitespace-normal">
+          <p className="border-t border-divider pt-4 text-ui text-foreground/80 leading-relaxed whitespace-pre-line">
             {book.description}
           </p>
         )}

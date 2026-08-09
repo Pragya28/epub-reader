@@ -109,6 +109,36 @@ describe("OpfParser", () => {
     expect(result.metadata.description).toBe("A book about testing.");
   });
 
+  it("preserves paragraph breaks from escaped <p> tags in the description", () => {
+    const xml = `
+      <package>
+        <metadata>
+          <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">Test Book</dc:title>
+          <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Test Author</dc:creator>
+          <dc:description xmlns:dc="http://purl.org/dc/elements/1.1/">&lt;p&gt;First paragraph.&lt;/p&gt;&lt;p&gt;Second paragraph.&lt;/p&gt;</dc:description>
+        </metadata>
+
+        <manifest>
+          <item
+            id="chapter-1"
+            href="text/chapter-1.xhtml"
+            media-type="application/xhtml+xml"
+          />
+        </manifest>
+
+        <spine>
+          <itemref idref="chapter-1" />
+        </spine>
+      </package>
+    `;
+
+    const result = parser.parse(parseXml(xml));
+
+    expect(result.metadata.description).toBe(
+      "First paragraph.\n\nSecond paragraph.",
+    );
+  });
+
   it("returns null description when absent", () => {
     const xml = `
       <package>

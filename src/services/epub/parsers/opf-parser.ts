@@ -51,10 +51,18 @@ export class OpfParser {
    * textContent alone doesn't strip that, since it's not markup as far as
    * the OPF's own XML parser is concerned. Re-parsing it as HTML and
    * reading textContent again removes it either way.
+   *
+   * Block boundaries are converted to blank lines first — plain
+   * `textContent` on the reparsed doc would otherwise concatenate
+   * `<p>A</p><p>B</p>` into "AB" with no separator, collapsing every
+   * paragraph break in the description into one run-on paragraph.
    */
   private stripHtml(text: string): string {
-    const doc = new DOMParser().parseFromString(text, "text/html");
-    return doc.body.textContent?.trim() ?? text;
+    const withBreaks = text
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/(p|div)>/gi, "\n\n");
+    const doc = new DOMParser().parseFromString(withBreaks, "text/html");
+    return doc.body.textContent?.replace(/\n{3,}/g, "\n\n").trim() ?? text;
   }
 
   // ---- Manifest ----
