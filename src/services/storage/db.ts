@@ -3,12 +3,14 @@ import type {
   StoredBook,
   StoredBookCover,
   StoredBookFile,
+  StoredSearchIndexEntry,
 } from "./storage-types";
 
 class LibruneDB extends Dexie {
   books!: Table<StoredBook>;
   bookFiles!: Table<StoredBookFile>;
   bookCovers!: Table<StoredBookCover>;
+  searchIndex!: Table<StoredSearchIndexEntry>;
 
   constructor() {
     super("librune-db");
@@ -27,6 +29,16 @@ class LibruneDB extends Dexie {
       books: "id, title, author, createdAt, &fileHash, progress.updatedAt",
       bookFiles: "bookId",
       bookCovers: "bookId",
+    });
+
+    // v4: adds the full-text search index (Sprint 6). One row per
+    // {word, bookId, chapter} occurrence; `word` and `bookId` indexed so a
+    // query can look up matches directly instead of scanning the table.
+    this.version(4).stores({
+      books: "id, title, author, createdAt, &fileHash, progress.updatedAt",
+      bookFiles: "bookId",
+      bookCovers: "bookId",
+      searchIndex: "++id, word, bookId",
     });
   }
 }

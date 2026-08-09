@@ -55,3 +55,11 @@ export interface StoredBookCover {
   bookId: string;
   cover: Blob;
 }
+
+/** One occurrence of `word` in `bookId`'s chapter `chapter` (spine index). */
+export interface StoredSearchIndexEntry {
+  id?: number;
+  word: string;
+  bookId: string;
+  chapter: number;
+}

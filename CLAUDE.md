@@ -46,6 +46,10 @@ Package manager is pnpm (`packageManager` pinned in package.json) — don't use 
 
 Tests are colocated in `__tests__/` next to the code they cover, not centralized.
 
+`store` in a filename means a Zustand store specifically (e.g. `reader-store.ts`) — don't use it for other kinds of modules (e.g. a Dexie-backed data module is `search-index.ts`, not `search-index-store.ts`).
+
+Don't re-export one module's functions through another for convenience (e.g. `services/search/search-service.ts` re-exporting `services/search/search-index.ts`'s functions) — import each function directly from the module that defines it.
+
 ### EPUB parsing (no epub.js)
 
 `services/epub/epub.service.ts` unzips with **JSZip** and reads `container.xml`/OPF via native `DOMParser`. `epub-parser.ts` orchestrates `parsers/{opf,chapter,toc}-parser.ts` into a `ParsedBook` (metadata + chapters + toc).
