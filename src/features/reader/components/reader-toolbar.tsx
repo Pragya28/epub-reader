@@ -72,8 +72,8 @@ export const ReaderToolbar: FC<ReaderToolbarProps> = ({ onOpenChange }) => {
         overlayClassName="bg-transparent supports-backdrop-filter:backdrop-blur-none"
         showCloseButton={false}
       >
-        <SheetHeader className="border-b border-border px-6 pt-3 pb-5">
-          <div className="mx-auto mb-4 h-1 w-16 rounded-full bg-border" />
+        <SheetHeader className="gap-4 border-b border-border px-6 pt-3 pb-5">
+          <div className="mx-auto h-1 w-16 rounded-full bg-border" />
 
           <SheetTitle className="text-center">Reading Preferences</SheetTitle>
         </SheetHeader>

@@ -87,7 +87,7 @@ export const ReaderScreen: FC = () => {
     return (
       <div className="flex h-dvh items-center justify-center bg-background text-foreground">
         <div className="flex flex-col items-center gap-4 text-center">
-          <p className="mb-2 font-semibold">Error loading book</p>
+          <p className="font-semibold">Error loading book</p>
           <p className="text-muted-foreground text-ui">{error}</p>
 
           <div className="flex gap-2">

@@ -31,22 +31,22 @@ export const ContinueReadingBanner: FC<ContinueReadingBannerProps> = ({
       </div>
 
       {/* Text block */}
-      <div className="flex flex-col flex-1 min-w-0 gap-1">
-        <p className="text-meta font-semibold uppercase tracking-[0.14em] text-warm-accent-foreground/80 leading-none mb-1 font-reading">
+      <div className="flex flex-col flex-1 min-w-0 gap-2">
+        <p className="text-meta font-semibold uppercase tracking-[0.14em] text-warm-accent-foreground/80 leading-none font-reading">
           Continue Reading
         </p>
         <p className="text-title-sm font-semibold text-warm-accent-foreground leading-snug truncate">
           {book.title}
         </p>
         {/* Sub-line: chapter + progress bar */}
-        <div className="mt-1.5 flex flex-row items-center gap-2">
+        <div className="flex flex-row items-center gap-2">
           <Progress
             value={book.progress ?? 0}
             className="flex-1"
             trackClassName="bg-warm-accent-foreground/20"
             indicatorClassName="bg-warm-accent-foreground"
           />
-          <span className="shrink-0 whitespace-nowrap text-meta text-warm-accent-foreground/70">
+          <span className="shrink-0 whitespace-nowrap text-meta text-warm-accent-foreground/90">
             {chapter} · {book.progress ?? 0}%
           </span>
         </div>

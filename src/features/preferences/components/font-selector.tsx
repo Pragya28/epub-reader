@@ -111,8 +111,8 @@ export const FontSelector: FC<FontSelectorProps> = ({
       )}
 
       {showPreview && (
-        <div className="flex flex-col pt-4 w-full">
-          <span className="metadata mb-2">Preview</span>
+        <div className="flex flex-col gap-2 pt-4 w-full">
+          <span className="metadata">Preview</span>
           <div className="flex flex-col rounded-sm bg-surface-high p-8">
             <p className="text-foreground" style={pangramStyle}>
               {PREVIEW_PANGRAM}

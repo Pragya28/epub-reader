@@ -48,7 +48,7 @@ export const BookCard: FC<BookWithProgress> = memo(function BookCard(book) {
       <div
         className="
           relative
-          aspect-3/4
+          aspect-2/3
           overflow-hidden
           rounded-xl
           border border-border/40
@@ -113,7 +113,7 @@ export const BookCard: FC<BookWithProgress> = memo(function BookCard(book) {
 
         {/* Reading progress text */}
         {statusText && (
-          <p className="text-meta text-muted-foreground mt-0.5">{statusText}</p>
+          <p className="text-meta text-muted-foreground">{statusText}</p>
         )}
       </div>
 
