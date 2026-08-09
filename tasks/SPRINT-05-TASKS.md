@@ -119,7 +119,18 @@ Also fixed as part of the same pass: `continue-reading-banner.tsx`'s progress ba
 
     **Regression guard:** `src/__tests__/token-contrast.test.ts` — 44 assertions computing every rendered pair in both themes against the documented minimums. 493/493 tests passing.
 
-28. 🟡 **Validate preference interactions across Reader and Library** — Day 1/2 (theme + reading preferences) verified live: theme change propagates library ↔ settings, `applyThemeToReader` correctly gates the reader's own theme control. Day 4 (library chrome) has now landed, unblocking the full cross-surface pass this item originally scoped — not yet run.
+28. ✅ **Validate preference interactions across Reader and Library** — Day 1/2 verified live: theme change propagates library ↔ settings, `applyThemeToReader` correctly gates the reader's own theme control.
+
+    **Full cross-surface pass, 2026-08-07**, all measured live against a real imported EPUB with `applyThemeToReader` flipped both ways, not assumed from reading the code:
+    - Settings theme change → propagates to Library and to the reader (when `applyThemeToReader` is true) without a reload.
+    - Toggling `applyThemeToReader` off mid-session live-reveals the reader toolbar's own theme control (no re-navigation needed) and its `readerTheme` selection stays fully independent of the app-shell `theme` — verified both directions, including that flipping it back on re-applies the shell theme to an already-open reader.
+    - Font size / line height set in the reader toolbar show correctly in Settings after navigating there, and vice versa — including a live font-family change propagating into an _already-open_ iframe via the store subscription, no reload.
+    - `margins`/`paragraphSpacing` (reader-only per the Day 1 store split) persist across a full reload and are left untouched by anything on the Settings screen.
+    - Preferences are global, not per-book: font/margin set while reading one book carried over to a second book opened from the library, as intended.
+
+    **Found and fixed a real, independent bug in the process**, exactly the kind this pass exists to catch: with `applyThemeToReader` flipped off then back on, a Project Gutenberg book's own stylesheet (`body { background-color: white }`) was winning over the reader's dark-mode background — because `reader-iframe-styles.ts`'s base `body` rule forced `color` with `!important` but not `background`. Result: near-white dark-mode text on a publisher-forced white background, effectively invisible (measured: `color: oklch(0.9385 ...)` on `background: rgb(255,255,255)`). This wasn't introduced by `#27`/`#28` — pre-existing, just never triggered by a book with an opinionated stylesheet until this pass loaded one. Fixed by forcing `background` too (`iframe-renderer.ts`, `reader-iframe-styles.ts`); font-family remains intentionally publisher-overridable, only the theme-critical background changed. Regression-guarded: a new test in `iframe-renderer.test.ts` asserts the forced background survives a stylesheet that hardcodes one.
+
+    494/494 tests passing (up from 493), `tsc`/`lint` clean.
 
 ❌ **Related Gap (spec-flagged, not tracked until now): [[Accessibility-01 Accessibility Scope|Accessibility Scope]].** The sprint doc explicitly recommends resolving this doc's open questions (target WCAG conformance level, how the iframe-rendered reader's custom scroll engine affects the accessibility tree, whether reduced-motion/contrast controls are user-facing or fall out of the theme system) _before_ Day 6 begins — "rather than deferring all accessibility decisions to Sprint 8." That recommendation was not followed: `#27`'s contrast/focus-state work (reduced-motion override) shipped without a written scope doc, so there's still no defined target to validate against. Worth writing before closing out Day 6/Sprint 5, not silently deferring to Sprint 8 as originally warned against.
 
@@ -154,8 +165,8 @@ Days 3 and 4 (reader chrome, library chrome) are both pure scroll/tap-interactio
 
 Numbered tasks:
 
-- `#28` — Cross-surface preference-interaction validation (Reader ↔ Library ↔ Settings). Unblocked since Day 4 stabilised.
 - `#29` — Day 7 hardening: performance, cleanup, docs, regression pass. Not started.
+- `#28` ✅ done 2026-08-07 (full cross-surface pass — also caught and fixed a real dark-mode background bug, see the item itself)
 - `#27` ✅ done 2026-08-07 (full contrast + focus pass against ACCESSIBILITY.md — see the item itself)
 - `#22` ✅ done 2026-08-07 · `#24` ✅ covered by the 2026-08-07 `/impeccable audit` (18/20); re-run once `#27`/`#28`/`#29` land if a final clean baseline is wanted.
 
@@ -166,4 +177,4 @@ Spec-flagged gap docs (`docs/07 - Gaps/`) — cross-referenced above. The spec's
 - ❌ **[[Infrastructure-01 Error and Crash Visibility|Error and Crash Visibility]]** (see Day 7, line ~116) — spec asks for "a light look during hardening," full resolution scoped to Sprint 8. Fold into `#29`.
 - ❌ **[[Onboarding-01 First-Run Experience|First-Run Experience]]** (see Day 7, line ~116) — same "light look during hardening" framing. Fold into `#29`.
 
-Suggested order: ~~Accessibility-01~~ → ~~`#27`~~ (both done 2026-08-07) → `#28` → `#29` with Infrastructure-01/Onboarding-01 folded in. Platform-01 is independent of all of them and can land anywhere, including Sprint 6.
+Suggested order: ~~Accessibility-01~~ → ~~`#27`~~ → ~~`#28`~~ (all done 2026-08-07) → `#29` with Infrastructure-01/Onboarding-01 folded in. Platform-01 is independent of all of them and can land anywhere, including Sprint 6.

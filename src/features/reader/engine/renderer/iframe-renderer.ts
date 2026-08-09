@@ -118,7 +118,11 @@ function buildReaderBaseStyle(bookId?: string): string {
  *
  * Our base theme/font styles are written before the book's own
  * stylesheets so publisher CSS (e.g. a body { font-family } rule) still
- * wins where it's actually specified — ours is just the fallback.
+ * wins where it's actually specified — ours is just the fallback. The
+ * one exception is `background` (see reader-iframe-styles.ts): that one
+ * is forced with !important, because losing it to a publisher's
+ * hardcoded `background-color: white` pairs badly with our
+ * equally-forced --sep-text and renders the page illegible in dark mode.
  */
 export function initializeReaderDocument(
   iframe: HTMLIFrameElement,

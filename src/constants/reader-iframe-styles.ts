@@ -160,7 +160,13 @@ export const READER_BASE_STYLE = `
     font-family: var(--reading-font-family) !important;
     font-size: calc(1rem * var(--reading-font-scale)) !important;
     line-height: var(--reading-line-height);
-    background: var(--sep-fade);
+    /* !important: publisher CSS is deliberately allowed to win on
+       font-family (that's a stylistic choice), but never on background —
+       a book stylesheet that hardcodes e.g. "background-color: white"
+       (common in Project Gutenberg EPUBs) would otherwise survive our
+       theme and pair with our forced (!important) --sep-text color,
+       silently rendering near-invisible text in dark mode. */
+    background: var(--sep-fade) !important;
     color: var(--sep-text) !important;
     padding: 120px var(--reading-margin);
     box-sizing: border-box;

@@ -42,6 +42,21 @@ describe("iframe-renderer", () => {
       expect(iframe.srcdoc).toContain("<style>");
     });
 
+    it("keeps our body background over a publisher stylesheet that hardcodes one", () => {
+      // Regression: our base style used to leave `background` un-!important
+      // while forcing `color` — a Project Gutenberg-style stylesheet with a
+      // plain `body { background-color: white }` would then win on
+      // background only, pairing white with our forced light-text dark-mode
+      // color and rendering the page effectively illegible.
+      initializeReaderDocument(iframe, [
+        "body { background-color: white; color: black; }",
+      ]);
+
+      expect(iframe.srcdoc).toMatch(
+        /background:\s*var\(--sep-fade\)\s*!important/,
+      );
+    });
+
     it("sanitizes stylesheets by removing expression()", () => {
       const malicious = "div { behavior: expression(alert('xss')); }";
 
