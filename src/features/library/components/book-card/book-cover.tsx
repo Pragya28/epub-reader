@@ -18,7 +18,7 @@ export const BookCover: FC<BookWithProgress> = ({
         alt=""
         loading="lazy"
         decoding="async"
-        className="w-full h-full object-cover"
+        className="w-full h-full object-contain bg-muted"
       />
     );
   }
