@@ -9,8 +9,8 @@ import { enrichBookWithProgress } from "../../utils/derive-book-status";
 import {
   DEFAULT_LIBRARY_FILTERS,
   filterBooksByCriteria,
-  filterBooksByQuery,
 } from "../../utils/filter-books";
+import { filterBooksByQuery } from "@/services/search/search-metadata";
 import { sortBooks } from "../../utils/sort-books";
 import type { StoredBook } from "@/services/storage/storage-types";
 

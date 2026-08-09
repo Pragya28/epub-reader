@@ -9,11 +9,8 @@ import {
   enrichBookWithProgress,
   pickCurrentlyReadingBook,
 } from "../utils/derive-book-status";
-import {
-  filterBooksByCriteria,
-  filterBooksByQuery,
-  hasActiveFilters,
-} from "../utils/filter-books";
+import { filterBooksByCriteria, hasActiveFilters } from "../utils/filter-books";
+import { filterBooksByQuery } from "@/services/search/search-metadata";
 import { sortBooks } from "../utils/sort-books";
 
 /**
