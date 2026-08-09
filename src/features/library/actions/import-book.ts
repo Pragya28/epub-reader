@@ -34,6 +34,8 @@ export async function importBook(file: File) {
       throw new Error("Book already imported");
     }
 
+    const createdAt = Date.now();
+
     const book: StoredBook = {
       id: bookId,
       title: metadata.title,
@@ -43,8 +45,17 @@ export async function importBook(file: File) {
       chapterCount,
       wordCount,
       readingTimeMinutes,
-      createdAt: Date.now(),
+      createdAt,
       fileHash,
+      progress: {
+        chapterIndex: 0,
+        totalChapters: chapterCount,
+        scrollFraction: 0,
+        anchorPath: null,
+        atDocumentEnd: false,
+        percent: 0,
+        updatedAt: createdAt,
+      },
     };
 
     // 6. Persist book

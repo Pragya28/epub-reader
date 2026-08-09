@@ -1,12 +1,15 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { importBook } from "../actions/import-book";
 import { loadLibrary } from "../actions/load-library";
 import { notify } from "@/components/toast/toast";
+import { ROUTES } from "@/utils/routes";
 
 /** Drives the hidden file-input flow behind the library's import FAB. */
 export function useImportBookFab() {
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleImport = () => {
     const input = document.createElement("input");
@@ -32,9 +35,10 @@ export function useImportBookFab() {
 
       setIsLoading(true);
       try {
-        await importBook(file);
+        const { id } = await importBook(file);
         await loadLibrary();
         notify.success("Book imported successfully");
+        navigate(ROUTES.READER.replace(":bookId", id));
       } catch (err) {
         const error =
           err instanceof Error
