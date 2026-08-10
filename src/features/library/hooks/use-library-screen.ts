@@ -9,9 +9,10 @@ import {
   enrichBookWithProgress,
   pickCurrentlyReadingBook,
 } from "../utils/derive-book-status";
-import { filterBooksByCriteria, hasActiveFilters } from "../utils/filter-books";
+import { filterBooksByCriteria } from "../utils/filter-books";
 import { filterBooksByQuery } from "@/services/search/search-metadata";
 import { sortBooks } from "../utils/sort-books";
+import { useLibraryFilters } from "./use-library-filters";
 
 /**
  * All non-visual state/derivation behind the library screen: loading the
@@ -21,27 +22,10 @@ import { sortBooks } from "../utils/sort-books";
  */
 export function useLibraryScreen() {
   const { books, isLoading, error } = libraryStore();
-  const {
-    query,
-    sortBy,
-    filters,
-    setQuery,
-    setSortBy,
-    setFilters,
-    resetFilters,
-  } = libraryFilterStore(
-    useShallow((state) => ({
-      query: state.query,
-      sortBy: state.sortBy,
-      filters: state.filters,
-      setQuery: state.setQuery,
-      setSortBy: state.setSortBy,
-      setFilters: state.setFilters,
-      resetFilters: state.resetFilters,
-    })),
+  const { query, setQuery } = libraryFilterStore(
+    useShallow((state) => ({ query: state.query, setQuery: state.setQuery })),
   );
   const [searchOpen, setSearchOpen] = useState(false);
-  const [filterOpen, setFilterOpen] = useState(false);
 
   const closeSearch = () => {
     setSearchOpen(false);
@@ -54,8 +38,6 @@ export function useLibraryScreen() {
     setOverlay,
     reveal: revealHeader,
   } = useChromeVisibility();
-
-  useEffect(() => setOverlay(filterOpen), [filterOpen, setOverlay]);
 
   useEffect(() => {
     const handleScroll = () => handleChromeScroll(window.scrollY);
@@ -97,15 +79,20 @@ export function useLibraryScreen() {
     [enriched],
   );
 
-  const languages = useMemo(
-    () =>
-      Array.from(
-        new Set(enriched.map((book) => book.language).filter(Boolean)),
-      ) as string[],
-    [enriched],
-  );
+  const {
+    isFiltering,
+    filterOpen,
+    setFilterOpen,
+    sortBy,
+    setSortBy,
+    filters,
+    setFilters,
+    resetFilters,
+    languages,
+  } = useLibraryFilters(enriched);
 
-  const isFiltering = hasActiveFilters(filters);
+  useEffect(() => setOverlay(filterOpen), [filterOpen, setOverlay]);
+
   const isSearching = searchOpen && query.trim() !== "";
 
   const visibleBooks = useMemo(() => {

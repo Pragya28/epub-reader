@@ -1,11 +1,12 @@
 import type { FC } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft, SlidersHorizontal } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 
 import { ROUTES } from "@/utils/routes";
 import { Button } from "@/components/ui/button";
 import { BookGrid } from "@/features/library/components/book-grid";
 import { LibraryFilterSheet } from "@/features/library/components/library-filter-sheet";
+import { SortFilterButton } from "@/features/library/components/sort-filter-button";
 import { useAuthorScreen } from "@/features/library/hooks/use-author-screen";
 
 export const LibraryAuthorScreen: FC = () => {
@@ -39,18 +40,10 @@ export const LibraryAuthorScreen: FC = () => {
         <span className="section-title font-semibold text-foreground mr-auto truncate">
           {author}
         </span>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Sort and filter"
+        <SortFilterButton
+          isFiltering={isFiltering}
           onClick={() => setFilterOpen(true)}
-          className="relative"
-        >
-          <SlidersHorizontal strokeWidth={1.5} className="size-5" />
-          {isFiltering && (
-            <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-selected" />
-          )}
-        </Button>
+        />
       </header>
 
       <main className="flex-1 px-4 pt-5 pb-10">

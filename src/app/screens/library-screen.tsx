@@ -4,9 +4,10 @@ import { Link } from "react-router-dom";
 import { useLibraryScreen } from "@/features/library/hooks/use-library-screen";
 import { BookGrid } from "@/features/library/components/book-grid";
 import { LibraryFilterSheet } from "@/features/library/components/library-filter-sheet";
+import { SortFilterButton } from "@/features/library/components/sort-filter-button";
 import { ContinueReadingBanner } from "@/features/library/components/continue-reading-banner";
 import { ImportBookFab } from "@/features/library/components/import-book-fab";
-import { Search, Settings, SlidersHorizontal, X } from "lucide-react";
+import { Search, Settings, X } from "lucide-react";
 import { WordMark } from "@/assets/word-mark";
 import { Button } from "@/components/ui/button";
 
@@ -68,18 +69,10 @@ export const LibraryScreen: FC = () => {
               <Search strokeWidth={1.5} className="size-5" />
             )}
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Sort and filter"
+          <SortFilterButton
+            isFiltering={isFiltering}
             onClick={() => setFilterOpen(true)}
-            className="relative"
-          >
-            <SlidersHorizontal strokeWidth={1.5} className="size-5" />
-            {isFiltering && (
-              <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-selected" />
-            )}
-          </Button>
+          />
           <Button
             variant="ghost"
             size="icon"
