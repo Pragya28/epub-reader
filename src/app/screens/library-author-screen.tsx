@@ -1,18 +1,33 @@
 import type { FC } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, SlidersHorizontal } from "lucide-react";
 
 import { ROUTES } from "@/utils/routes";
 import { Button } from "@/components/ui/button";
 import { BookGrid } from "@/features/library/components/book-grid";
+import { LibraryFilterSheet } from "@/features/library/components/library-filter-sheet";
 import { useAuthorScreen } from "@/features/library/hooks/use-author-screen";
 
 export const LibraryAuthorScreen: FC = () => {
-  const { author, isLoading, error, books } = useAuthorScreen();
+  const {
+    author,
+    isLoading,
+    error,
+    books,
+    isFiltering,
+    filterOpen,
+    setFilterOpen,
+    sortBy,
+    setSortBy,
+    filters,
+    setFilters,
+    resetFilters,
+    languages,
+  } = useAuthorScreen();
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <header className="folio-header sticky top-0 z-50 px-5 flex items-center">
+      <header className="folio-header sticky top-0 z-50 flex items-center gap-1 px-5">
         <Button
           variant="ghost"
           size="icon"
@@ -21,19 +36,43 @@ export const LibraryAuthorScreen: FC = () => {
         >
           <ChevronLeft strokeWidth={1.5} className="size-6" />
         </Button>
+        <span className="section-title font-semibold text-foreground mr-auto truncate">
+          {author}
+        </span>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Sort and filter"
+          onClick={() => setFilterOpen(true)}
+          className="relative"
+        >
+          <SlidersHorizontal strokeWidth={1.5} className="size-5" />
+          {isFiltering && (
+            <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-selected" />
+          )}
+        </Button>
       </header>
 
       <main className="flex-1 px-4 pt-5 pb-10">
-        <h1 className="section-title font-semibold text-foreground mb-5 leading-tight">
-          {author}
-        </h1>
         <BookGrid
           isLoading={isLoading}
-          isSearch={false}
+          isSearch={isFiltering}
           error={error}
           books={books}
+          hideMoreByAuthor
         />
       </main>
+
+      <LibraryFilterSheet
+        open={filterOpen}
+        onOpenChange={setFilterOpen}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
+        filters={filters}
+        onFiltersChange={setFilters}
+        onReset={resetFilters}
+        languages={languages}
+      />
     </div>
   );
 };

@@ -20,7 +20,14 @@ import { DeleteBookDialog } from "./delete-book-dialog";
 // every card would re-render even though its own book data didn't
 // change. Effective now that use-library-screen.ts memoizes the list
 // so each book's prop values stay referentially stable across renders.
-export const BookCard: FC<BookWithProgress> = memo(function BookCard(book) {
+interface BookCardProps extends BookWithProgress {
+  hideMoreByAuthor?: boolean;
+}
+
+export const BookCard: FC<BookCardProps> = memo(function BookCard({
+  hideMoreByAuthor,
+  ...book
+}) {
   const { id, isNew, isFinished, author, title } = book;
   const {
     statusText,
@@ -32,7 +39,7 @@ export const BookCard: FC<BookWithProgress> = memo(function BookCard(book) {
     hasMoreByAuthor,
     openMoreByAuthor,
     menuItems,
-  } = useBookCard(book);
+  } = useBookCard(book, hideMoreByAuthor);
 
   return (
     <div className="group relative z-0 flex flex-col gap-2">

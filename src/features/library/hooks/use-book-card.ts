@@ -22,7 +22,10 @@ export type BookCardMenuEntry =
     };
 
 /** Dropdown actions and derived status text behind a single BookCard. */
-export function useBookCard(book: BookWithProgress) {
+export function useBookCard(
+  book: BookWithProgress,
+  hideMoreByAuthor?: boolean,
+) {
   const { id, author, isFinished, isReading, progress } = book;
   const navigate = useNavigate();
   const booksByAuthorCount = libraryStore((state) =>
@@ -37,7 +40,7 @@ export function useBookCard(book: BookWithProgress) {
       ? `${progress}% read`
       : null;
 
-  const hasMoreByAuthor = booksByAuthorCount > 1;
+  const hasMoreByAuthor = !hideMoreByAuthor && booksByAuthorCount > 1;
 
   const openInReader = () => navigate(ROUTES.READER.replace(":bookId", id));
   const markFinished = () => void markBookFinished(id);

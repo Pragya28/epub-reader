@@ -8,6 +8,7 @@ interface BookGridProps {
   isSearch: boolean;
   error: string | null;
   books: BookWithProgress[];
+  hideMoreByAuthor?: boolean;
 }
 
 export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
@@ -15,6 +16,7 @@ export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
   isSearch,
   error,
   books,
+  hideMoreByAuthor,
 }) {
   if (error) {
     return (
@@ -77,7 +79,7 @@ export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
       style={{ gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))" }}
     >
       {books.map((book) => (
-        <BookCard key={book.id} {...book} />
+        <BookCard key={book.id} {...book} hideMoreByAuthor={hideMoreByAuthor} />
       ))}
     </div>
   );
