@@ -69,13 +69,13 @@ Legend: ✅ done · 🟡 partial · ❌ missing
 
 ## Day 4 — Reader Integration
 
-13. ❌ **Jump to matching chapter from a search result** — thin wrapper around the existing `jumpToTocItem()`/reader-navigation primitives (see "Already Complete" above), passed a chapter index instead of a TOC item.
-14. ❌ **Highlight the matched search term in the reader** — new: nothing in the current reader engine highlights arbitrary text inside the iframe's rendered chapter HTML. Needs a DOM-search-and-wrap pass scoped to the mounted chapter section, done carefully given the iframe sanitizes and windows content (`MAX_WINDOW_SIZE = 5` — see `chapter-window.ts`); the target chapter must be mounted before the highlight can be applied.
-15. ❌ **Return-to-reading navigation after a search jump** — likely reuses the reader's existing back-navigation (`goBack` in `use-reader-screen.ts`) rather than new state.
+13. ✅ **Jump to matching chapter from a search result** — implemented via `loadReaderBook(bookId, jumpChapterIndex)`, which seeds `currentChapterIndex` from the search screen's click instead of saved progress; `useReaderEngine`'s initial-mount branch scrolls straight to that chapter's section.
+14. ✅ **Highlight the matched search term in the reader** — new `highlightWordInSection()` (`src/features/reader/engine/scroll/highlight-match.ts`) does a `TreeWalker`-based DOM search-and-wrap scoped to the already-mounted target section, applied once that section exists (after the search-jump scroll, before `handleScroll()` resumes normal windowing).
+15. ✅ **Return-to-reading navigation after a search jump** — reuses the existing `goBack: () => navigate(-1)` in `use-reader-screen.ts`, no new state; the search→reader navigation pushes a normal history entry.
 
 ### Done Criteria
 
-🟡 Not started.
+✅ Done — search results screen (`src/app/screens/search-screen.tsx`) plus all three reader-integration items above.
 
 ---
 
