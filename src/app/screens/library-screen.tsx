@@ -7,7 +7,7 @@ import { LibraryFilterSheet } from "@/features/library/components/library-filter
 import { SortFilterButton } from "@/features/library/components/sort-filter-button";
 import { ContinueReadingBanner } from "@/features/library/components/continue-reading-banner";
 import { ImportBookFab } from "@/features/library/components/import-book-fab";
-import { Search, Settings, X } from "lucide-react";
+import { Search, Settings } from "lucide-react";
 import { WordMark } from "@/assets/word-mark";
 import { Button } from "@/components/ui/button";
 
@@ -17,15 +17,9 @@ export const LibraryScreen: FC = () => {
     error,
     currentBook,
     visibleBooks,
-    isSearching,
     isFiltering,
     headerVisible,
     revealHeader,
-    searchOpen,
-    query,
-    setQuery,
-    openSearch,
-    closeSearch,
     filterOpen,
     setFilterOpen,
     sortBy,
@@ -60,14 +54,10 @@ export const LibraryScreen: FC = () => {
           <Button
             variant="ghost"
             size="icon"
-            aria-label={searchOpen ? "Close search" : "Search"}
-            onClick={() => (searchOpen ? closeSearch() : openSearch())}
+            aria-label="Search"
+            render={<Link to={ROUTES.SEARCH} />}
           >
-            {searchOpen ? (
-              <X strokeWidth={1.5} className="size-5" />
-            ) : (
-              <Search strokeWidth={1.5} className="size-5" />
-            )}
+            <Search strokeWidth={1.5} className="size-5" />
           </Button>
           <SortFilterButton
             isFiltering={isFiltering}
@@ -88,24 +78,12 @@ export const LibraryScreen: FC = () => {
       {/* Extra bottom padding keeps content clear of the fixed bottom bar;
           top padding clears the fixed header above. */}
       <main className="flex-1 px-4 pt-(--header-height) pb-36">
-        {searchOpen ? (
-          <input
-            autoFocus
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by title, author, or description"
-            aria-label="Search your library"
-            className="input-folio w-full text-ui text-foreground mb-5 py-2 placeholder:text-muted-foreground"
-          />
-        ) : (
-          <h1 className="section-title font-semibold text-foreground mb-5 leading-tight">
-            Your Personal Collection
-          </h1>
-        )}
+        <h1 className="section-title font-semibold text-foreground mb-5 leading-tight">
+          Your Personal Collection
+        </h1>
         <BookGrid
           isLoading={isLoading}
-          isSearch={isSearching || isFiltering}
+          isSearch={isFiltering}
           error={error}
           books={visibleBooks}
         />

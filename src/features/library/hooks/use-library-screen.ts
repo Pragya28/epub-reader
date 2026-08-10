@@ -1,36 +1,25 @@
-import { useEffect, useMemo, useState } from "react";
-import { useShallow } from "zustand/react/shallow";
+import { useEffect, useMemo } from "react";
 
 import { useChromeVisibility } from "@/shared/hooks/use-chrome-visibility";
 import { libraryStore } from "../store/library-store";
-import { libraryFilterStore } from "../store/library-filter-store";
 import { loadLibrary } from "../actions/load-library";
 import {
   enrichBookWithProgress,
   pickCurrentlyReadingBook,
 } from "../utils/derive-book-status";
 import { filterBooksByCriteria } from "../utils/filter-books";
-import { filterBooksByQuery } from "@/services/search/search-metadata";
 import { sortBooks } from "../utils/sort-books";
 import { useLibraryFilters } from "./use-library-filters";
 
 /**
  * All non-visual state/derivation behind the library screen: loading the
  * library on mount (and re-fetching on tab-visible, since the reader flushes
- * its final progress save on unmount), and the search/sort/filter pipeline.
+ * its final progress save on unmount), and the sort/filter pipeline. Query
+ * search lives on its own screen (src/app/screens/search-screen.tsx).
  * Kept separate from LibraryScreen so that component stays presentational.
  */
 export function useLibraryScreen() {
   const { books, isLoading, error } = libraryStore();
-  const { query, setQuery } = libraryFilterStore(
-    useShallow((state) => ({ query: state.query, setQuery: state.setQuery })),
-  );
-  const [searchOpen, setSearchOpen] = useState(false);
-
-  const closeSearch = () => {
-    setSearchOpen(false);
-    setQuery("");
-  };
 
   const {
     visible: headerVisible,
@@ -93,29 +82,19 @@ export function useLibraryScreen() {
 
   useEffect(() => setOverlay(filterOpen), [filterOpen, setOverlay]);
 
-  const isSearching = searchOpen && query.trim() !== "";
-
   const visibleBooks = useMemo(() => {
     const sorted = sortBooks(enriched, sortBy);
-    const filtered = filterBooksByCriteria(sorted, filters);
-    return isSearching ? filterBooksByQuery(filtered, query) : filtered;
-  }, [enriched, sortBy, filters, isSearching, query]);
+    return filterBooksByCriteria(sorted, filters);
+  }, [enriched, sortBy, filters]);
 
   return {
     isLoading,
     error,
     currentBook,
     visibleBooks,
-    isSearching,
     isFiltering,
     headerVisible,
     revealHeader,
-
-    searchOpen,
-    query,
-    setQuery,
-    openSearch: () => setSearchOpen(true),
-    closeSearch,
 
     filterOpen,
     setFilterOpen,
