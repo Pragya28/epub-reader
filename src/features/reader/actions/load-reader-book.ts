@@ -2,7 +2,10 @@ import { EpubParser } from "@/services/epub/epub-parser";
 import { getBookWithFile } from "@/services/storage/book-repository";
 import { readerStore } from "../store/reader-store";
 
-export async function loadReaderBook(bookId: string) {
+export async function loadReaderBook(
+  bookId: string,
+  jumpChapterIndex?: number,
+) {
   const store = readerStore.getState();
   const parser = new EpubParser();
 
@@ -28,6 +31,16 @@ export async function loadReaderBook(bookId: string) {
     const totalChapters = parsedBook.chapters.length;
 
     if (
+      jumpChapterIndex !== undefined &&
+      jumpChapterIndex >= 0 &&
+      jumpChapterIndex < totalChapters
+    ) {
+      // A search-result jump overrides saved progress — the reader should
+      // open at the chapter the user clicked from search, not wherever they
+      // last left off. useReaderEngine's searchJump branch handles scrolling
+      // and highlighting once that chapter's section mounts.
+      store.setCurrentChapterIndex(jumpChapterIndex);
+    } else if (
       savedProgress &&
       savedProgress.chapterIndex >= 0 &&
       savedProgress.chapterIndex < totalChapters

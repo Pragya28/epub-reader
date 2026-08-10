@@ -14,6 +14,7 @@ import {
 import { detectVisibleChapter } from "../engine/scroll/detect-visible-chapter";
 import { resolveScrollAnchor } from "../engine/scroll/scroll-anchor";
 import { maintainChapterWindow } from "../engine/windowing/chapter-window";
+import { highlightWordInSection } from "../engine/scroll/highlight-match";
 import {
   applyReaderPreferences,
   initializeReaderDocument,
@@ -43,6 +44,8 @@ interface UseReaderEngineProps {
   bookId?: string;
   /** Position to restore on mount (from previously saved progress). */
   initialProgress?: ReadingProgress | null;
+  /** Target chapter + word to jump to and highlight, from a search result click. Takes priority over initialProgress. */
+  searchJump?: { chapterIndex: number; word: string };
   /** Called when the reader taps an external link — caller handles confirmation UI. */
   onExternalLink?: (href: string) => void;
   /** Called on a horizontal swipe gesture; direction is 1 (forward) or -1 (back). */
@@ -58,6 +61,7 @@ export function useReaderEngine({
   parsedBook,
   bookId,
   initialProgress,
+  searchJump,
   onExternalLink,
   onSwipeChapter,
   onScrollPosition,
@@ -701,7 +705,29 @@ export function useReaderEngine({
         });
         iframeDoc.addEventListener("touchend", onTouchEnd, { passive: true });
 
-        if (!restoredInitialPosition && initialProgress) {
+        if (!restoredInitialPosition && searchJump) {
+          restoredInitialPosition = true;
+          const section = iframeDoc.querySelector(
+            `section[data-chapter="${searchJump.chapterIndex}"]`,
+          ) as HTMLElement | null;
+
+          if (section) {
+            store.setIsJumping(true);
+            const targetY = win.scrollY + section.getBoundingClientRect().top;
+            win.scrollTo(0, targetY);
+            highlightWordInSection(section, searchJump.word);
+
+            requestAnimationFrame(() => {
+              store.setIsJumping(false);
+              handleScroll();
+            });
+          } else {
+            logger.warn("searchJump — target section not mounted, skipping", {
+              chapterIndex: searchJump.chapterIndex,
+            });
+            handleScroll();
+          }
+        } else if (!restoredInitialPosition && initialProgress) {
           restoredInitialPosition = true;
           restoreInitialPosition(iframeDoc, win, initialProgress);
         } else {
@@ -796,6 +822,7 @@ export function useReaderEngine({
     chapterLoader,
     bookId,
     initialProgress,
+    searchJump,
     onExternalLink,
     onSwipeChapter,
     onScrollPosition,

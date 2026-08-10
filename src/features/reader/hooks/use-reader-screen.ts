@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { ROUTES } from "@/utils/routes";
 import { getBookCoverUrl } from "@/services/storage/book-repository";
@@ -16,10 +16,16 @@ import { useChromeVisibility } from "@/shared/hooks/use-chrome-visibility";
  * flow. Kept separate from ReaderScreen so that component stays
  * presentational, matching useLibraryScreen on the library side.
  */
+interface SearchJumpState {
+  searchJump?: { chapterIndex: number; word: string };
+}
+
 export function useReaderScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { bookId } = useParams();
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const searchJump = (location.state as SearchJumpState | null)?.searchJump;
   const [pendingExternalHref, setPendingExternalHref] = useState<string | null>(
     null,
   );
@@ -61,7 +67,7 @@ export function useReaderScreen() {
   useEffect(() => {
     if (!bookId) return;
 
-    void loadReaderBook(bookId).catch(() => {
+    void loadReaderBook(bookId, searchJump?.chapterIndex).catch(() => {
       // errors are already captured in store.error by loadReaderBook
     });
 
@@ -79,6 +85,11 @@ export function useReaderScreen() {
       }
       readerStore.getState().reset();
     };
+    // searchJump intentionally excluded: a jump to a different chapter of a
+    // different book always arrives together with a bookId change (this
+    // effect's only real trigger), so re-running on searchJump alone would
+    // just re-fire the same load for no reason.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookId]);
 
   const handleTocItemClick = useCallback(
@@ -140,6 +151,7 @@ export function useReaderScreen() {
     parsedBook,
     bookId,
     initialProgress: readerDocument?.book.progress ?? null,
+    searchJump,
     onExternalLink: handleExternalLink,
     onScrollPosition: handleChromeScroll,
     onContentTap: toggleChrome,
