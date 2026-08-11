@@ -51,7 +51,10 @@ describe("searchMaintenanceStore", () => {
     expect(state.progress).toBe(100);
     expect(state.failedCount).toBe(0);
     expect(state.lastRebuiltAt).not.toBeNull();
-  }, 30000);
+    // Inherits the project's global testTimeout (vite.config.ts) rather
+    // than a per-test override — real import + rebuild work here has
+    // needed more room than a fixed 30s under full-suite contention.
+  });
 
   it("advances progress toward 95% while running, via an interval", async () => {
     // Fully mocked — no real Dexie/JSZip work, so fake timers (which only
