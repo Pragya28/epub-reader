@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 
 import { useChromeVisibility } from "@/shared/hooks/use-chrome-visibility";
 import { libraryStore } from "../store/library-store";
+import { libraryFilterStore } from "../store/filter-store";
 import { loadLibrary } from "../actions/load-library";
 import {
   enrichBookWithProgress,
@@ -78,7 +79,7 @@ export function useLibraryScreen() {
     setFilters,
     resetFilters,
     languages,
-  } = useLibraryFilters(enriched);
+  } = useLibraryFilters(enriched, libraryFilterStore);
 
   useEffect(() => setOverlay(filterOpen), [filterOpen, setOverlay]);
 
