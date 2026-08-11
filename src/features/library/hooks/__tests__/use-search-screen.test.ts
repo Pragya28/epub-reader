@@ -47,4 +47,25 @@ describe("useSearchScreen", () => {
     expect(result.current.contentMatches).toHaveLength(1);
     expect(result.current.isSearching).toBe(true);
   });
+
+  it("reports loading while a search is in flight, then settles", async () => {
+    const { result } = renderHook(() => useSearchScreen());
+
+    act(() => result.current.setQuery("weight"));
+    expect(result.current.isLoading).toBe(true);
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+  });
+
+  it("clears results and stops loading when the search rejects", async () => {
+    const { searchLibrary } = await import("../../actions/search-library");
+    vi.mocked(searchLibrary).mockRejectedValueOnce(new Error("index broken"));
+
+    const { result } = renderHook(() => useSearchScreen());
+
+    act(() => result.current.setQuery("weight"));
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.resultCount).toBe(0);
+  });
 });

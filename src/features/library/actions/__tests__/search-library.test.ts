@@ -35,4 +35,22 @@ describe("searchLibrary", () => {
 
     expect(ensureIndexesForBooks).toHaveBeenCalledWith(["book-1", "book-2"]);
   });
+
+  it("still returns metadata matches when the index backfill fails", async () => {
+    // Regression guard: a library imported before search indexing shipped
+    // backfills every book on first search, and one unreadable book used to
+    // reject the whole call — showing "0 results found" for a title that
+    // plainly matches.
+    vi.mocked(ensureIndexesForBooks).mockRejectedValueOnce(
+      new Error("no stored file"),
+    );
+
+    const results = await searchLibrary(
+      [createBook("book-1"), createBook("book-2")],
+      "Book book-1",
+    );
+
+    expect(results.metadataMatches).toHaveLength(1);
+    expect(results.contentMatches).toEqual([]);
+  });
 });

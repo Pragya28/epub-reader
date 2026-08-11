@@ -1,10 +1,19 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { hasIndex } from "@/services/search/search-index";
+import { buildIndex } from "@/services/search/search-service";
 import { getAllBooks } from "@/services/storage/book-repository";
 import { importBook } from "../import-book";
 import { loadFixture } from "@/tests/utils/load-fixtures";
 import { resetTestDb } from "@/tests/utils/reset-test-db";
 import { resetLibraryStore } from "@/tests/utils/reset-store";
+
+// Wraps the real buildIndex so the other tests here still exercise real
+// indexing; only the failure test overrides it for a single call.
+vi.mock("@/services/search/search-service", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/services/search/search-service")>();
+  return { ...actual, buildIndex: vi.fn(actual.buildIndex) };
+});
 
 describe("importBook", () => {
   beforeEach(async () => {
@@ -95,6 +104,23 @@ describe("importBook", () => {
 
     const [book] = await getAllBooks();
     expect(await hasIndex(book.id)).toBe(true);
+  });
+
+  it("still imports the book when index building fails", async () => {
+    // Stands in for an exhausted storage quota — the index write is the
+    // largest of the import and runs after the book itself is persisted,
+    // so failing it must not fail the import.
+    vi.mocked(buildIndex).mockRejectedValueOnce(
+      new DOMException("quota", "QuotaExceededError"),
+    );
+
+    const file = await loadFixture("valid-book.epub");
+    await expect(importBook(file)).resolves.toBeDefined();
+
+    // Guards against the mock silently not applying, which would make the
+    // assertion above pass without ever exercising the failure path.
+    expect(buildIndex).toHaveBeenCalled();
+    expect(await getAllBooks()).toHaveLength(1);
   });
 
   it("rejects duplicate book imports", async () => {

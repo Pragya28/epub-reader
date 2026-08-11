@@ -3,8 +3,11 @@ import { buildIndex } from "@/services/search/search-service";
 import { saveImportedBook } from "@/services/storage/book-repository";
 import { createBookId } from "@/utils/create-book-id";
 import { hashFile } from "@/utils/hash";
+import { logger as rootLogger } from "@/shared/logger/logger";
 import { libraryStore } from "../store/library-store";
 import type { StoredBook } from "@/services/storage/storage-types";
+
+const logger = rootLogger.child("import-book");
 
 export async function importBook(file: File) {
   const store = libraryStore.getState();
@@ -69,7 +72,16 @@ export async function importBook(file: File) {
     // 7. Update store reactively
     store.addBook(book);
 
-    await buildIndex(bookId, file);
+    // The index is the largest write of the import and the likeliest to hit
+    // a storage quota, and it runs *after* the book itself is already
+    // persisted — so a failure here must not fail an otherwise-good import.
+    // ensureIndexesForBooks() rebuilds a missing index on the next search,
+    // so the book is searchable again once space frees up.
+    try {
+      await buildIndex(bookId, file);
+    } catch (error) {
+      logger.error("failed to build search index for imported book", error);
+    }
 
     return {
       id: bookId,

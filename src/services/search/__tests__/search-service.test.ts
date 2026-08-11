@@ -74,4 +74,24 @@ describe("search-service", () => {
     await expect(ensureIndexesForBooks(["book-5"])).resolves.not.toThrow();
     expect(await hasIndex("book-5")).toBe(false);
   });
+
+  it("ensureIndexesForBooks still indexes other books when one fails", async () => {
+    const { getBookFile } = await import("@/services/storage/book-repository");
+    const file = await loadFixture("valid-book.epub");
+
+    // book-6's file is unparseable (stands in for a corrupt file or an
+    // exhausted storage quota); book-7's is fine and must still be indexed.
+    vi.mocked(getBookFile).mockImplementation(async (bookId: string) =>
+      bookId === "book-6"
+        ? { bookId, file: new Blob(["not an epub"]) }
+        : { bookId, file },
+    );
+
+    await expect(
+      ensureIndexesForBooks(["book-6", "book-7"]),
+    ).resolves.not.toThrow();
+
+    expect(await hasIndex("book-6")).toBe(false);
+    expect(await hasIndex("book-7")).toBe(true);
+  });
 });

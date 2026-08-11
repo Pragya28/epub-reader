@@ -1,8 +1,11 @@
 import { EpubParser } from "@/services/epub/epub-parser";
 import { getBookFile } from "@/services/storage/book-repository";
 import type { StoredSearchIndexEntry } from "@/services/storage/storage-types";
+import { logger as rootLogger } from "@/shared/logger/logger";
 import { hasIndex, putIndexEntries } from "./search-index";
 import { tokenizeChapterHtml } from "./tokenize";
+
+const logger = rootLogger.child("search-service");
 
 /**
  * Builds and persists the full-text search index for one book. Reparses the
@@ -49,7 +52,15 @@ export async function ensureIndexesForBooks(bookIds: string[]): Promise<void> {
       const stored = await getBookFile(bookId);
       if (!stored) return;
 
-      await buildIndex(bookId, stored.file);
+      // One book that can't be indexed (corrupt file, exhausted storage
+      // quota) must not take down the search that triggered the backfill —
+      // the remaining books still return results, and this one is retried
+      // on the next search.
+      try {
+        await buildIndex(bookId, stored.file);
+      } catch (error) {
+        logger.error("failed to backfill search index", { bookId, error });
+      }
     }),
   );
 }

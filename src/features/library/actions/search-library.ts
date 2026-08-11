@@ -2,7 +2,10 @@ import { findChapterMatches } from "@/services/search/search-content";
 import type { ChapterMatch } from "@/services/search/search-content";
 import { ensureIndexesForBooks } from "@/services/search/search-service";
 import { filterBooksByQuery } from "@/services/search/search-metadata";
+import { logger as rootLogger } from "@/shared/logger/logger";
 import type { BookWithProgress } from "../types/library.types";
+
+const logger = rootLogger.child("search-library");
 
 export interface LibrarySearchResults {
   /** Book-level metadata matches (title/author/description). */
@@ -25,10 +28,20 @@ export async function searchLibrary(
   books: BookWithProgress[],
   query: string,
 ): Promise<LibrarySearchResults> {
-  await ensureIndexesForBooks(books.map((book) => book.id));
-
+  // Metadata search needs no index, so it must not be held hostage to the
+  // backfill below — on a library imported before Sprint 6 that's a full
+  // reparse of every book, and running it first made a title match take
+  // minutes (or fail outright) instead of being instant.
   const metadataMatches = filterBooksByQuery(books, query);
-  const contentMatches = await findChapterMatches(query);
 
-  return { metadataMatches, contentMatches };
+  try {
+    await ensureIndexesForBooks(books.map((book) => book.id));
+    const contentMatches = await findChapterMatches(query);
+    return { metadataMatches, contentMatches };
+  } catch (error) {
+    // A broken index must degrade to metadata-only results, never to an
+    // empty screen that reads as "no such book".
+    logger.error("content search failed, returning metadata matches", error);
+    return { metadataMatches, contentMatches: [] };
+  }
 }
