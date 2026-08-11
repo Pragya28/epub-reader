@@ -30,76 +30,76 @@ Legend: ✅ done · 🟡 partial · ❌ missing
 - **Cons:** real migration engineering, not a toggle — same lazy-plus-eventual-batch pattern as the existing whole-blob OPFS migration, but N files per book instead of 1, with a partial-failure story to design; storage duplication, since the original EPUB blob would almost certainly still be kept (re-export, exact-byte reconstruction) — directly working against the still-unresolved Storage-01 quota gap rather than alongside it; same partial OPFS browser support (Safari outside workers) now multiplied across N file operations per book instead of 1; materially bigger Platform-01 (multi-tab) exposure — N concurrent file writes during a migration or re-index vs. today's single blob write; and critically, **no measured need yet** — this optimizes a cost (JSZip-per-chapter) nobody has profiled as an actual bottleneck.
 - **Recommendation:** don't build proactively. Revisit only if profiling after Sprint 6 ships shows JSZip extraction is a measured bottleneck (large-library re-index time, or reader chapter-open latency) — and even then, try a lighter middle ground first: a per-chapter _plain-text_ cache in IndexedDB (sitting next to the search index this sprint already builds) rather than full OPFS files. Same repeat-extraction win, none of the OPFS partial-support gaps or the added multi-tab surface.
 
-1. ❌ **Search service** — a `services/search/` slice (mirroring `services/epub/`, `services/storage/`) wrapping index build/query, framework-agnostic per the existing layering convention (`services/` = infra, no Zustand/React).
-2. ❌ **IndexedDB search store** — new `db.version(4).stores({ ..., searchIndex: ... })` block, following the existing "no data migration needed, Dexie reindexes on next write" pattern documented in `CLAUDE.md`. Per the architecture doc: `word`, `bookId`, `chapter` fields, indexed on `word` and `bookId`.
-3. ❌ **Search abstraction separating metadata from content search** — a thin composition layer over the existing `filterBooksByQuery()` (metadata) and the new content-search query engine (Day 3), not a rewrite of the metadata path.
-4. ❌ **Index lifecycle (create, update, delete)** — exposed as plain async functions in the search service, called from Day 5's import/delete hooks.
+1. ✅ **Search service** — `src/services/search/` built as planned, framework-agnostic (no Zustand/React): `tokenize.ts`, `search-index.ts` (Dexie access), `search-service.ts` (build/ensure), `search-content.ts` (content query + ranking), `search-metadata.ts` (metadata query), `snippet.ts`. _(done 2026-08-09)_
+2. ✅ **IndexedDB search store** — `db.version(4).stores({ ..., searchIndex: "++id, word, bookId" })` (`src/services/storage/db.ts`), following the existing no-data-migration pattern. `word` and `bookId` both indexed, per the architecture doc. _(done 2026-08-09)_
+3. ✅ **Search abstraction separating metadata from content search** — kept as two independent modules composed by one caller rather than merged: `filterBooksByQuery()` moved into `search-metadata.ts` (book-level) and `findChapterMatches()` in `search-content.ts` (chapter-level), composed by `searchLibrary()` into a `{ metadataMatches, contentMatches }` result. The metadata path was relocated, not rewritten. _(done 2026-08-09)_
+4. ✅ **Index lifecycle (create, update, delete)** — plain async functions, no class: `hasIndex()`, `putIndexEntries()`, `deleteIndex()`, `findMatches()` (`search-index.ts`), plus `buildIndex()`/`ensureIndex()` (`search-service.ts`). Consumed by Day 5's import/delete hooks. _(done 2026-08-09)_
 
 ### Done Criteria
 
-🟡 Not started. `EpubParser.loadChapter()` and the Dexie schema pattern are the two concrete pieces of infra to build on.
+✅ Done — `services/search/` slice, `searchIndex` store at schema v4, and the lifecycle functions Day 5 hooks into. Built on `EpubParser.loadChapter()` per the decision above, not per-chapter OPFS files. _(2026-08-09)_
 
 ---
 
 ## Day 2 — Indexing
 
-5. ❌ **Chapter tokenization** — strip HTML from `ParsedChapter.content` (already-sanitized per-chapter HTML from `loadChapter()`), lowercase, strip punctuation, split on whitespace, drop empty tokens, per the architecture doc's tokenization steps.
-6. ❌ **Inverted index construction** — one record per `{word, bookId, chapter}` occurrence, per the architecture doc's model.
-7. ❌ **Word normalization** — casing (straightforward) and stop-word filtering (the architecture doc names this but doesn't specify a list — needs a small decision, not full stemming/diacritics unless the doc's later sections call for it explicitly).
-8. ❌ **Index persistence to IndexedDB** — via the Day 1 search store.
+5. ✅ **Chapter tokenization** — `tokenizeChapterHtml()` (`src/services/search/tokenize.ts`) strips tags, lowercases, and splits on a Unicode-aware `/[^\p{L}\p{N}]+/u` boundary rather than plain whitespace-plus-punctuation, so accented and non-Latin scripts tokenize correctly instead of being mangled. _(done 2026-08-09)_
+6. ✅ **Inverted index construction** — one row per `{word, bookId, chapter}`, but **deduped per chapter** (`new Set(words)` in `buildIndex()`), not one row per raw occurrence as the architecture doc's model implies. Keeps the index materially smaller; the tradeoff is that occurrence _frequency_ isn't recoverable, which is what constrains item 10's ranking below. _(done 2026-08-09)_
+7. ✅ **Word normalization** — casing via `toLowerCase()`, plus stop-word filtering against a hand-picked 29-word `STOP_WORDS` set (`src/constants/search-stop-words.ts`, a pure data table per `CLAUDE.md`'s `constants/` convention). No stemming or diacritic folding — the architecture doc never asked for either. _(done 2026-08-09)_
+8. ✅ **Index persistence to IndexedDB** — `putIndexEntries()` bulk-adds the whole book's entries in one call via the Day 1 store. _(done 2026-08-09)_
 
 ### Done Criteria
 
-🟡 Not started.
+✅ Done — tokenizer, stop-word list, per-chapter-deduped inverted index, and bulk persistence. _(2026-08-09)_
 
 ---
 
 ## Day 3 — Search Engine
 
-9. ❌ **Combined metadata + content search** — composes Day 1's abstraction layer; needs a decision on how content-search results interleave with the existing `filterBooksByCriteria()`/`sortBooks()` pipeline in `use-library-screen.ts` (append as a distinct results mode, most likely, given content search is chapter-level and metadata search is book-level).
-10. ❌ **Ranked results** — the architecture doc doesn't specify a ranking function; simplest defensible option (word-occurrence count per book, or per-chapter) should be a documented decision here, not left implicit.
-11. ❌ **Highlighted snippets in results** — extract surrounding text around a match from the chapter's stripped plain text.
-12. ❌ **Fast lookup against the inverted index** — direct IndexedDB query by `word` index; the architecture's whole point is avoiding a full-table scan per search.
+9. ✅ **Combined metadata + content search** — `searchLibrary()` (`src/features/library/actions/search-library.ts`) returns `{ metadataMatches, contentMatches }` as two distinct result sets. **Decision: they don't interleave** — a metadata hit is a book and a content hit is a chapter, so collapsing them into one list would throw away the chapter jump target Day 4 needs. This also kept it off the `filterBooksByCriteria()`/`sortBooks()` pipeline entirely: search became its own screen (Day 4) rather than another filter on the library grid. _(done 2026-08-09)_
+10. ✅ **Ranked results** — `rankMatches()` (`search-content.ts`) sorts chapters by count of _distinct query words matched_ (desc), tie-broken by chapter index (asc). **Documented constraint:** occurrence-frequency ranking isn't available, because item 6 stores one row per unique word per chapter rather than per occurrence — this is the strongest ranking the current schema actually supports, and changing it means a schema change, not a scoring tweak. _(done 2026-08-09)_
+11. ✅ **Highlighted snippets in results** — `extractSnippet()` (`snippet.ts`) pulls ±60 chars around the first match from the chapter's stripped, whitespace-collapsed plain text, falling back to a leading excerpt when the word isn't found in the rendered text. _(done 2026-08-09)_
+12. ✅ **Fast lookup against the inverted index** — `findMatches()` queries `db.searchIndex.where({ word })` directly against the indexed field, so a search is one index lookup per query word, not a table scan. Optional `bookId` narrowing is applied in memory afterward. _(done 2026-08-09)_
 
 ### Done Criteria
 
-🟡 Not started.
+✅ Done — `searchLibrary()` composing both search modes, distinct-word-count ranking, snippets, and index-backed lookup. Covered by `search-content.test.ts` / `search-metadata.test.ts`. _(2026-08-09)_
 
 ---
 
 ## Day 4 — Reader Integration
 
-13. ✅ **Jump to matching chapter from a search result** — implemented via `loadReaderBook(bookId, jumpChapterIndex)`, which seeds `currentChapterIndex` from the search screen's click instead of saved progress; `useReaderEngine`'s initial-mount branch scrolls straight to that chapter's section.
-14. ✅ **Highlight the matched search term in the reader** — new `highlightWordInSection()` (`src/features/reader/engine/scroll/highlight-match.ts`) does a `TreeWalker`-based DOM search-and-wrap scoped to the already-mounted target section, applied once that section exists (after the search-jump scroll, before `handleScroll()` resumes normal windowing).
-15. ✅ **Return-to-reading navigation after a search jump** — reuses the existing `goBack: () => navigate(-1)` in `use-reader-screen.ts`, no new state; the search→reader navigation pushes a normal history entry.
+13. ✅ **Jump to matching chapter from a search result** — implemented via `loadReaderBook(bookId, jumpChapterIndex)`, which seeds `currentChapterIndex` from the search screen's click instead of saved progress; `useReaderEngine`'s initial-mount branch scrolls straight to that chapter's section. _(done 2026-08-11)_
+14. ✅ **Highlight the matched search term in the reader** — new `highlightWordInSection()` (`src/features/reader/engine/scroll/highlight-match.ts`) does a `TreeWalker`-based DOM search-and-wrap scoped to the already-mounted target section, applied once that section exists (after the search-jump scroll, before `handleScroll()` resumes normal windowing). _(done 2026-08-11)_
+15. ✅ **Return-to-reading navigation after a search jump** — reuses the existing `goBack: () => navigate(-1)` in `use-reader-screen.ts`, no new state; the search→reader navigation pushes a normal history entry. _(done 2026-08-11)_
 
 ### Done Criteria
 
-✅ Done — search results screen (`src/app/screens/search-screen.tsx`) plus all three reader-integration items above.
+✅ Done — search results screen (`src/app/screens/search-screen.tsx`) plus all three reader-integration items above. _(2026-08-11)_
 
 ---
 
 ## Day 5 — Index Maintenance
 
-16. ✅ **Build index during import** — `importBook()` (`src/features/library/actions/import-book.ts`) calls `buildIndex(bookId, file)` after the book/file/cover writes succeed.
-17. ✅ **Delete indexes on book removal** — `deleteBook()` (`src/features/library/actions/delete-book.ts`) calls `deleteIndex(bookId)` alongside the existing storage delete. Re-import-triggered rebuild was scoped out: `importBook()` already throws `"Book already imported"` on a `fileHash` match before any write happens, so there's no code path where the same book is actually re-imported and needs its index rebuilt.
-18. ✅ **Lazy backfill for pre-Sprint-6 libraries** — `ensureIndexesForBooks(bookIds)` (`src/services/search/search-service.ts`) checks `hasIndex()` per book (cheap, no file read) and only builds the ones missing an index. Called from `searchLibrary()` (`src/features/library/actions/search-library.ts`) before content search runs, so any book never indexed becomes searchable on first use. No new UI, no startup migration pass. Design rationale: `superpowers/specs/2026-08-11-search-index-maintenance-design.md`.
+16. ✅ **Build index during import** — `importBook()` (`src/features/library/actions/import-book.ts`) calls `buildIndex(bookId, file)` after the book/file/cover writes succeed. _(done 2026-08-11)_
+17. ✅ **Delete indexes on book removal** — `deleteBook()` (`src/features/library/actions/delete-book.ts`) calls `deleteIndex(bookId)` alongside the existing storage delete. Re-import-triggered rebuild was scoped out: `importBook()` already throws `"Book already imported"` on a `fileHash` match before any write happens, so there's no code path where the same book is actually re-imported and needs its index rebuilt. _(done 2026-08-11)_
+18. ✅ **Lazy backfill for pre-Sprint-6 libraries** — `ensureIndexesForBooks(bookIds)` (`src/services/search/search-service.ts`) checks `hasIndex()` per book (cheap, no file read) and only builds the ones missing an index. Called from `searchLibrary()` (`src/features/library/actions/search-library.ts`) before content search runs, so any book never indexed becomes searchable on first use. No new UI, no startup migration pass. Design rationale: `superpowers/specs/2026-08-11-search-index-maintenance-design.md`. _(done 2026-08-11)_
 
-    ✅ **Related Gap: [[Platform-01 Multi-Tab Concurrency|Multi-Tab Concurrency]].** Already covered by the pre-existing `hasIndex`-then-build pattern in `ensureIndex()`/`ensureIndexesForBooks()` — no new locking needed, IndexedDB's own transaction guarantees make the writes themselves atomic, and Dexie's `&fileHash` unique index already prevents a duplicate `books` row from concurrent imports of the same book. Broader cross-tab sync (filters, reading progress, preferences) remains out of scope — that's Sprint 8 Day 4's item.
+    ✅ **Related Gap: [[Platform-01 Multi-Tab Concurrency|Multi-Tab Concurrency]].** Already covered by the pre-existing `hasIndex`-then-build pattern in `ensureIndex()`/`ensureIndexesForBooks()` — no new locking needed, IndexedDB's own transaction guarantees make the writes themselves atomic, and Dexie's `&fileHash` unique index already prevents a duplicate `books` row from concurrent imports of the same book. Broader cross-tab sync (filters, reading progress, preferences) remains out of scope — that's Sprint 8 Day 4's item. _(verified 2026-08-11)_
 
-18b. ✅ **Manual "Rebuild Search Index" action in Settings — _not in the sprint spec_, added on request after items 16–18 landed.** Items 16–18 cover the automatic lifecycle (build on import, delete on removal, backfill on search), but left no escape hatch for an index that's stale or corrupted while the book itself is unchanged — e.g. after a future tokenizer change, which would otherwise require deleting and re-importing every book. Three pieces:
+19. ✅ **Manual "Rebuild Search Index" action in Settings — _not in the sprint spec_, added on request after items 16–18 landed.** Items 16–18 cover the automatic lifecycle (build on import, delete on removal, backfill on search), but left no escape hatch for an index that's stale or corrupted while the book itself is unchanged — e.g. after a future tokenizer change, which would otherwise require deleting and re-importing every book. Three pieces:
 
     - `rebuildSearchIndex()` (`src/features/library/actions/rebuild-search-index.ts`) — full wipe + rebuild across every book, `deleteIndex` then `buildIndex` per book, sequential rather than `Promise.all` (concurrent JSZip parses are real contention on lower-end devices — the same cost that forced Day 5's test-timeout bumps). A single bad book (missing/corrupt file) is counted in a returned `{ total, failed }`, not thrown, so it can't abort the rest of the library.
     - `search-maintenance-store.ts` (`src/features/library/store/`) — `persist`-wrapped Zustand store owning the orchestration. `startRebuild()` being a store action rather than a component effect is what makes the rebuild survive navigating away from Settings (e.g. to read a book) — nothing is tied to the screen's lifecycle. Only `lastRebuiltAt` is persisted; `status`/`progress`/`failedCount` reset on load. Surviving a full page reload mid-rebuild would need a Background Sync API and is explicitly out of scope; re-running after an interruption is always safe since each book is delete-then-build, not merge.
     - Settings UI card (`src/app/screens/settings-screen.tsx`) — button (disabled, "Rebuilding…" while running), estimated progress bar, completion toast, and a "Last rebuilt: <date>" line. Progress is estimated from total word count via a deliberately rough, unbenchmarked `MS_PER_1000_WORDS = 500`, capped at 95% so the bar never reads "done" before the work finishes.
 
-    Full-library only — per-book selection is documented as a known extension in the spec's Non-Goals (`rebuildSearchIndex(bookIds?)` plus a checkbox list reusing the same store) but deliberately unbuilt. Design rationale: `superpowers/specs/2026-08-11-settings-reindex-design.md`; plan: `superpowers/plans/2026-08-11-settings-reindex.md`. Merged in [#3](https://github.com/Pragya28/epub-reader/pull/3).
+    Full-library only — per-book selection is documented as a known extension in the spec's Non-Goals (`rebuildSearchIndex(bookIds?)` plus a checkbox list reusing the same store) but deliberately unbuilt. Design rationale: `superpowers/specs/2026-08-11-settings-reindex-design.md`; plan: `superpowers/plans/2026-08-11-settings-reindex.md`. Merged in [#3](https://github.com/Pragya28/epub-reader/pull/3). _(done 2026-08-11)_
 
     🟡 **Follow-up, not blocking:** the progress bar under a real multi-book rebuild is unverified — the dev library is empty, so rebuilds finish instantly, and importing a book needs a native file picker the sandboxed browser tool can't drive. Worth one manual pass with a real book. If automating it ever matters: Vite's dev server does serve `src/tests/fixtures/*.epub` directly (confirmed via `fetch()`), so a `DataTransfer`-based injection into the file input could close the gap — untried, flagged as a possible approach rather than a known-good one.
 
 ### Done Criteria
 
-✅ Done — build/delete hooks wired into import/delete, lazy backfill wired into `searchLibrary()`, plus the unplanned Settings rebuild action (18b). Covered by tests in `import-book.test.ts`, `delete-book.test.ts`, `search-service.test.ts`, `search-library.test.ts`, `rebuild-search-index.test.ts`, `search-maintenance-store.test.ts`, `settings-screen.test.tsx`.
+✅ Done — build/delete hooks wired into import/delete, lazy backfill wired into `searchLibrary()`, plus the unplanned Settings rebuild action (19). Covered by tests in `import-book.test.ts`, `delete-book.test.ts`, `search-service.test.ts`, `search-library.test.ts`, `rebuild-search-index.test.ts`, `search-maintenance-store.test.ts`, `settings-screen.test.tsx`.
 
 ⚠️ **Test-infrastructure gap surfaced here, worth knowing before Day 6's perf work:** `fake-indexeddb` doesn't structured-clone `File`/`Blob` through Dexie's `bookFiles` table — a stored file reads back as `{}`. Pre-existing and previously masked (`book-files.test.ts` round-trips a Blob but only asserts `.bookId`/`toBeDefined()`); `rebuildSearchIndex` is simply the first path that re-reads a _stored_ file and parses it. Worked around with targeted `getBookFile` stubs in the affected tests, not fixed globally — swapping in Node's native `Blob`/`File` in `src/tests/setup.ts` was tried and broke JSZip parsing outright. Separately, `fake-indexeddb`'s bulk delete is dramatically slower than real IndexedDB at high row counts (~45k rows for `valid-book-2.epub`), which is why the global Vitest `testTimeout` is now 90s and a few stale per-test overrides were removed to inherit it. Both are test-environment only — real browser IndexedDB handles both fine.
 
@@ -107,9 +107,9 @@ Legend: ✅ done · 🟡 partial · ❌ missing
 
 ## Day 6 — Performance
 
-19. ❌ **Optimize index size** — likely stop-word exclusion (Day 2) plus not indexing extremely short/common tokens; needs a concrete size measurement before optimizing further (no premature indexing scheme).
-20. ❌ **Improve query speed** — should already be fast given the `word`-indexed IndexedDB store (Day 1); this day is about confirming that with a real benchmark, not adding new machinery preemptively.
-21. ❌ **Large-library testing** — new perf test, `search.perf.test.ts`, following the established "regression guard, not a tight gate" pattern from `load-library.perf.test.ts`/`epub-parser.perf.test.ts` (seed N synthetic indexed books, assert a generous time budget).
+20. ❌ **Optimize index size** — the two cheap wins are already in from Day 2, so don't re-plan them: stop-word exclusion (item 7) and per-chapter dedupe (item 6, one row per unique word per chapter rather than per occurrence). What's left is measuring, then deciding whether anything further is warranted. **One real datapoint already exists**, observed while building item 19: `valid-book-2.epub` (~216k words, 12 chapters) produces **45,033 index rows**. That's the number to extrapolate from for a large library, and it's also why the Day 5/19 test suite is slow (see the Day 5 test-infrastructure note). Any further scheme — minimum token length, per-book row caps — needs a measured size budget first, not a guess.
+21. ❌ **Improve query speed** — should already be fast given the `word`-indexed IndexedDB store (Day 1); this day is about confirming that with a real benchmark, not adding new machinery preemptively.
+22. ❌ **Large-library testing** — new perf test, `search.perf.test.ts`, following the established "regression guard, not a tight gate" pattern from `load-library.perf.test.ts`/`epub-parser.perf.test.ts` (seed N synthetic indexed books, assert a generous time budget).
 
     ❌ **Related Gap: [[Storage-01 Quota and Eviction|Storage Quota and Eviction]].** Named explicitly under both this day and Day 5 in the spec, and names Sprint 6 by name — "full-text indexes for a large library are a meaningful multiple of the raw book size, so quota pressure becomes more likely once Sprint 6 ships." Read in full (2026-08-07): recommends requesting `navigator.storage.persist()` at first import, surfacing `navigator.storage.estimate()` somewhere in the UI, failing index builds/imports gracefully with an explicit "storage full" message, and detecting eviction on load rather than silently showing an empty library. Its "OPFS (EPUB files) and IndexedDB" framing is, unlike `Search Index Architecture.md`'s per-chapter claim, actually accurate to the real storage layer (see the corrected Day 1 note) — no mismatch here, this doc just needs reading, not correcting. Full resolution (persistent-storage request UI, a storage-usage view, eviction detection) is real feature work with no obvious home in this sprint's Day-by-Day breakdown — scope this day's obligation to the part that's actually Sprint-6-caused: measure the _new_ index's size contribution to quota pressure and fail an index build gracefully if it would exceed available quota, rather than building the full persist/estimate/eviction-detection UI here. Flag the rest for Sprint 8 explicitly, the same way Sprint 5 deferred Infrastructure-01/Onboarding-01's full builds.
 
@@ -121,9 +121,9 @@ Legend: ✅ done · 🟡 partial · ❌ missing
 
 ## Day 7 — Hardening
 
-22. ❌ **Documentation** — update `CLAUDE.md`'s Architecture section with the new `services/search/` slice, following the existing `services/{epub,storage}/` pattern already documented there.
-23. ❌ **Cleanup**
-24. ❌ **Full search regression suite + manual exploratory testing** — per the Sprint 4/5 Day 7 pattern: `tsc -b` + `pnpm lint` + `pnpm test:run` + `pnpm build`, plus a live pass against a real EPUB fixture (not just unit tests), same as Sprint 5 Day 3's reader-chrome work caught two live-only bugs unit tests missed.
+23. ❌ **Documentation** — update `CLAUDE.md`'s Architecture section with the new `services/search/` slice, following the existing `services/{epub,storage}/` pattern already documented there.
+24. ❌ **Cleanup**
+25. ❌ **Full search regression suite + manual exploratory testing** — per the Sprint 4/5 Day 7 pattern: `tsc -b` + `pnpm lint` + `pnpm test:run` + `pnpm build`, plus a live pass against a real EPUB fixture (not just unit tests), same as Sprint 5 Day 3's reader-chrome work caught two live-only bugs unit tests missed.
 
 ### Done Criteria
 
