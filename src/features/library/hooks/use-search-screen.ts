@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { libraryStore } from "../store/library-store";
 import { enrichBookWithProgress } from "../utils/derive-book-status";
 import { searchLibrary } from "../actions/search-library";
+import { loadLibrary } from "../actions/load-library";
 import { logger as rootLogger } from "@/shared/logger/logger";
 import {
   DEFAULT_SEARCH_STATUS_FILTER,
@@ -34,6 +35,15 @@ export function useSearchScreen() {
   const [statusFilter, setStatusFilter] = useState<SearchStatusFilter>(
     DEFAULT_SEARCH_STATUS_FILTER,
   );
+
+  // The library is normally populated by the library screen, but search can
+  // be reached directly (deep link, or a refresh while on this screen) with
+  // an empty store — which silently broke metadata search (nothing to match
+  // against) and made the status filter a no-op (content matches couldn't
+  // resolve their book). Load it here rather than depending on arrival path.
+  useEffect(() => {
+    if (books.length === 0) void loadLibrary();
+  }, [books.length]);
 
   const enriched = useMemo(() => books.map(enrichBookWithProgress), [books]);
 

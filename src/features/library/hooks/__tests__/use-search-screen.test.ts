@@ -12,6 +12,10 @@ const book: StoredBook = {
   createdAt: Date.now(),
 } as StoredBook;
 
+vi.mock("../../actions/load-library", () => ({
+  loadLibrary: vi.fn(async () => {}),
+}));
+
 vi.mock("../../actions/search-library", () => ({
   searchLibrary: vi.fn(async (_books: unknown, query: string) => {
     if (!query.trim()) return { metadataMatches: [], contentMatches: [] };
@@ -46,6 +50,19 @@ describe("useSearchScreen", () => {
     expect(result.current.metadataMatches).toHaveLength(1);
     expect(result.current.contentMatches).toHaveLength(1);
     expect(result.current.isSearching).toBe(true);
+  });
+
+  it("loads the library when reached with an empty store", async () => {
+    // Caught by a live pass, not by tests: arriving at /search directly (deep
+    // link or a refresh on this screen) left `books` empty, which silently
+    // broke metadata search and made the status filter a no-op, since content
+    // matches couldn't resolve their book to a reading status.
+    const { loadLibrary } = await import("../../actions/load-library");
+    libraryStore.setState({ books: [], isLoading: false, error: null });
+
+    renderHook(() => useSearchScreen());
+
+    await waitFor(() => expect(loadLibrary).toHaveBeenCalled());
   });
 
   it("reports loading while a search is in flight, then settles", async () => {
