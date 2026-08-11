@@ -58,7 +58,7 @@ describe("importBook", () => {
     const books = await getAllBooks();
 
     expect(books).toHaveLength(2);
-  }, 15000);
+  });
 
   it("imports large epub", async () => {
     const file = await loadFixture("large-book.epub");
