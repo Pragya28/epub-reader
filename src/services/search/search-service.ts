@@ -1,4 +1,5 @@
 import { EpubParser } from "@/services/epub/epub-parser";
+import { getBookFile } from "@/services/storage/book-repository";
 import type { StoredSearchIndexEntry } from "@/services/storage/storage-types";
 import { hasIndex, putIndexEntries } from "./search-index";
 import { tokenizeChapterHtml } from "./tokenize";
@@ -33,4 +34,22 @@ export async function buildIndex(bookId: string, file: Blob): Promise<void> {
 export async function ensureIndex(bookId: string, file: Blob): Promise<void> {
   if (await hasIndex(bookId)) return;
   await buildIndex(bookId, file);
+}
+
+/**
+ * Backfills search indexes for books that predate this sprint's indexing
+ * (or otherwise lost their index) — checked via a cheap hasIndex lookup per
+ * book, with a file read + build only for the ones actually missing one.
+ */
+export async function ensureIndexesForBooks(bookIds: string[]): Promise<void> {
+  await Promise.all(
+    bookIds.map(async (bookId) => {
+      if (await hasIndex(bookId)) return;
+
+      const stored = await getBookFile(bookId);
+      if (!stored) return;
+
+      await buildIndex(bookId, stored.file);
+    }),
+  );
 }
