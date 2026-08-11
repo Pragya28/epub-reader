@@ -63,10 +63,12 @@ describe("importBook", () => {
   it("imports large epub", async () => {
     const file = await loadFixture("large-book.epub");
 
-    // Import now also builds the search index (a second full parse of the
-    // book), so this needs more headroom than the default 5s test timeout.
+    // Import also builds the search index (a second full parse of the
+    // book) — inherits the project's global testTimeout (vite.config.ts)
+    // rather than a per-test override, since that budget has needed
+    // raising more than once for this exact reason.
     await expect(importBook(file)).resolves.not.toThrow();
-  }, 30000);
+  });
 
   it("throws for invalid spine references", async () => {
     const file = await loadFixture("broken-spine.epub");
