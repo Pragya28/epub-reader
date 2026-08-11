@@ -149,4 +149,58 @@ describe("loadReaderBook", () => {
     expect(state.readerDocument).toEqual(readerDocument);
     expect(state.parsedBook).toBeNull();
   });
+
+  it("seeds currentChapterIndex from jumpChapterIndex, overriding saved progress", async () => {
+    const bookWithProgress: StoredBook = {
+      ...storedBook,
+      progress: {
+        chapterIndex: 1,
+        totalChapters: 5,
+        scrollFraction: 0.5,
+        atDocumentEnd: false,
+        percent: 20,
+        updatedAt: Date.now(),
+      },
+    };
+
+    vi.mocked(getBookWithFile).mockResolvedValue({
+      book: bookWithProgress,
+      file: new Blob(["epub"]),
+    });
+    parseBook.mockResolvedValue({
+      ...parsedBook,
+      chapters: [{}, {}, {}, {}, {}],
+    });
+
+    await loadReaderBook("book-1", 3);
+
+    expect(readerStore.getState().currentChapterIndex).toBe(3);
+  });
+
+  it("falls back to saved progress when jumpChapterIndex is out of range", async () => {
+    const bookWithProgress: StoredBook = {
+      ...storedBook,
+      progress: {
+        chapterIndex: 1,
+        totalChapters: 5,
+        scrollFraction: 0.5,
+        atDocumentEnd: false,
+        percent: 20,
+        updatedAt: Date.now(),
+      },
+    };
+
+    vi.mocked(getBookWithFile).mockResolvedValue({
+      book: bookWithProgress,
+      file: new Blob(["epub"]),
+    });
+    parseBook.mockResolvedValue({
+      ...parsedBook,
+      chapters: [{}, {}, {}, {}, {}],
+    });
+
+    await loadReaderBook("book-1", 99);
+
+    expect(readerStore.getState().currentChapterIndex).toBe(1);
+  });
 });

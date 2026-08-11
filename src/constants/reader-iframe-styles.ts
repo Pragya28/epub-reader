@@ -128,6 +128,9 @@ export const READER_BASE_STYLE = `
     --reading-font-family: "Literata", serif;
     --reading-margin: 16px;
     --reading-paragraph-spacing: 8px;
+    /* Mirrors --cover-gold / --selected from src/index.css. */
+    --search-highlight-bg: oklch(74.32% 0.1171 89.51 / 35%);
+    --search-highlight-text: oklch(58.07% 0.1046 78.37);
   }
 
   @media (prefers-color-scheme: dark) {
@@ -135,6 +138,7 @@ export const READER_BASE_STYLE = `
       --sep-ink:  ${SEPARATOR_COLOR_DARK};
       --sep-fade: oklch(18.38% 0.0052 67.5);
       --sep-text: oklch(93.85% 0.0254 86.87);
+      --search-highlight-text: oklch(77.53% 0.123 78.89);
     }
   }
 
@@ -143,12 +147,14 @@ export const READER_BASE_STYLE = `
     --sep-ink:  ${SEPARATOR_COLOR_LIGHT};
     --sep-fade: oklch(98.38% 0.0159 82.79);
     --sep-text: oklch(22.57% 0.0237 96.74);
+    --search-highlight-text: oklch(58.07% 0.1046 78.37);
   }
 
   :root[data-theme="dark"] {
     --sep-ink:  ${SEPARATOR_COLOR_DARK};
     --sep-fade: oklch(18.38% 0.0052 67.5);
     --sep-text: oklch(93.85% 0.0254 86.87);
+    --search-highlight-text: oklch(77.53% 0.123 78.89);
   }
 
   html, body {
@@ -194,5 +200,14 @@ export const READER_BASE_STYLE = `
   pre {
     max-width: 100%;
     overflow-x: auto;
+  }
+
+  mark.search-highlight {
+    background: var(--search-highlight-bg) !important;
+    color: var(--search-highlight-text) !important;
+    font-weight: 600;
+    padding: 0 2px;
+    /* Mirrors --radius-sm (0.375rem * 0.6) from src/index.css. */
+    border-radius: 0.225rem;
   }
 `;
