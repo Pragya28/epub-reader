@@ -1,4 +1,5 @@
 import { EpubParser } from "@/services/epub/epub-parser";
+import { buildIndex } from "@/services/search/search-service";
 import { saveImportedBook } from "@/services/storage/book-repository";
 import { createBookId } from "@/utils/create-book-id";
 import { hashFile } from "@/utils/hash";
@@ -67,6 +68,8 @@ export async function importBook(file: File) {
 
     // 7. Update store reactively
     store.addBook(book);
+
+    await buildIndex(bookId, file);
 
     return {
       id: bookId,

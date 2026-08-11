@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Always work in ponytail mode (full intensity) in this repo — favor the simplest solution that works, stdlib/native/existing-dependency first, no speculative abstractions.
 
+When executing a superpowers plan in this repo, default to: a feature branch in the current directory (not an isolated worktree), and inline execution (not subagent-driven-development) — unless the user asks for isolation or subagent dispatch for that specific task.
+
 ## Project
 
 Librune — a local-first EPUB reader PWA (React 19 + TypeScript + Vite). All book data (files, covers, reading progress) lives in IndexedDB; nothing is uploaded to a server.

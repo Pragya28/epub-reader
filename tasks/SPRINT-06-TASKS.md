@@ -81,18 +81,15 @@ Legend: ✅ done · 🟡 partial · ❌ missing
 
 ## Day 5 — Index Maintenance
 
-16. ❌ **Build index during import** — hook into `importBook()` (`src/features/library/actions/import-book.ts`), after the book/file/cover writes succeed.
-17. ❌ **Delete/update indexes on book removal or re-import** — hook into `deleteBook()`, and decide re-import behavior (full rebuild is simplest and safest to start with).
-18. ❌ **Handle storage migration for existing libraries without an index** — books imported before Sprint 6 have no search index; needs an explicit backfill decision (lazy, on first search of an unindexed book vs. an eager one-time migration pass on app load).
+16. ✅ **Build index during import** — `importBook()` (`src/features/library/actions/import-book.ts`) calls `buildIndex(bookId, file)` after the book/file/cover writes succeed.
+17. ✅ **Delete indexes on book removal** — `deleteBook()` (`src/features/library/actions/delete-book.ts`) calls `deleteIndex(bookId)` alongside the existing storage delete. Re-import-triggered rebuild was scoped out: `importBook()` already throws `"Book already imported"` on a `fileHash` match before any write happens, so there's no code path where the same book is actually re-imported and needs its index rebuilt.
+18. ✅ **Lazy backfill for pre-Sprint-6 libraries** — `ensureIndexesForBooks(bookIds)` (`src/services/search/search-service.ts`) checks `hasIndex()` per book (cheap, no file read) and only builds the ones missing an index. Called from `searchLibrary()` (`src/features/library/actions/search-library.ts`) before content search runs, so any book never indexed becomes searchable on first use. No new UI, no startup migration pass. Design rationale: `superpowers/specs/2026-08-11-search-index-maintenance-design.md`.
 
-    ❌ **Related Gap: [[Platform-01 Multi-Tab Concurrency|Multi-Tab Concurrency]].** The Sprint 6 spec names this explicitly under this exact day — "index writes during import are a concrete case where concurrent-tab writes could race." Confirmed against the current codebase (session note, 2026-08-07): `filter-store.ts` (renamed from `library-filter-store.ts` during Day 4's merge) already has no cross-tab sync today (`persist` writes to localStorage per-tab, no `storage`-event listener, no `BroadcastChannel`), and the same book-progress race the gap doc describes (`services/storage`'s `updateBookProgress`-style last-write-wins) exists independently of search. Day 5 is where this sprint's own new write surface (index builds) makes the existing gap _worse_, not where the gap originates — **fix belongs here, scoped to what Day 5 actually needs**, not a general multi-tab architecture:
-    - IndexedDB's own transaction guarantees are sufficient for the index _writes themselves_ being atomic — per the gap doc's own recommendation, no custom locking needed.
-    - The actual risk is two tabs importing the _same_ book concurrently and each building a full index for it redundantly (wasted work, not corruption, since Dexie's `&fileHash` unique index already prevents a duplicate `books` row). Cheapest correct fix: check for an existing index for `bookId` before building one, inside the same code path that already checks `fileHash` for duplicate import.
-    - Broader cross-tab sync (filters, reading progress, preferences via `BroadcastChannel`/`storage` events) is real but is the gap doc's own Sprint 8 Day 4 item, not Sprint 6's — don't over-scope this into a general fix while here for the index-write case.
+    ✅ **Related Gap: [[Platform-01 Multi-Tab Concurrency|Multi-Tab Concurrency]].** Already covered by the pre-existing `hasIndex`-then-build pattern in `ensureIndex()`/`ensureIndexesForBooks()` — no new locking needed, IndexedDB's own transaction guarantees make the writes themselves atomic, and Dexie's `&fileHash` unique index already prevents a duplicate `books` row from concurrent imports of the same book. Broader cross-tab sync (filters, reading progress, preferences) remains out of scope — that's Sprint 8 Day 4's item.
 
 ### Done Criteria
 
-🟡 Not started.
+✅ Done — build/delete hooks wired into import/delete, lazy backfill wired into `searchLibrary()`, all covered by tests in `import-book.test.ts`, `delete-book.test.ts`, `search-service.test.ts`, `search-library.test.ts`.
 
 ---
 

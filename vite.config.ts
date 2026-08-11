@@ -89,5 +89,9 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: "./src/tests/setup.ts",
     css: true,
+    // importBook now also builds a search index (a second full EPUB parse),
+    // so tests that import a fixture need more than the 5s default,
+    // especially under the CPU contention of a full pre-commit test run.
+    testTimeout: 45000,
   },
 });
