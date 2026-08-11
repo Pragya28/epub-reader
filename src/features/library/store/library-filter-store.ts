@@ -6,7 +6,7 @@ import { DEFAULT_SORT } from "../utils/sort-books";
 import type { LibraryFilters } from "../utils/filter-books";
 import { DEFAULT_LIBRARY_FILTERS } from "../utils/filter-books";
 
-interface LibraryFilterStore {
+interface FilterStore {
   query: string;
   sortBy: SortOption;
   filters: LibraryFilters;
@@ -21,8 +21,8 @@ interface LibraryFilterStore {
 // state in the screen hooks — it's chrome, not a filter choice.
 // Factory (not a singleton) so each screen that lists books — library,
 // per-author — keeps its own sort/filter/search state instead of sharing one.
-function createLibraryFilterStore(name: string) {
-  return create<LibraryFilterStore>()(
+function createFilterStore(name: string) {
+  return create<FilterStore>()(
     persist(
       (set) => ({
         query: "",
@@ -38,9 +38,5 @@ function createLibraryFilterStore(name: string) {
   );
 }
 
-export const libraryFilterStore = createLibraryFilterStore(
-  "library-filter-store",
-);
-export const authorFilterStore = createLibraryFilterStore(
-  "author-filter-store",
-);
+export const libraryFilterStore = createFilterStore("library-filter-store");
+export const authorFilterStore = createFilterStore("author-filter-store");
