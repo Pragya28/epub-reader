@@ -136,13 +136,19 @@ Legend: ✅ done · 🟡 partial · ❌ missing
 
 ## Day 7 — Hardening
 
-27. ❌ **Documentation** — update `CLAUDE.md`'s Architecture section with the new `services/search/` slice, following the existing `services/{epub,storage}/` pattern already documented there.
-28. ❌ **Cleanup**
-29. ❌ **Full search regression suite + manual exploratory testing** — per the Sprint 4/5 Day 7 pattern: `tsc -b` + `pnpm lint` + `pnpm test:run` + `pnpm build`, plus a live pass against a real EPUB fixture (not just unit tests), same as Sprint 5 Day 3's reader-chrome work caught two live-only bugs unit tests missed.
+27. ✅ **Documentation** — `CLAUDE.md` gains a "Search (inverted index, no search library)" section alongside the existing `services/{epub,storage}/` ones, covering the module split, the one-row-per-word-per-chapter decision and what it costs ranking, and the lifecycle rule that index failures must never fail the thing around them. The Layout bullet now reads `src/services/{epub,storage,search}/`. Also corrected a **stale** fact the sprint had invalidated: the Storage section still described "schema v3, three tables" — it's v4 with `searchIndex` since Day 1. _(done 2026-08-11)_
+
+28. ✅ **Cleanup** — `refactor_tool` (dead_code) reported **0 dead symbols in `services/search/`**: this sprint introduced none. Of 47 repo-wide hits, nearly all are false positives the graph can't see through (shadcn primitives exporting a complete component API, React lifecycle methods, handlers used only in JSX, closures returned from hooks). Two were genuinely dead and are deleted: `getBook()` and `getBooksSortedByLastRead()` in `book-repository.ts` — no callers, no tests, and the latter's doc comment described a job `pickCurrentlyReadingBook()` does from the store instead. **Deliberately not done:** `book-repository.ts` re-exports `getBookFile` from `book-files.ts`, which `CLAUDE.md` forbids — but two tests depend on `vi.spyOn(bookRepository, "getBookFile")`, which only works _because_ of the re-export, and those spies are the workaround for the `fake-indexeddb` Blob limitation (Day 5). Removing it means rewriting both onto module mocks; not worth destabilising on a cleanup day. Left as a known, reasoned exception. _(done 2026-08-11)_
+
+29. ✅ **Full search regression suite + manual exploratory testing** — `tsc -b` clean, `pnpm lint` 0 errors (7 pre-existing warnings, none from this sprint), `pnpm test:run` **534 passed / 57 files**, `pnpm build` clean. The live pass **earned its place, exactly as the Sprint 5 Day 3 precedent predicted** — see item 30. _(done 2026-08-11)_
+
+30. ✅ **Search screen didn't load the library — found by the Day 7 live pass, invisible to every unit test.** Reaching `/search` directly (deep link, or a refresh while on the screen) left `libraryStore.books` empty, because the library is populated by the _library_ screen's `loadLibrary()` effect. Two consequences, one pre-existing and one introduced this sprint: **metadata search silently returned nothing** (`filterBooksByQuery` had an empty array to match against — the same false-negative class as item 23, from a different cause), and **the new status filter was a no-op**, because content matches couldn't resolve their `bookId` to a book and `filterSearchResultsByStatus`'s deliberate "show results we can't classify" fallback then passed everything through regardless of filter. Fixed by loading the library from `useSearchScreen` when the store is empty, rather than depending on which screen the user arrived from. The fallback is kept — it's still correct for an index row whose book was deleted. **Live evidence:** searching "Harry" against a real book went from 39 results to **40** after the fix, the extra one being the book-title match that had been missing; Finished then correctly showed the empty view reading "40 results are hidden by the current filter" with its "Show all results" action. Regression test added to `use-search-screen.test.ts`. _(done 2026-08-11)_
 
 ### Done Criteria
 
-🟡 Not started.
+✅ Done — documentation (27), cleanup (28), and the full gate suite plus a live pass against a real book (29). The live pass found one real bug (30) that 534 unit tests did not, which is the second sprint running that a manual pass has justified itself; keep it in Day 7.
+
+**Item 23's caveat is now resolved.** The search fix was verified live against a real book on a real dev server, not just against tests: "Harry" returns 40 results where the reported bug showed 0. What remains unverified is only the rebuild progress bar under a multi-book library (item 19's follow-up), which needs more than one book imported.
 
 ---
 

@@ -41,7 +41,7 @@ Package manager is pnpm (`packageManager` pinned in package.json) — don't use 
 
 - `src/app/` — routing shell only (`router.tsx`, three screens: library/reader/settings). Thin composition, no business logic.
 - `src/features/{library,preferences,reader}/` — vertical slices, each with `store/`, `actions/`, `components/`, `types/`. `reader/` additionally owns `engine/` (custom chapter rendering pipeline), `hooks/`, and `utils/`; `preferences/` additionally owns `hooks/` and `constants/`.
-- `src/services/{epub,storage}/` — framework-agnostic infra. `epub/` parses EPUB files; `storage/` wraps Dexie/IndexedDB.
+- `src/services/{epub,storage,search}/` — framework-agnostic infra. `epub/` parses EPUB files; `storage/` wraps Dexie/IndexedDB; `search/` builds and queries the full-text index.
 - `src/components/` — shadcn/ui primitives (`ui/`) plus cross-cutting `toast/` and `error-boundary/`.
 - `src/shared/` — cross-feature utilities not tied to one layer (`logger/`, `ornaments.ts` — decorative SVGs injected into the reader iframe).
 - `src/constants/`, `src/utils/` — pure data tables / generic helpers (`cn.ts`, `routes.ts`, `create-book-id.ts`, `hash.ts`).
@@ -66,9 +66,23 @@ Don't re-export one module's functions through another for convenience (e.g. `se
 - `scroll/detect-visible-chapter.ts` + `loader/chapter-loader.ts` drive mount/unmount as the user scrolls.
 - `hooks/use-reader-engine.ts` is the glue hook wiring load/mount/scroll/progress-save together.
 
+### Search (inverted index, no search library)
+
+`services/search/` is framework-agnostic (no Zustand/React), split by concern:
+
+- `tokenize.ts` — strips tags, lowercases, splits on a Unicode-aware `/[^\p{L}\p{N}]+/u` boundary so non-Latin scripts tokenize correctly. Stop words come from `src/constants/search-stop-words.ts`.
+- `search-service.ts` — `buildIndex()` / `ensureIndex()` / `ensureIndexesForBooks()`. Indexing reuses `EpubParser.loadChapter()` per spine index rather than any per-chapter storage layer; there is exactly one path that answers "what is chapter N's text".
+- `search-index.ts` — Dexie access (`hasIndex`, `putIndexEntries`, `deleteIndex`, `findMatches`). Named without `-store` on purpose: `store` means Zustand here.
+- `search-content.ts` / `search-metadata.ts` — chapter-level and book-level queries, composed by `features/library/actions/search-library.ts`. They stay separate because a metadata hit is a book and a content hit is a chapter; merging them would throw away the chapter jump target.
+- `snippet.ts` — ±60 chars around the first match.
+
+One row per unique word **per chapter**, not per occurrence — this keeps the index far smaller (~0.21 rows per word of book text) but means occurrence frequency isn't recoverable, which is why ranking counts _distinct query words matched_ rather than term frequency. Changing that is a schema change, not a scoring tweak.
+
+Index lifecycle: built on import, deleted on book removal, and lazily backfilled by `searchLibrary()` for books that predate the feature. **Index failures must never fail the thing around them** — `importBook()` persists the book before indexing, and one unindexable book must not abort a backfill or a search; the lazy backfill retries. Metadata search needs no index and must never be blocked behind one.
+
 ### Storage (Dexie / IndexedDB)
 
-`services/storage/db.ts` — DB name `librune-db`, currently schema v3, three tables: `books` (metadata + optional embedded `progress`/`manualStatus`), `bookFiles` (raw epub Blob), `bookCovers` (cover Blob). `book-repository.ts` / `cover-cache.ts` wrap raw Dexie calls. When adding a new indexed field, add a new `db.version(n).stores(...)` block (see the v3 comment for the pattern — no data migration needed since Dexie only reindexes on next write).
+`services/storage/db.ts` — DB name `librune-db`, currently schema v4, four tables: `books` (metadata + optional embedded `progress`/`manualStatus`), `bookFiles` (raw epub Blob), `bookCovers` (cover Blob), `searchIndex` (`++id, word, bookId` — the inverted index above). `book-repository.ts` / `cover-cache.ts` wrap raw Dexie calls. When adding a new indexed field, add a new `db.version(n).stores(...)` block (see the v3 comment for the pattern — no data migration needed since Dexie only reindexes on next write).
 
 Service worker (`vite-plugin-pwa`, see `vite.config.ts`) precaches only the app shell — EPUB files and covers live in IndexedDB and must **not** be added to `globPatterns` or runtime caching.
 
