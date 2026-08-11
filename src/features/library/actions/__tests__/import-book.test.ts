@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { hasIndex } from "@/services/search/search-index";
 import { getAllBooks } from "@/services/storage/book-repository";
 import { importBook } from "../import-book";
 import { loadFixture } from "@/tests/utils/load-fixtures";
@@ -57,13 +58,15 @@ describe("importBook", () => {
     const books = await getAllBooks();
 
     expect(books).toHaveLength(2);
-  });
+  }, 15000);
 
   it("imports large epub", async () => {
     const file = await loadFixture("large-book.epub");
 
+    // Import now also builds the search index (a second full parse of the
+    // book), so this needs more headroom than the default 5s test timeout.
     await expect(importBook(file)).resolves.not.toThrow();
-  });
+  }, 30000);
 
   it("throws for invalid spine references", async () => {
     const file = await loadFixture("broken-spine.epub");
@@ -81,6 +84,15 @@ describe("importBook", () => {
     expect(book.chapterCount).toBeGreaterThan(0);
     expect(book.wordCount).toBeGreaterThan(0);
     expect(book.readingTimeMinutes).toBeGreaterThan(0);
+  });
+
+  it("builds a search index for the imported book", async () => {
+    const file = await loadFixture("valid-book.epub");
+
+    await importBook(file);
+
+    const [book] = await getAllBooks();
+    expect(await hasIndex(book.id)).toBe(true);
   });
 
   it("rejects duplicate book imports", async () => {
