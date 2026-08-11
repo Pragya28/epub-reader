@@ -1,9 +1,10 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, beforeEach } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { SettingsScreen } from "../settings-screen";
 import { preferencesStore } from "@/features/preferences/store/preferences-store";
+import { searchMaintenanceStore } from "@/features/library/store/search-maintenance-store";
 
 function renderScreen() {
   return render(
@@ -21,6 +22,12 @@ describe("SettingsScreen", () => {
       readerFont: "literata",
       fontScale: 1,
       lineHeight: 1.6,
+    });
+    searchMaintenanceStore.setState({
+      status: "idle",
+      progress: 0,
+      failedCount: 0,
+      lastRebuiltAt: null,
     });
   });
 
@@ -108,5 +115,47 @@ describe("SettingsScreen", () => {
     );
 
     expect(preferencesStore.getState().lineHeight).toBeCloseTo(1.5);
+  });
+
+  it("triggers a search index rebuild and shows a completion state", async () => {
+    // Drive startRebuild's own lifecycle directly (idle -> running -> idle
+    // with a recorded lastRebuiltAt) rather than exercising the real
+    // action's IndexedDB/JSZip work here — that path is covered by
+    // rebuild-search-index.test.ts and search-maintenance-store.test.ts.
+    let resolveRebuild!: () => void;
+    const deferredRebuild = new Promise<void>((resolve) => {
+      resolveRebuild = resolve;
+    });
+    searchMaintenanceStore.setState({
+      startRebuild: () => {
+        searchMaintenanceStore.setState({ status: "running", progress: 40 });
+        return deferredRebuild.then(() => {
+          searchMaintenanceStore.setState({
+            status: "idle",
+            progress: 100,
+            failedCount: 0,
+            lastRebuiltAt: Date.now(),
+          });
+        });
+      },
+    });
+
+    const user = userEvent.setup();
+    renderScreen();
+
+    expect(screen.getByText("Never rebuilt")).toBeInTheDocument();
+
+    const rebuildButton = screen.getByRole("button", {
+      name: /rebuild search index/i,
+    });
+    await user.click(rebuildButton);
+
+    expect(screen.getByRole("button", { name: /rebuilding/i })).toBeDisabled();
+
+    resolveRebuild();
+
+    await waitFor(() => {
+      expect(screen.getByText(/last rebuilt:/i)).toBeInTheDocument();
+    });
   });
 });

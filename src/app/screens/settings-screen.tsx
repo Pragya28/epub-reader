@@ -1,11 +1,17 @@
 import type { FC } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft, Sun, CaseSensitive } from "lucide-react";
+import { ChevronLeft, Sun, CaseSensitive, DatabaseZap } from "lucide-react";
 
 import { ROUTES } from "@/utils/routes";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { StepperRow } from "@/components/ui/stepper-row";
+import {
+  Progress,
+  ProgressTrack,
+  ProgressIndicator,
+} from "@/components/ui/progress";
+import { notify } from "@/components/toast/toast";
 import {
   FONT_SCALE_MAX,
   FONT_SCALE_MIN,
@@ -15,6 +21,7 @@ import {
   LINE_HEIGHT_STEP,
   preferencesStore,
 } from "@/features/preferences/store/preferences-store";
+import { searchMaintenanceStore } from "@/features/library/store/search-maintenance-store";
 import { ThemeSelector } from "@/features/preferences/components/theme-selector";
 import { FontSelector } from "@/features/preferences/components/font-selector";
 
@@ -32,6 +39,19 @@ export const SettingsScreen: FC = () => {
     setFontScale,
     setLineHeight,
   } = preferencesStore();
+
+  const { status, progress, lastRebuiltAt, startRebuild } =
+    searchMaintenanceStore();
+
+  const handleRebuild = async () => {
+    await startRebuild();
+    const { failedCount } = searchMaintenanceStore.getState();
+    if (failedCount > 0) {
+      notify.error(`Rebuilt search index — ${failedCount} book(s) failed`);
+    } else {
+      notify.success("Search index rebuilt");
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -122,6 +142,49 @@ export const SettingsScreen: FC = () => {
               paragraphSpacing={paragraphSpacing}
               collapsible
             />
+          </section>
+
+          <section className="flex flex-col gap-6 rounded-sm border border-border bg-card p-6">
+            <div className="flex items-center gap-2">
+              <DatabaseZap
+                className="size-4 text-muted-foreground"
+                strokeWidth={1.5}
+              />
+              <h2 className="metadata">Search Index</h2>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <span className="text-ui font-semibold text-foreground">
+                    Rebuild Search Index
+                  </span>
+                  <span className="text-ui-sm text-muted-foreground">
+                    {lastRebuiltAt
+                      ? `Last rebuilt: ${new Date(lastRebuiltAt).toLocaleString()}`
+                      : "Never rebuilt"}
+                  </span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={status === "running"}
+                  onClick={handleRebuild}
+                >
+                  {status === "running"
+                    ? "Rebuilding…"
+                    : "Rebuild Search Index"}
+                </Button>
+              </div>
+
+              {status === "running" && (
+                <Progress value={progress}>
+                  <ProgressTrack>
+                    <ProgressIndicator />
+                  </ProgressTrack>
+                </Progress>
+              )}
+            </div>
           </section>
         </div>
       </main>
