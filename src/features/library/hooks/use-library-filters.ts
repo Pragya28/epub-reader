@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
-import type { libraryFilterStore } from "../store/library-filter-store";
+import type { libraryFilterStore } from "../store/filter-store";
 import { hasActiveFilters } from "../utils/filter-books";
 import type { BookWithProgress } from "../types/library.types";
 

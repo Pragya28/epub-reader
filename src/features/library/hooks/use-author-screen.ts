@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 import { libraryStore } from "../store/library-store";
-import { authorFilterStore } from "../store/library-filter-store";
+import { authorFilterStore } from "../store/filter-store";
 import { loadLibrary } from "../actions/load-library";
 import { enrichBookWithProgress } from "../utils/derive-book-status";
 import {

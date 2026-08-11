@@ -3,7 +3,7 @@ import { useShallow } from "zustand/react/shallow";
 
 import { useChromeVisibility } from "@/shared/hooks/use-chrome-visibility";
 import { libraryStore } from "../store/library-store";
-import { libraryFilterStore } from "../store/library-filter-store";
+import { libraryFilterStore } from "../store/filter-store";
 import { loadLibrary } from "../actions/load-library";
 import {
   enrichBookWithProgress,
