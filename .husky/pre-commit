@@ -1,8 +1,13 @@
 #!/usr/bin/env sh
 
-pnpm lint-staged
+# See .husky/pre-push — a failing command mid-script is otherwise invisible
+# to git. The Impeccable report below is deliberately non-blocking (|| true).
+set -e
 
-pnpm test
+# lint-staged also runs `vitest related` on staged .ts/.tsx — every test that
+# imports a staged file, whether or not the test itself changed. The full
+# suite still gates pre-push.
+pnpm lint-staged
 
 # Non-blocking Impeccable design QA report on staged UI files.
 DETECT_SCRIPT="$HOME/.claude/plugins/cache/impeccable/impeccable/4.0.4/skills/impeccable/scripts/detect.mjs"
