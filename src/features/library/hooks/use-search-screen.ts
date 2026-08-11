@@ -3,6 +3,11 @@ import { libraryStore } from "../store/library-store";
 import { enrichBookWithProgress } from "../utils/derive-book-status";
 import { searchLibrary } from "../actions/search-library";
 import { logger as rootLogger } from "@/shared/logger/logger";
+import {
+  DEFAULT_SEARCH_STATUS_FILTER,
+  filterSearchResultsByStatus,
+  type SearchStatusFilter,
+} from "../utils/filter-search-results";
 import type { LibrarySearchResults } from "../actions/search-library";
 
 const logger = rootLogger.child("use-search-screen");
@@ -26,6 +31,9 @@ export function useSearchScreen() {
   // setState in an effect body is what react-hooks/set-state-in-effect
   // forbids (same reason `results` isn't reset there either, below).
   const [settledQuery, setSettledQuery] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<SearchStatusFilter>(
+    DEFAULT_SEARCH_STATUS_FILTER,
+  );
 
   const enriched = useMemo(() => books.map(enrichBookWithProgress), [books]);
 
@@ -62,14 +70,23 @@ export function useSearchScreen() {
   // a synchronous setState-in-effect — see react-hooks/set-state-in-effect).
   const displayResults = isSearching ? results : EMPTY_RESULTS;
 
+  // Status scoping is applied here rather than inside searchLibrary so
+  // changing the filter re-renders from cached results instead of
+  // re-running the search (and its index backfill).
+  const scoped = useMemo(
+    () => filterSearchResultsByStatus(displayResults, enriched, statusFilter),
+    [displayResults, enriched, statusFilter],
+  );
+
   return {
     query,
     setQuery,
-    metadataMatches: displayResults.metadataMatches,
-    contentMatches: displayResults.contentMatches,
-    resultCount:
-      displayResults.metadataMatches.length +
-      displayResults.contentMatches.length,
+    statusFilter,
+    setStatusFilter,
+    hiddenCount: scoped.hiddenCount,
+    metadataMatches: scoped.metadataMatches,
+    contentMatches: scoped.contentMatches,
+    resultCount: scoped.metadataMatches.length + scoped.contentMatches.length,
     isSearching,
     isLoading: isSearching && settledQuery !== query,
   };

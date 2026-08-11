@@ -1,9 +1,20 @@
 import { useEffect, useState, type FC } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Search as SearchIcon, X } from "lucide-react";
+import { ArrowLeft, Search as SearchIcon, SearchX, X } from "lucide-react";
 import { ROUTES } from "@/utils/routes";
 import { useSearchScreen } from "@/features/library/hooks/use-search-screen";
 import { SearchResultRow } from "@/features/library/components/search-result-row";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import type { SearchStatusFilter } from "@/features/library/utils/filter-search-results";
 import {
   getBookCoverUrl,
   getBookWithFile,
@@ -12,6 +23,12 @@ import { EpubParser } from "@/services/epub/epub-parser";
 import { extractSnippet } from "@/services/search/snippet";
 import { flattenToc } from "@/features/reader/utils/flatten-toc";
 import type { ChapterMatch } from "@/services/search/search-content";
+
+const SEARCH_STATUS_OPTIONS: { value: SearchStatusFilter; label: string }[] = [
+  { value: "unfinished", label: "Unfinished" },
+  { value: "all", label: "All" },
+  { value: "finished", label: "Finished" },
+];
 
 interface ContentMatchDisplay extends ChapterMatch {
   bookTitle: string;
@@ -50,8 +67,18 @@ async function loadContentMatchDisplay(
 
 export const SearchScreen: FC = () => {
   const navigate = useNavigate();
-  const { query, setQuery, metadataMatches, contentMatches, resultCount } =
-    useSearchScreen();
+  const {
+    query,
+    setQuery,
+    metadataMatches,
+    contentMatches,
+    resultCount,
+    isLoading,
+    isSearching,
+    statusFilter,
+    setStatusFilter,
+    hiddenCount,
+  } = useSearchScreen();
 
   const [metadataCovers, setMetadataCovers] = useState<Record<string, string>>(
     {},
@@ -132,10 +159,68 @@ export const SearchScreen: FC = () => {
       </div>
 
       <div className="px-4 py-4">
-        {query.trim() !== "" && (
+        {isSearching && (
+          <ToggleGroup
+            value={[statusFilter]}
+            onValueChange={(next) => {
+              const [picked] = next as SearchStatusFilter[];
+              // Base UI clears the array when the active item is pressed
+              // again; keep the current filter rather than falling into an
+              // unlabelled fourth state.
+              if (picked) setStatusFilter(picked);
+            }}
+            aria-label="Filter results by reading status"
+            className="mb-4"
+          >
+            {SEARCH_STATUS_OPTIONS.map(({ value, label }) => (
+              <ToggleGroupItem key={value} value={value} size="sm">
+                {label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        )}
+
+        {/* Suppressed at zero results — the empty view below says it better
+            than "0 results found" stacked on top of it. */}
+        {isSearching && (isLoading || resultCount > 0) && (
           <p className="font-reading mb-5 text-meta text-muted-foreground italic">
-            {resultCount} {resultCount === 1 ? "result" : "results"} found
+            {isLoading
+              ? "Searching…"
+              : `${resultCount} ${resultCount === 1 ? "result" : "results"} found${hiddenCount > 0 ? ` · ${hiddenCount} hidden` : ""}`}
           </p>
+        )}
+
+        {isSearching && !isLoading && resultCount === 0 && (
+          <Empty role="status" aria-live="polite" className="py-24">
+            <EmptyHeader>
+              <EmptyMedia>
+                <SearchX
+                  size={48}
+                  strokeWidth={1.5}
+                  className="text-muted-foreground/30"
+                />
+              </EmptyMedia>
+              <EmptyTitle className="text-ui uppercase tracking-[0.15em] text-muted-foreground">
+                No results found
+              </EmptyTitle>
+              <EmptyDescription className="text-ui-sm opacity-60">
+                {hiddenCount > 0
+                  ? `${hiddenCount} ${hiddenCount === 1 ? "result is" : "results are"} hidden by the current filter.`
+                  : "Try a different word, or check the spelling."}
+              </EmptyDescription>
+            </EmptyHeader>
+            {hiddenCount > 0 && (
+              <EmptyContent>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setStatusFilter("all")}
+                >
+                  Show all results
+                </Button>
+              </EmptyContent>
+            )}
+          </Empty>
         )}
 
         <div className="flex flex-col divide-y divide-divider">
