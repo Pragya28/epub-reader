@@ -24,10 +24,6 @@ export async function getAllBooks() {
   return db.books.orderBy("createdAt").reverse().toArray();
 }
 
-export async function getBook(bookId: string) {
-  return db.books.get(bookId);
-}
-
 export const getBookFile = bookFiles.getBookFile;
 
 export async function getBookWithFile(bookId: string) {
@@ -83,18 +79,6 @@ export async function updateBookProgress(
   progress: ReadingProgress,
 ): Promise<void> {
   await db.books.update(bookId, { progress, manualStatus: undefined });
-}
-
-/**
- * Books that have reading progress, most-recently-read first. Used to
- * pick the "continue reading" book without pulling the whole library.
- */
-export async function getBooksSortedByLastRead(): Promise<StoredBook[]> {
-  return db.books
-    .orderBy("progress.updatedAt")
-    .reverse()
-    .filter((book) => !!book.progress)
-    .toArray();
 }
 
 export async function getBookCoverUrl(
