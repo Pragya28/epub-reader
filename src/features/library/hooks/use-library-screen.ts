@@ -89,7 +89,7 @@ export function useLibraryScreen() {
     setFilters,
     resetFilters,
     languages,
-  } = useLibraryFilters(enriched);
+  } = useLibraryFilters(enriched, libraryFilterStore);
 
   useEffect(() => setOverlay(filterOpen), [filterOpen, setOverlay]);
 

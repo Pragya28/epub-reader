@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 import { libraryStore } from "../store/library-store";
+import { authorFilterStore } from "../store/library-filter-store";
 import { loadLibrary } from "../actions/load-library";
 import { enrichBookWithProgress } from "../utils/derive-book-status";
 import {
@@ -22,7 +23,10 @@ export function useAuthorScreen() {
   }, []);
 
   const enriched = books.map(enrichBookWithProgress);
-  const { sortBy, filters, ...libraryFilters } = useLibraryFilters(enriched);
+  const { sortBy, filters, ...libraryFilters } = useLibraryFilters(
+    enriched,
+    authorFilterStore,
+  );
   const authorBooks = filterBooksByCriteria(
     sortBooks(filterBooksByAuthor(enriched, author), sortBy),
     filters,
