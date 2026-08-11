@@ -1,16 +1,19 @@
 import type { FC } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft, Sun, CaseSensitive, DatabaseZap } from "lucide-react";
+import {
+  ChevronLeft,
+  Sun,
+  CaseSensitive,
+  DatabaseZap,
+  RefreshCw,
+} from "lucide-react";
 
+import { cn } from "@/utils/cn";
 import { ROUTES } from "@/utils/routes";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { StepperRow } from "@/components/ui/stepper-row";
-import {
-  Progress,
-  ProgressTrack,
-  ProgressIndicator,
-} from "@/components/ui/progress";
+import { Progress } from "@/components/ui/progress";
 import { notify } from "@/components/toast/toast";
 import {
   FONT_SCALE_MAX,
@@ -167,23 +170,26 @@ export const SettingsScreen: FC = () => {
                 </div>
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="icon"
                   disabled={status === "running"}
                   onClick={handleRebuild}
+                  aria-label={
+                    status === "running"
+                      ? "Rebuilding search index"
+                      : "Rebuild search index"
+                  }
                 >
-                  {status === "running"
-                    ? "Rebuilding…"
-                    : "Rebuild Search Index"}
+                  <RefreshCw
+                    strokeWidth={1.5}
+                    className={cn(
+                      "size-4",
+                      status === "running" && "motion-safe:animate-spin",
+                    )}
+                  />
                 </Button>
               </div>
 
-              {status === "running" && (
-                <Progress value={progress}>
-                  <ProgressTrack>
-                    <ProgressIndicator />
-                  </ProgressTrack>
-                </Progress>
-              )}
+              {status === "running" && <Progress value={progress} />}
             </div>
           </section>
         </div>
