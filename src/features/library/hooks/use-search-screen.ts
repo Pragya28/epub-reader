@@ -78,7 +78,12 @@ export function useSearchScreen() {
   // Falls back to EMPTY_RESULTS whenever the query is cleared, rather than
   // resetting `results` state from inside the effect above (which would be
   // a synchronous setState-in-effect — see react-hooks/set-state-in-effect).
-  const displayResults = isSearching ? results : EMPTY_RESULTS;
+  // Results are only shown for the query they were computed for. Without the
+  // settledQuery check, retyping left the previous term's results on screen
+  // until the new search resolved — so you'd see hits for "Harr" while the
+  // box read "Harry", which looks like wrong answers rather than pending ones.
+  const displayResults =
+    isSearching && settledQuery === query ? results : EMPTY_RESULTS;
 
   // Status scoping is applied here rather than inside searchLibrary so
   // changing the filter re-renders from cached results instead of

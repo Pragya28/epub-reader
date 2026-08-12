@@ -6,6 +6,7 @@ describe("SearchResultRow", () => {
   it("renders a book-only match without chapter/snippet lines", () => {
     render(
       <SearchResultRow
+        bookId="b1"
         title="The Weight of Forever"
         author="Eleanor Vance"
         coverUrl={undefined}
@@ -19,6 +20,7 @@ describe("SearchResultRow", () => {
   it("renders a chapter match with the matched word highlighted", () => {
     render(
       <SearchResultRow
+        bookId="b1"
         title="The Alchemist's Silence"
         author="Elena Thorne"
         coverUrl={undefined}

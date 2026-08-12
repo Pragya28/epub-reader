@@ -1,6 +1,6 @@
 import { memo, type FC } from "react";
 import type { BookWithProgress } from "../../types/library.types";
-import { BookCover } from "./book-cover";
+import { BookCover } from "@/components/book-cover/book-cover";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/utils/routes";
 import {
@@ -64,7 +64,12 @@ export const BookCard: FC<BookCardProps> = memo(function BookCard({
           group-hover:shadow-lg
         "
       >
-        <BookCover {...book} />
+        <BookCover
+          id={book.id}
+          title={book.title}
+          author={book.author}
+          coverUrl={book.coverBg}
+        />
         {isNew && (
           <div className="absolute top-0 right-0 bg-background/95 text-foreground text-meta font-bold uppercase tracking-[0.8px] px-2.5 py-1 rounded-bl-xl">
             NEW

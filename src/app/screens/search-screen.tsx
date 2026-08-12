@@ -227,6 +227,7 @@ export const SearchScreen: FC = () => {
           {metadataMatches.map((book) => (
             <SearchResultRow
               key={book.id}
+              bookId={book.id}
               title={book.title}
               author={book.author ?? ""}
               coverUrl={metadataCovers[book.id]}
@@ -238,6 +239,7 @@ export const SearchScreen: FC = () => {
           {contentDisplay.map((match) => (
             <SearchResultRow
               key={`${match.bookId}-${match.chapter}`}
+              bookId={match.bookId}
               title={match.bookTitle}
               author={match.bookAuthor}
               coverUrl={match.coverUrl}

@@ -1,6 +1,10 @@
 import type { FC } from "react";
 
+import { BookCover } from "@/components/book-cover/book-cover";
+
 interface SearchResultRowProps {
+  /** Drives the derived gradient when the book has no cover image. */
+  bookId: string;
   title: string;
   author: string;
   coverUrl: string | undefined;
@@ -32,6 +36,7 @@ function renderSnippet(snippet: string, highlightWord?: string) {
 }
 
 export const SearchResultRow: FC<SearchResultRowProps> = ({
+  bookId,
   title,
   author,
   coverUrl,
@@ -47,9 +52,13 @@ export const SearchResultRow: FC<SearchResultRowProps> = ({
       className="flex w-full gap-3.5 py-3.5 text-left"
     >
       <div className="aspect-2/3 w-14 shrink-0 overflow-hidden rounded-sm bg-card shadow-sm">
-        {coverUrl && (
-          <img src={coverUrl} alt="" className="size-full object-cover" />
-        )}
+        <BookCover
+          id={bookId}
+          title={title}
+          author={author}
+          coverUrl={coverUrl}
+          compact
+        />
       </div>
       <div className="flex min-w-0 flex-col gap-0.5">
         <div className="font-ui text-sm font-semibold text-foreground">

@@ -4,7 +4,7 @@ import { BookOpenIcon, ClockIcon, UsersIcon } from "@phosphor-icons/react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import type { BookWithProgress } from "../types/library.types";
-import { BookCover } from "./book-card/book-cover";
+import { BookCover } from "@/components/book-cover/book-cover";
 import {
   formatReadingProgress,
   formatReadingTime,
@@ -40,7 +40,12 @@ export const AboutBookSheet: FC<AboutBookSheetProps> = ({
 
         <div className="flex gap-4">
           <div className="w-24 shrink-0 aspect-2/3 overflow-hidden rounded-lg border border-border/40 elevated-soft">
-            <BookCover {...book} />
+            <BookCover
+              id={book.id}
+              title={book.title}
+              author={book.author}
+              coverUrl={book.coverBg}
+            />
           </div>
 
           <div className="flex min-w-0 flex-col justify-center gap-1">
