@@ -3,6 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Search as SearchIcon, SearchX, X } from "lucide-react";
 import { ROUTES } from "@/utils/routes";
 import { useSearchScreen } from "@/features/library/hooks/use-search-screen";
+import {
+  loadSearchResultDisplays,
+  type BookCache,
+  type ContentMatchDisplay,
+} from "@/features/library/actions/load-search-result-displays";
 import { SearchResultRow } from "@/features/library/components/search-result-row";
 import {
   Empty,
@@ -15,13 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { SearchStatusFilter } from "@/features/library/utils/filter-search-results";
-import {
-  getBookCoverUrl,
-  getBookWithFile,
-} from "@/services/storage/book-repository";
-import { EpubParser } from "@/services/epub/epub-parser";
-import { extractSnippet } from "@/services/search/snippet";
-import { flattenToc } from "@/features/reader/utils/flatten-toc";
+import { getBookCoverUrl } from "@/services/storage/book-repository";
 import type { ChapterMatch } from "@/services/search/search-content";
 
 /** Rows built per page. Each costs a chapter decompress + sanitize. */
@@ -32,84 +31,6 @@ const SEARCH_STATUS_OPTIONS: { value: SearchStatusFilter; label: string }[] = [
   { value: "all", label: "All" },
   { value: "finished", label: "Finished" },
 ];
-
-interface ContentMatchDisplay extends ChapterMatch {
-  bookTitle: string;
-  bookAuthor: string;
-  coverUrl: string | undefined;
-  chapterLabel: string;
-  snippet: string;
-}
-
-type LoadedBook = Awaited<ReturnType<typeof loadBookOnce>>;
-
-async function loadBookOnce(bookId: string) {
-  const readerDoc = await getBookWithFile(bookId);
-  if (!readerDoc) return null;
-
-  const [parsedBook, coverUrl] = await Promise.all([
-    new EpubParser().parseBook(readerDoc.file),
-    getBookCoverUrl(bookId),
-  ]);
-
-  return {
-    book: readerDoc.book,
-    parsedBook,
-    coverUrl,
-    // Flattened once per book rather than once per match — it was being
-    // recomputed for every result in the same book.
-    toc: flattenToc(parsedBook.toc, 0),
-  };
-}
-
-/**
- * Builds the display rows for content matches, parsing each book **once**.
- *
- * Previously this ran per match, so N results in one book meant N full
- * fetches and JSZip unzips of the same EPUB — measured at ~94ms per result,
- * i.e. ~3.7s of duplicate work for 39 matches in a single book. The index
- * query itself is ~14ms; the parsing was the entire cost.
- *
- * `books` is owned by the caller so it survives across pages — otherwise
- * every "load 10 more" re-parses the same book again.
- */
-async function loadContentMatchDisplays(
-  matches: ChapterMatch[],
-  books: Map<string, Promise<LoadedBook>>,
-): Promise<ContentMatchDisplay[]> {
-  const bookFor = (bookId: string) => {
-    let pending = books.get(bookId);
-    if (!pending) {
-      pending = loadBookOnce(bookId);
-      books.set(bookId, pending);
-    }
-    return pending;
-  };
-
-  const rows = await Promise.all(
-    matches.map(async (match): Promise<ContentMatchDisplay | null> => {
-      const loaded = await bookFor(match.bookId);
-      if (!loaded) return null;
-
-      const word = match.matchedWords[0];
-      const chapter = await loaded.parsedBook.loadChapter(match.chapter);
-      const tocEntry = loaded.toc.find(
-        ({ item }) => item.chapterIndex === match.chapter,
-      );
-
-      return {
-        ...match,
-        bookTitle: loaded.book.title,
-        bookAuthor: loaded.book.author ?? "",
-        coverUrl: loaded.coverUrl,
-        chapterLabel: tocEntry?.item.label ?? "",
-        snippet: extractSnippet(chapter.content, word),
-      };
-    }),
-  );
-
-  return rows.filter((row): row is ContentMatchDisplay => row !== null);
-}
 
 export const SearchScreen: FC = () => {
   const navigate = useNavigate();
@@ -146,7 +67,7 @@ export const SearchScreen: FC = () => {
     paging.forMatches === contentMatches ? paging.count : CONTENT_PAGE_SIZE;
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
-  const bookCacheRef = useRef(new Map<string, Promise<LoadedBook>>());
+  const bookCacheRef = useRef<BookCache>(new Map());
 
   useEffect(() => {
     let cancelled = false;
@@ -184,7 +105,7 @@ export const SearchScreen: FC = () => {
 
   useEffect(() => {
     let cancelled = false;
-    void loadContentMatchDisplays(visibleMatches, bookCacheRef.current).then(
+    void loadSearchResultDisplays(visibleMatches, bookCacheRef.current).then(
       (results) => {
         if (!cancelled) setContentDisplay(results);
       },

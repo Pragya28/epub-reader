@@ -1,11 +1,23 @@
-import { describe, expect, it, beforeAll } from "vitest";
+import { describe, expect, it, beforeAll, vi, afterEach } from "vitest";
 
 import { db } from "@/services/storage/db";
 import { resetTestDb } from "@/tests/utils/reset-test-db";
+import { loadFixture } from "@/tests/utils/load-fixtures";
 import { findChapterMatches } from "../search-content";
+import { EpubParser } from "@/services/epub/epub-parser";
+import * as bookRepository from "@/services/storage/book-repository";
+import { loadSearchResultDisplays } from "@/features/library/actions/load-search-result-displays";
 import type { StoredSearchIndexEntry } from "@/services/storage/storage-types";
+import type { ChapterMatch } from "../search-content";
 
 /**
+ * Covers two layers, because measuring only the first was actively
+ * misleading once: the **index query** (fast, and the original subject of
+ * this file) and **result-row building** (which was ~250x slower and where
+ * a real user-visible regression actually lived — see the parse-once tests
+ * below). A search feels as slow as its slowest layer, so a green index
+ * benchmark on its own is not evidence that search is fast.
+ *
  * A regression guard, not a tight perf gate — generous on purpose so it
  * doesn't flake on a slow CI runner. Mirrors
  * features/library/actions/__tests__/load-library.perf.test.ts, but for
@@ -65,6 +77,10 @@ function makeEntries(): StoredSearchIndexEntry[] {
 }
 
 describe("search performance at index scale", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   beforeAll(async () => {
     await resetTestDb();
     await db.searchIndex.bulkAdd(makeEntries());
@@ -91,6 +107,62 @@ describe("search performance at index scale", () => {
     expect(matches).toHaveLength(CHAPTERS_PER_BOOK);
     expect(elapsedMs).toBeLessThan(QUERY_BUDGET_MS);
   });
+
+  it("parses each book once no matter how many rows it produces", async () => {
+    // The guard that matters, and the one a timing budget missed: building
+    // result rows used to fetch and unzip the book *per match*, so 39 hits
+    // in one book meant 39 full JSZip parses (~94ms each, ~3.7s total)
+    // while the index query above stayed at single-digit milliseconds. This
+    // asserts the structural property rather than a duration, so it can't
+    // be masked by a fast machine.
+    const file = await loadFixture("valid-book.epub");
+    // fake-indexeddb doesn't structured-clone Blobs through Dexie (see the
+    // Day 5 note in tasks/SPRINT-06-TASKS.md), so the stored file is served
+    // from memory here rather than round-tripped.
+    vi.spyOn(bookRepository, "getBookWithFile").mockResolvedValue({
+      book: { id: "perf-book-0", title: "Perf", fileHash: "h", createdAt: 0 },
+      file,
+    } as Awaited<ReturnType<typeof bookRepository.getBookWithFile>>);
+    vi.spyOn(bookRepository, "getBookCoverUrl").mockResolvedValue(undefined);
+
+    const parseSpy = vi.spyOn(EpubParser.prototype, "parseBook");
+
+    const matches: ChapterMatch[] = Array.from({ length: 30 }, (_, i) => ({
+      bookId: "perf-book-0",
+      chapter: i % CHAPTERS_PER_BOOK,
+      matchedWords: ["chapter"],
+    }));
+
+    const rows = await loadSearchResultDisplays(matches, new Map());
+
+    expect(rows).toHaveLength(matches.length);
+    expect(parseSpy).toHaveBeenCalledTimes(1);
+  }, 60_000);
+
+  it("reuses the cache across pages so paging never re-parses", async () => {
+    const file = await loadFixture("valid-book.epub");
+    vi.spyOn(bookRepository, "getBookWithFile").mockResolvedValue({
+      book: { id: "perf-book-0", title: "Perf", fileHash: "h", createdAt: 0 },
+      file,
+    } as Awaited<ReturnType<typeof bookRepository.getBookWithFile>>);
+    vi.spyOn(bookRepository, "getBookCoverUrl").mockResolvedValue(undefined);
+
+    const parseSpy = vi.spyOn(EpubParser.prototype, "parseBook");
+
+    const match = (chapter: number): ChapterMatch => ({
+      bookId: "perf-book-0",
+      chapter,
+      matchedWords: ["chapter"],
+    });
+
+    // The screen owns this map so successive pages share it — building it
+    // per call is what made "load 10 more" re-parse the whole book.
+    const cache = new Map();
+    await loadSearchResultDisplays([match(0)], cache);
+    await loadSearchResultDisplays([match(0), match(1)], cache);
+
+    expect(parseSpy).toHaveBeenCalledTimes(1);
+  }, 60_000);
 
   it("runs a multi-word query within a generous budget", async () => {
     const query = `word10 word20 word30 ${UBIQUITOUS_WORD}`;
