@@ -13,6 +13,16 @@ import type { LibrarySearchResults } from "../actions/search-library";
 
 const logger = rootLogger.child("use-search-screen");
 
+/** Long enough to skip mid-word prefixes, short enough to feel live. */
+const SEARCH_DEBOUNCE_MS = 250;
+
+/**
+ * One- and two-letter queries match nearly every chapter in the library —
+ * the most expensive possible search for the least useful result. The cost
+ * is in building result rows, so the guard is on running the search at all.
+ */
+const MIN_QUERY_LENGTH = 3;
+
 const EMPTY_RESULTS: LibrarySearchResults = {
   metadataMatches: [],
   contentMatches: [],
@@ -48,30 +58,38 @@ export function useSearchScreen() {
   const enriched = useMemo(() => books.map(enrichBookWithProgress), [books]);
 
   const trimmed = query.trim();
-  const isSearching = trimmed !== "";
+  const isSearching = trimmed.length >= MIN_QUERY_LENGTH;
+  /** Typed something, but not yet enough to search on. */
+  const needsMoreInput = trimmed.length > 0 && !isSearching;
 
   useEffect(() => {
     if (!isSearching) return;
 
     let cancelled = false;
 
-    void searchLibrary(enriched, query)
-      .then((next) => {
-        if (!cancelled) setResults(next);
-      })
-      // Without this, a rejected search left the previous (or empty) results
-      // on screen under a "0 results found" label — a false negative that
-      // reads as "you don't own this book".
-      .catch((error) => {
-        logger.error("search failed", error);
-        if (!cancelled) setResults(EMPTY_RESULTS);
-      })
-      .finally(() => {
-        if (!cancelled) setSettledQuery(query);
-      });
+    // Debounced: without this every keystroke ran a full search, so typing
+    // "Harry" fired five of them — and the single-letter prefixes are the
+    // most expensive, matching nearly every chapter in the library.
+    const timer = setTimeout(() => {
+      void searchLibrary(enriched, query)
+        .then((next) => {
+          if (!cancelled) setResults(next);
+        })
+        // Without this, a rejected search left the previous (or empty)
+        // results on screen under a "0 results found" label — a false
+        // negative that reads as "you don't own this book".
+        .catch((error) => {
+          logger.error("search failed", error);
+          if (!cancelled) setResults(EMPTY_RESULTS);
+        })
+        .finally(() => {
+          if (!cancelled) setSettledQuery(query);
+        });
+    }, SEARCH_DEBOUNCE_MS);
 
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, [enriched, query, isSearching]);
 
@@ -103,6 +121,8 @@ export function useSearchScreen() {
     contentMatches: scoped.contentMatches,
     resultCount: scoped.metadataMatches.length + scoped.contentMatches.length,
     isSearching,
+    needsMoreInput,
+    minQueryLength: MIN_QUERY_LENGTH,
     isLoading: isSearching && settledQuery !== query,
   };
 }

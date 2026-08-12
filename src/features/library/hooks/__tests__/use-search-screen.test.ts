@@ -30,6 +30,9 @@ vi.mock("../../actions/search-library", () => ({
 
 describe("useSearchScreen", () => {
   beforeEach(() => {
+    // Call counts leak between tests otherwise — clearAllMocks keeps the
+    // vi.mock factories' implementations, it only resets the call log.
+    vi.clearAllMocks();
     libraryStore.setState({ books: [book], isLoading: false, error: null });
   });
 
@@ -63,6 +66,20 @@ describe("useSearchScreen", () => {
     renderHook(() => useSearchScreen());
 
     await waitFor(() => expect(loadLibrary).toHaveBeenCalled());
+  });
+
+  it("does not search below the minimum query length", async () => {
+    const { searchLibrary } = await import("../../actions/search-library");
+    const { result } = renderHook(() => useSearchScreen());
+
+    act(() => result.current.setQuery("we"));
+
+    expect(result.current.needsMoreInput).toBe(true);
+    expect(result.current.isSearching).toBe(false);
+
+    // Long enough for the debounce to have fired if it were going to.
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(searchLibrary).not.toHaveBeenCalled();
   });
 
   it("reports loading while a search is in flight, then settles", async () => {

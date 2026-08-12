@@ -1,4 +1,4 @@
-import { useEffect, useState, type FC } from "react";
+import { useEffect, useMemo, useRef, useState, type FC } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Search as SearchIcon, SearchX, X } from "lucide-react";
 import { ROUTES } from "@/utils/routes";
@@ -24,6 +24,9 @@ import { extractSnippet } from "@/services/search/snippet";
 import { flattenToc } from "@/features/reader/utils/flatten-toc";
 import type { ChapterMatch } from "@/services/search/search-content";
 
+/** Rows built per page. Each costs a chapter decompress + sanitize. */
+const CONTENT_PAGE_SIZE = 10;
+
 const SEARCH_STATUS_OPTIONS: { value: SearchStatusFilter; label: string }[] = [
   { value: "unfinished", label: "Unfinished" },
   { value: "all", label: "All" },
@@ -38,31 +41,74 @@ interface ContentMatchDisplay extends ChapterMatch {
   snippet: string;
 }
 
-async function loadContentMatchDisplay(
-  match: ChapterMatch,
-): Promise<ContentMatchDisplay | null> {
-  const readerDoc = await getBookWithFile(match.bookId);
+type LoadedBook = Awaited<ReturnType<typeof loadBookOnce>>;
+
+async function loadBookOnce(bookId: string) {
+  const readerDoc = await getBookWithFile(bookId);
   if (!readerDoc) return null;
 
-  const word = match.matchedWords[0];
-  const parser = new EpubParser();
   const [parsedBook, coverUrl] = await Promise.all([
-    parser.parseBook(readerDoc.file),
-    getBookCoverUrl(match.bookId),
+    new EpubParser().parseBook(readerDoc.file),
+    getBookCoverUrl(bookId),
   ]);
-  const chapter = await parsedBook.loadChapter(match.chapter);
-  const tocEntry = flattenToc(parsedBook.toc, 0).find(
-    ({ item }) => item.chapterIndex === match.chapter,
-  );
 
   return {
-    ...match,
-    bookTitle: readerDoc.book.title,
-    bookAuthor: readerDoc.book.author ?? "",
+    book: readerDoc.book,
+    parsedBook,
     coverUrl,
-    chapterLabel: tocEntry?.item.label ?? "",
-    snippet: extractSnippet(chapter.content, word),
+    // Flattened once per book rather than once per match — it was being
+    // recomputed for every result in the same book.
+    toc: flattenToc(parsedBook.toc, 0),
   };
+}
+
+/**
+ * Builds the display rows for content matches, parsing each book **once**.
+ *
+ * Previously this ran per match, so N results in one book meant N full
+ * fetches and JSZip unzips of the same EPUB — measured at ~94ms per result,
+ * i.e. ~3.7s of duplicate work for 39 matches in a single book. The index
+ * query itself is ~14ms; the parsing was the entire cost.
+ *
+ * `books` is owned by the caller so it survives across pages — otherwise
+ * every "load 10 more" re-parses the same book again.
+ */
+async function loadContentMatchDisplays(
+  matches: ChapterMatch[],
+  books: Map<string, Promise<LoadedBook>>,
+): Promise<ContentMatchDisplay[]> {
+  const bookFor = (bookId: string) => {
+    let pending = books.get(bookId);
+    if (!pending) {
+      pending = loadBookOnce(bookId);
+      books.set(bookId, pending);
+    }
+    return pending;
+  };
+
+  const rows = await Promise.all(
+    matches.map(async (match): Promise<ContentMatchDisplay | null> => {
+      const loaded = await bookFor(match.bookId);
+      if (!loaded) return null;
+
+      const word = match.matchedWords[0];
+      const chapter = await loaded.parsedBook.loadChapter(match.chapter);
+      const tocEntry = loaded.toc.find(
+        ({ item }) => item.chapterIndex === match.chapter,
+      );
+
+      return {
+        ...match,
+        bookTitle: loaded.book.title,
+        bookAuthor: loaded.book.author ?? "",
+        coverUrl: loaded.coverUrl,
+        chapterLabel: tocEntry?.item.label ?? "",
+        snippet: extractSnippet(chapter.content, word),
+      };
+    }),
+  );
+
+  return rows.filter((row): row is ContentMatchDisplay => row !== null);
 }
 
 export const SearchScreen: FC = () => {
@@ -78,6 +124,8 @@ export const SearchScreen: FC = () => {
     statusFilter,
     setStatusFilter,
     hiddenCount,
+    needsMoreInput,
+    minQueryLength,
   } = useSearchScreen();
 
   const [metadataCovers, setMetadataCovers] = useState<Record<string, string>>(
@@ -86,6 +134,19 @@ export const SearchScreen: FC = () => {
   const [contentDisplay, setContentDisplay] = useState<ContentMatchDisplay[]>(
     [],
   );
+  // Paging is tied to the match list it belongs to, so a new query restarts
+  // at page one without a setState-in-effect (which the lint rules forbid,
+  // and which would render one frame of the old page size).
+  const [paging, setPaging] = useState<{
+    forMatches: ChapterMatch[];
+    count: number;
+  }>({ forMatches: contentMatches, count: CONTENT_PAGE_SIZE });
+
+  const visibleCount =
+    paging.forMatches === contentMatches ? paging.count : CONTENT_PAGE_SIZE;
+
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const bookCacheRef = useRef(new Map<string, Promise<LoadedBook>>());
 
   useEffect(() => {
     let cancelled = false;
@@ -106,20 +167,50 @@ export const SearchScreen: FC = () => {
     };
   }, [metadataMatches]);
 
+  // Only build rows the user can actually reach. Each row still costs a
+  // chapter decompress + sanitize (~25ms), so loading all 39 up front made
+  // first paint wait on ~35 rows nobody had scrolled to yet.
+  const visibleMatches = useMemo(
+    () => contentMatches.slice(0, visibleCount),
+    [contentMatches, visibleCount],
+  );
+
+  // Cleared per query, not per page — declared before the loader below so it
+  // resets first when a new search arrives. Paging keeps the parsed book, so
+  // "10 more rows" costs 10 chapter reads, not another full unzip.
+  useEffect(() => {
+    bookCacheRef.current = new Map();
+  }, [contentMatches]);
+
   useEffect(() => {
     let cancelled = false;
-    void Promise.all(contentMatches.map(loadContentMatchDisplay)).then(
+    void loadContentMatchDisplays(visibleMatches, bookCacheRef.current).then(
       (results) => {
-        if (cancelled) return;
-        setContentDisplay(
-          results.filter((r): r is ContentMatchDisplay => r !== null),
-        );
+        if (!cancelled) setContentDisplay(results);
       },
     );
     return () => {
       cancelled = true;
     };
-  }, [contentMatches]);
+  }, [visibleMatches]);
+
+  // Grows the window as the sentinel below the list scrolls into view.
+  useEffect(() => {
+    const sentinel = loadMoreRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        setPaging({
+          forMatches: contentMatches,
+          count: visibleCount + CONTENT_PAGE_SIZE,
+        });
+      }
+    });
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [contentMatches, visibleCount]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -187,6 +278,16 @@ export const SearchScreen: FC = () => {
             {isLoading
               ? "Searching…"
               : `${resultCount} ${resultCount === 1 ? "result" : "results"} found${hiddenCount > 0 ? ` · ${hiddenCount} hidden` : ""}`}
+          </p>
+        )}
+
+        {needsMoreInput && (
+          <p
+            role="status"
+            aria-live="polite"
+            className="font-reading text-meta text-muted-foreground italic"
+          >
+            Type at least {minQueryLength} characters to search.
           </p>
         )}
 
@@ -259,6 +360,16 @@ export const SearchScreen: FC = () => {
             />
           ))}
         </div>
+
+        {/* Sentinel: scrolling to it builds the next page of rows. */}
+        {visibleCount < contentMatches.length && (
+          <div
+            ref={loadMoreRef}
+            aria-hidden
+            className="h-10"
+            data-testid="search-load-more"
+          />
+        )}
       </div>
     </div>
   );
