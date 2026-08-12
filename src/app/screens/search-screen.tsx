@@ -281,6 +281,27 @@ export const SearchScreen: FC = () => {
           </p>
         )}
 
+        {!isSearching && !needsMoreInput && (
+          <Empty className="py-24">
+            <EmptyHeader>
+              <EmptyMedia>
+                <SearchIcon
+                  size={48}
+                  strokeWidth={1.5}
+                  className="text-muted-foreground/30"
+                />
+              </EmptyMedia>
+              <EmptyTitle className="text-ui uppercase tracking-[0.15em] text-muted-foreground">
+                Search your library
+              </EmptyTitle>
+              <EmptyDescription className="text-ui-sm opacity-60">
+                Find a book by title or author, or search inside the text of
+                every book you've imported.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        )}
+
         {needsMoreInput && (
           <p
             role="status"
