@@ -30,8 +30,10 @@ Run a single test file: `pnpm test:run src/features/reader/engine/windowing/__te
 
 Git hooks (husky) already enforce quality gates — don't skip them:
 
-- `pre-commit`: `lint-staged` (eslint --fix + prettier on staged files) then `pnpm test`
-- `pre-push`: `pnpm build` then `pnpm test`
+- `pre-commit`: `lint-staged` — eslint --fix + prettier, then `vitest related --run` on staged `.ts`/`.tsx` (every test that _imports_ a staged file, whether or not the test itself changed). Not the full suite: that's pre-push's job.
+- `pre-push`: `pnpm build` then `pnpm test:run` (single pass — `pnpm test` is watch mode and can hang a hook)
+
+Both hooks `set -e`, so a failure in any step blocks the commit/push rather than being masked by the last command's exit code.
 
 Package manager is pnpm (`packageManager` pinned in package.json) — don't use npm/yarn.
 
