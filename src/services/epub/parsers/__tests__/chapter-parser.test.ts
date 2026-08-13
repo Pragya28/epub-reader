@@ -184,9 +184,14 @@ describe("ChapterParser", () => {
       parsedEpub.manifest.ch2 = { href: "text/ch2.xhtml", properties: "" };
       parsedEpub.spine.push("ch2");
 
-      const wordCount = await parser.countWords(zip, parsedEpub, "OPS/");
+      const { total, perChapter } = await parser.countWords(
+        zip,
+        parsedEpub,
+        "OPS/",
+      );
 
-      expect(wordCount).toBe(2 + 5);
+      expect(total).toBe(2 + 5);
+      expect(perChapter).toEqual([2, 5]);
     });
 
     it("does not let one unreadable chapter sink the whole count", async () => {
@@ -196,9 +201,14 @@ describe("ChapterParser", () => {
       };
       parsedEpub.spine.push("missing");
 
-      const wordCount = await parser.countWords(zip, parsedEpub, "OPS/");
+      const { total, perChapter } = await parser.countWords(
+        zip,
+        parsedEpub,
+        "OPS/",
+      );
 
-      expect(wordCount).toBe(2);
+      expect(total).toBe(2);
+      expect(perChapter).toEqual([2, 0]);
     });
 
     it("returns 0 for an empty chapter body", async () => {
@@ -211,7 +221,14 @@ describe("ChapterParser", () => {
       };
       parsedEpub.spine = ["empty"];
 
-      expect(await parser.countWords(zip, parsedEpub, "OPS/")).toBe(0);
+      const { total, perChapter } = await parser.countWords(
+        zip,
+        parsedEpub,
+        "OPS/",
+      );
+
+      expect(total).toBe(0);
+      expect(perChapter).toEqual([0]);
     });
   });
 

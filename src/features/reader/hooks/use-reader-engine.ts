@@ -24,6 +24,7 @@ import {
 const CHAPTER_MOUNT_ERROR_HTML = `<p class="chapter-mount-error">This chapter couldn't be displayed.</p>`;
 import { logger as rootLogger } from "@/shared/logger/logger";
 import {
+  computeChapterWordOffsets,
   computeReaderProgress,
   saveReaderProgress,
 } from "../actions/save-reader-progress";
@@ -42,6 +43,9 @@ interface UseReaderEngineProps {
   parsedBook: ParsedBook | null;
   /** Book id to persist reading progress against. No-op when omitted. */
   bookId?: string;
+  /** Per-chapter word counts, same order as the spine — enables word-based
+   * progress %. Omit to fall back to chapter-granularity %. */
+  chapterWordCounts?: number[];
   /** Position to restore on mount (from previously saved progress). */
   initialProgress?: ReadingProgress | null;
   /** Target chapter + word to jump to and highlight, from a search result click. Takes priority over initialProgress. */
@@ -60,6 +64,7 @@ export function useReaderEngine({
   iframeRef,
   parsedBook,
   bookId,
+  chapterWordCounts,
   initialProgress,
   searchJump,
   onExternalLink,
@@ -68,6 +73,13 @@ export function useReaderEngine({
   onContentTap,
 }: UseReaderEngineProps) {
   const chapterLoader = useMemo(() => new ChapterLoader(), []);
+  const chapterWordOffsets = useMemo(
+    () =>
+      chapterWordCounts
+        ? computeChapterWordOffsets(chapterWordCounts)
+        : undefined,
+    [chapterWordCounts],
+  );
   const restoreRef = useRef<
     | ((iframeDoc: Document, win: Window, progress: ReadingProgress) => void)
     | null
@@ -215,6 +227,7 @@ export function useReaderEngine({
           win,
           activeIndex,
           totalChapters,
+          chapterWordOffsets,
         });
 
         store.setProgressPercent(progress.percent);
@@ -494,6 +507,7 @@ export function useReaderEngine({
               win,
               activeIndex: store.currentChapterIndex,
               totalChapters,
+              chapterWordOffsets,
             }),
           );
 
@@ -559,6 +573,7 @@ export function useReaderEngine({
               win,
               activeIndex: readerStore.getState().currentChapterIndex,
               totalChapters,
+              chapterWordOffsets,
             }),
           );
         }
@@ -635,6 +650,7 @@ export function useReaderEngine({
             win,
             activeIndex: store.currentChapterIndex,
             totalChapters,
+            chapterWordOffsets,
           });
 
           logger.debug("resize/orientation change — re-anchoring position", {
@@ -821,6 +837,7 @@ export function useReaderEngine({
     parsedBook,
     chapterLoader,
     bookId,
+    chapterWordOffsets,
     initialProgress,
     searchJump,
     onExternalLink,

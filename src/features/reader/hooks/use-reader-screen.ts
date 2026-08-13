@@ -150,6 +150,7 @@ export function useReaderScreen() {
     iframeRef,
     parsedBook,
     bookId,
+    chapterWordCounts: readerDocument?.book.chapterWordCounts,
     initialProgress: readerDocument?.book.progress ?? null,
     searchJump,
     onExternalLink: handleExternalLink,

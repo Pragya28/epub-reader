@@ -92,6 +92,9 @@ export interface ParsedLibraryBook {
   cover?: Blob;
   chapterCount: number;
   wordCount: number;
+  /** Per-chapter word counts, same order as the spine — used to convert a
+   * reading position into a book-wide word offset without re-parsing. */
+  chapterWordCounts: number[];
   /** Estimated minutes to read the whole book, at 200 words/minute. */
   readingTimeMinutes: number;
 }

@@ -75,27 +75,34 @@ export class ChapterParser {
   }
 
   /**
-   * Total word count across every spine chapter, used for the library's
-   * estimated reading time. Reads and parses each chapter's raw markup (same
-   * as parseChapter) but skips asset resolution/sanitization entirely — this
-   * only ever reads `.textContent`, never renders the markup, so none of
-   * that work is needed just to count words.
+   * Word count across every spine chapter, both the book total (used for
+   * the library's estimated reading time) and the per-chapter breakdown
+   * (used to convert a scroll position into a book-wide word offset for
+   * progress %, without re-parsing chapters at read time). Reads and parses
+   * each chapter's raw markup (same as parseChapter) but skips asset
+   * resolution/sanitization entirely — this only ever reads `.textContent`,
+   * never renders the markup, so none of that work is needed just to count
+   * words.
    */
   async countWords(
     zip: JSZip,
     parsedEpub: ParsedEpub,
     opfDirectory: string,
-  ): Promise<number> {
-    let wordCount = 0;
+  ): Promise<{ total: number; perChapter: number[] }> {
+    const perChapter: number[] = [];
+    let total = 0;
 
     for (let i = 0; i < parsedEpub.spine.length; i++) {
+      let chapterWordCount = 0;
       try {
         const manifestItem = this.getSpineManifestItem(parsedEpub, i);
         const chapterPath = this.resolvePath(opfDirectory, manifestItem.href);
         const chapterContent = await this.loadChapterContent(zip, chapterPath);
         const chapterDoc = this.parseChapterDocument(chapterContent);
 
-        wordCount += this.countTextWords(chapterDoc.body?.textContent ?? "");
+        chapterWordCount = this.countTextWords(
+          chapterDoc.body?.textContent ?? "",
+        );
       } catch (error) {
         // Mirrors parseAllChapters: one unreadable chapter shouldn't sink the
         // whole book's word count, just under-count it slightly.
@@ -104,9 +111,11 @@ export class ChapterParser {
           error,
         );
       }
+      perChapter.push(chapterWordCount);
+      total += chapterWordCount;
     }
 
-    return wordCount;
+    return { total, perChapter };
   }
 
   private countTextWords(text: string): number {

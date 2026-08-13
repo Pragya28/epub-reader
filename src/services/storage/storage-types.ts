@@ -25,8 +25,16 @@ export interface ReadingProgress {
    * the only place this should be interpreted.
    */
   atDocumentEnd: boolean;
-  /** 0-100 overall book progress estimate, chapter-granularity + in-chapter fraction. */
+  /**
+   * 0-100 overall book progress estimate. Word-based when the book has
+   * chapterWordCounts (wordOffset / book.wordCount); falls back to
+   * chapter-granularity + in-chapter fraction otherwise.
+   */
   percent: number;
+  /** Cumulative words read up to this position, book-wide. Undefined when
+   * the book predates chapterWordCounts and no word-based estimate could
+   * be computed. */
+  wordOffset?: number;
   updatedAt: number;
 }
 
@@ -38,6 +46,8 @@ export interface StoredBook {
   description?: string | null;
   chapterCount?: number;
   wordCount?: number;
+  /** Per-chapter word counts, same order as the spine — see ParsedLibraryBook. */
+  chapterWordCounts?: number[];
   readingTimeMinutes?: number;
   createdAt: number;
   fileHash: string;

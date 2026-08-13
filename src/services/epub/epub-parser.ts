@@ -106,16 +106,18 @@ export class EpubParser {
     const parsed = this.opfParser.parse(extraction.opfXml);
     const opfDirectory = this.getOpfDirectory(extraction.opfPath);
 
-    const [cover, wordCount] = await Promise.all([
-      this.loadCover(extraction.zip, parsed.coverItem, opfDirectory),
-      this.chapterParser.countWords(extraction.zip, parsed, opfDirectory),
-    ]);
+    const [cover, { total: wordCount, perChapter: chapterWordCounts }] =
+      await Promise.all([
+        this.loadCover(extraction.zip, parsed.coverItem, opfDirectory),
+        this.chapterParser.countWords(extraction.zip, parsed, opfDirectory),
+      ]);
 
     return {
       metadata: parsed.metadata,
       cover,
       chapterCount: parsed.spine.length,
       wordCount,
+      chapterWordCounts,
       readingTimeMinutes: Math.max(
         1,
         Math.ceil(wordCount / AVERAGE_READING_WPM),

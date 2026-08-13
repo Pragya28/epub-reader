@@ -7,6 +7,22 @@ import { computeScrollAnchor } from "../engine/scroll/scroll-anchor";
 const logger = rootLogger.child("save-reader-progress");
 
 /**
+ * Prefix-sums per-chapter word counts into cumulative offsets (length
+ * chapterWordCounts.length + 1, last entry is the book total) — call once
+ * per book load and reuse, rather than re-summing on every progress
+ * computation. See ComputeProgressParams.chapterWordOffsets.
+ */
+export function computeChapterWordOffsets(
+  chapterWordCounts: number[],
+): number[] {
+  const offsets = [0];
+  for (const count of chapterWordCounts) {
+    offsets.push(offsets[offsets.length - 1] + count);
+  }
+  return offsets;
+}
+
+/**
  * Persists reading progress. Best-effort: a failed write shouldn't
  * interrupt reading, so errors are logged and swallowed rather than
  * surfaced to the UI.
@@ -37,6 +53,15 @@ interface ComputeProgressParams {
   win: Window;
   activeIndex: number;
   totalChapters: number;
+  /**
+   * Cumulative word count before each chapter, length totalChapters + 1
+   * (last entry is the book's total word count) — see
+   * computeChapterWordOffsets. Precomputed once per book load so percent
+   * is an O(1) lookup here instead of re-summing chapter counts on every
+   * scroll tick. When present, percent is computed from word offset
+   * instead of chapter-granularity + in-chapter fraction.
+   */
+  chapterWordOffsets?: number[];
 }
 
 /**
@@ -63,6 +88,7 @@ export function computeReaderProgress({
   win,
   activeIndex,
   totalChapters,
+  chapterWordOffsets,
 }: ComputeProgressParams): ReadingProgress {
   const section = iframeDoc.querySelector(
     `section[data-chapter="${activeIndex}"]`,
@@ -93,13 +119,27 @@ export function computeReaderProgress({
   // while the user is looking at the literal last pixel of the book.
   const effectiveFraction = atDocumentEnd ? 1 : scrollFraction;
 
+  const totalWordCount = chapterWordOffsets?.[totalChapters];
+
+  const wordOffset =
+    chapterWordOffsets && chapterWordOffsets.length === totalChapters + 1
+      ? chapterWordOffsets[activeIndex] +
+        effectiveFraction *
+          (chapterWordOffsets[activeIndex + 1] -
+            chapterWordOffsets[activeIndex])
+      : undefined;
+
   const percent =
-    totalChapters > 0
-      ? Math.min(
-          100,
-          Math.round(((activeIndex + effectiveFraction) / totalChapters) * 100),
-        )
-      : 0;
+    wordOffset !== undefined && totalWordCount
+      ? Math.min(100, Math.round((wordOffset / totalWordCount) * 100))
+      : totalChapters > 0
+        ? Math.min(
+            100,
+            Math.round(
+              ((activeIndex + effectiveFraction) / totalChapters) * 100,
+            ),
+          )
+        : 0;
 
   return {
     chapterIndex: activeIndex,
@@ -108,6 +148,7 @@ export function computeReaderProgress({
     anchorPath,
     atDocumentEnd,
     percent,
+    wordOffset,
     updatedAt: Date.now(),
   };
 }
