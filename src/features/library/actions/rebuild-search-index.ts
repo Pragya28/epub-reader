@@ -1,4 +1,5 @@
 import { deleteIndex } from "@/services/search/search-index";
+import { deleteChapterText } from "@/services/search/chapter-text";
 import { buildIndex } from "@/services/search/search-service";
 import { getAllBooks, getBookFile } from "@/services/storage/book-repository";
 
@@ -19,6 +20,7 @@ export async function rebuildSearchIndex(): Promise<{
   for (const book of books) {
     try {
       await deleteIndex(book.id);
+      await deleteChapterText(book.id);
       const stored = await getBookFile(book.id);
       if (!stored) {
         failed += 1;

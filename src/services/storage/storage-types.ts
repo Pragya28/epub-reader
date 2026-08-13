@@ -63,3 +63,16 @@ export interface StoredSearchIndexEntry {
   bookId: string;
   chapter: number;
 }
+
+/**
+ * Plain text + TOC label for one chapter, cached at index-build time so
+ * search result rows never need to re-fetch and re-unzip the EPUB just to
+ * show a snippet. Derived data, not canonical — the `.epub` file remains
+ * the source of truth, and a cache miss falls back to parsing on demand.
+ */
+export interface StoredChapterText {
+  bookId: string;
+  chapter: number;
+  text: string;
+  label: string;
+}

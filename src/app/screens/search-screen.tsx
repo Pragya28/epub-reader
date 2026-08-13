@@ -6,6 +6,7 @@ import { useSearchScreen } from "@/features/library/hooks/use-search-screen";
 import {
   loadSearchResultDisplays,
   type BookCache,
+  type BookMetaCache,
   type ContentMatchDisplay,
 } from "@/features/library/actions/load-search-result-displays";
 import { SearchResultRow } from "@/features/library/components/search-result-row";
@@ -67,7 +68,10 @@ export const SearchScreen: FC = () => {
     paging.forMatches === contentMatches ? paging.count : CONTENT_PAGE_SIZE;
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  // bookCacheRef is only touched on a chapter-text cache miss (full parse
+  // fallback); metaCacheRef is the common path (title/author/cover only).
   const bookCacheRef = useRef<BookCache>(new Map());
+  const metaCacheRef = useRef<BookMetaCache>(new Map());
 
   useEffect(() => {
     let cancelled = false;
@@ -101,15 +105,18 @@ export const SearchScreen: FC = () => {
   // "10 more rows" costs 10 chapter reads, not another full unzip.
   useEffect(() => {
     bookCacheRef.current = new Map();
+    metaCacheRef.current = new Map();
   }, [contentMatches]);
 
   useEffect(() => {
     let cancelled = false;
-    void loadSearchResultDisplays(visibleMatches, bookCacheRef.current).then(
-      (results) => {
-        if (!cancelled) setContentDisplay(results);
-      },
-    );
+    void loadSearchResultDisplays(
+      visibleMatches,
+      bookCacheRef.current,
+      metaCacheRef.current,
+    ).then((results) => {
+      if (!cancelled) setContentDisplay(results);
+    });
     return () => {
       cancelled = true;
     };

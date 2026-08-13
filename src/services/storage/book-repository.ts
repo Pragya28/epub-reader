@@ -24,6 +24,15 @@ export async function getAllBooks() {
   return db.books.orderBy("createdAt").reverse().toArray();
 }
 
+/**
+ * Metadata only, no file. Reintroduced for the search screen's chapter-text
+ * cache path (Sprint 6B) — a cache-hit row needs a title/author but has no
+ * reason to fetch and hold the raw EPUB blob, which getBookWithFile does.
+ */
+export async function getBook(bookId: string) {
+  return db.books.get(bookId);
+}
+
 export const getBookFile = bookFiles.getBookFile;
 
 export async function getBookWithFile(bookId: string) {

@@ -7,6 +7,8 @@ import {
   ensureIndexesForBooks,
 } from "../search-service";
 import { findMatches, hasIndex } from "../search-index";
+import { getChapterText } from "../chapter-text";
+import * as chapterText from "../chapter-text";
 
 // Storing a real Blob in fake-indexeddb and reading it back doesn't survive
 // the round trip intact in this jsdom test environment (loses its Blob
@@ -93,5 +95,28 @@ describe("search-service", () => {
 
     expect(await hasIndex("book-6")).toBe(false);
     expect(await hasIndex("book-7")).toBe(true);
+  });
+
+  it("caches plain text and a TOC label for every chapter it indexes", async () => {
+    const file = await loadFixture("valid-book.epub");
+
+    await buildIndex("book-8", file);
+
+    const cached = await getChapterText("book-8", 0);
+    expect(cached).toBeDefined();
+    expect(cached?.text.length).toBeGreaterThan(0);
+    // Plain text, not markup — the whole point of caching it.
+    expect(cached?.text).not.toMatch(/<[^>]+>/);
+  });
+
+  it("still builds the word index if caching chapter text fails", async () => {
+    vi.spyOn(chapterText, "putChapterTexts").mockRejectedValueOnce(
+      new Error("quota exceeded"),
+    );
+
+    const file = await loadFixture("valid-book.epub");
+
+    await expect(buildIndex("book-9", file)).resolves.not.toThrow();
+    expect(await hasIndex("book-9")).toBe(true);
   });
 });

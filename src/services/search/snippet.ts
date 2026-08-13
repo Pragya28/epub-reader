@@ -1,13 +1,15 @@
 import { EpubParser } from "@/services/epub/epub-parser";
+import { toPlainText } from "./html-text";
 
 const SNIPPET_CONTEXT_CHARS = 60;
 
-/** Plain-text excerpt around the first occurrence of `word` in `html`. */
+/**
+ * Plain-text excerpt around the first occurrence of `word`. `html` may be
+ * raw chapter markup or already-plain text (e.g. from the chapter-text
+ * cache) — toPlainText is a no-op on text with no tags left to strip.
+ */
 export function extractSnippet(html: string, word: string): string {
-  const text = html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  const text = toPlainText(html);
 
   const index = text.toLowerCase().indexOf(word.toLowerCase());
   if (index === -1) return text.slice(0, SNIPPET_CONTEXT_CHARS * 2);

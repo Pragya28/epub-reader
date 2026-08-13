@@ -1,6 +1,8 @@
 import { EpubParser } from "@/services/epub/epub-parser";
 import { extractSnippet } from "@/services/search/snippet";
+import { getChapterText } from "@/services/search/chapter-text";
 import {
+  getBook,
   getBookCoverUrl,
   getBookWithFile,
 } from "@/services/storage/book-repository";
@@ -14,6 +16,24 @@ export interface ContentMatchDisplay extends ChapterMatch {
   chapterLabel: string;
   snippet: string;
 }
+
+interface BookMeta {
+  title: string;
+  author: string;
+  coverUrl: string | undefined;
+}
+
+async function loadBookMetaOnce(bookId: string): Promise<BookMeta | null> {
+  const [book, coverUrl] = await Promise.all([
+    getBook(bookId),
+    getBookCoverUrl(bookId),
+  ]);
+  if (!book) return null;
+  return { title: book.title, author: book.author ?? "", coverUrl };
+}
+
+/** Title/author/cover only — no file fetch, no parsing. */
+export type BookMetaCache = Map<string, Promise<BookMeta | null>>;
 
 async function loadBookOnce(bookId: string) {
   const readerDoc = await getBookWithFile(bookId);
@@ -35,36 +55,69 @@ async function loadBookOnce(bookId: string) {
 
 export type LoadedBook = Awaited<ReturnType<typeof loadBookOnce>>;
 
-/** Cache of parsed books, owned by the caller so it can outlive one call. */
+/**
+ * Full-parse fallback, only reached on a chapter-text cache miss (a book
+ * indexed before Sprint 6B, or one whose text cache write failed).
+ */
 export type BookCache = Map<string, Promise<LoadedBook>>;
 
+function memoized<K, V>(
+  map: Map<K, Promise<V>>,
+  key: K,
+  load: () => Promise<V>,
+) {
+  let pending = map.get(key);
+  if (!pending) {
+    pending = load();
+    map.set(key, pending);
+  }
+  return pending;
+}
+
 /**
- * Builds display rows for content matches, parsing each book exactly **once**.
+ * Builds display rows for content matches, without re-parsing the EPUB when
+ * it can be avoided.
  *
- * This used to run per match, so N results in one book meant N fetches and N
- * full JSZip unzips of the same EPUB — measured at ~94ms per result against a
- * real 40-chapter book, i.e. ~3.7s for 39 matches, while the index query
- * itself was ~14ms. Parsing was effectively the entire cost of a search.
+ * Each chapter's plain text + TOC label is cached at index-build time
+ * (search-service.ts) — the common case here is a Dexie read of the cache,
+ * no file fetch and no JSZip unzip. A cache miss falls back to parsing the
+ * whole book, exactly as this function worked before the cache existed;
+ * `books` and `metaCache` are owned by the caller so paging through more
+ * rows, or hitting several matches in the same book, never repeats work.
  *
- * `books` is passed in rather than created here so that paging to the next
- * batch of rows reuses the already-unzipped EPUB instead of re-parsing it.
+ * This used to run per match unconditionally, so N results in one book
+ * meant N fetches and N full JSZip unzips of the same EPUB — measured at
+ * ~94ms per result against a real 40-chapter book, i.e. ~3.7s for 39
+ * matches, while the index query itself was ~14ms.
  */
 export async function loadSearchResultDisplays(
   matches: ChapterMatch[],
   books: BookCache,
+  metaCache: BookMetaCache,
 ): Promise<ContentMatchDisplay[]> {
-  const bookFor = (bookId: string) => {
-    let pending = books.get(bookId);
-    if (!pending) {
-      pending = loadBookOnce(bookId);
-      books.set(bookId, pending);
-    }
-    return pending;
-  };
-
   const rows = await Promise.all(
     matches.map(async (match): Promise<ContentMatchDisplay | null> => {
-      const loaded = await bookFor(match.bookId);
+      const cached = await getChapterText(match.bookId, match.chapter);
+
+      if (cached) {
+        const meta = await memoized(metaCache, match.bookId, () =>
+          loadBookMetaOnce(match.bookId),
+        );
+        if (!meta) return null;
+
+        return {
+          ...match,
+          bookTitle: meta.title,
+          bookAuthor: meta.author,
+          coverUrl: meta.coverUrl,
+          chapterLabel: cached.label,
+          snippet: extractSnippet(cached.text, match.matchedWords[0]),
+        };
+      }
+
+      const loaded = await memoized(books, match.bookId, () =>
+        loadBookOnce(match.bookId),
+      );
       if (!loaded) return null;
 
       const chapter = await loaded.parsedBook.loadChapter(match.chapter);

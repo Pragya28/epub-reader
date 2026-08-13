@@ -133,7 +133,7 @@ describe("search performance at index scale", () => {
       matchedWords: ["chapter"],
     }));
 
-    const rows = await loadSearchResultDisplays(matches, new Map());
+    const rows = await loadSearchResultDisplays(matches, new Map(), new Map());
 
     expect(rows).toHaveLength(matches.length);
     expect(parseSpy).toHaveBeenCalledTimes(1);
@@ -158,8 +158,9 @@ describe("search performance at index scale", () => {
     // The screen owns this map so successive pages share it — building it
     // per call is what made "load 10 more" re-parse the whole book.
     const cache = new Map();
-    await loadSearchResultDisplays([match(0)], cache);
-    await loadSearchResultDisplays([match(0), match(1)], cache);
+    const metaCache = new Map();
+    await loadSearchResultDisplays([match(0)], cache, metaCache);
+    await loadSearchResultDisplays([match(0), match(1)], cache, metaCache);
 
     expect(parseSpy).toHaveBeenCalledTimes(1);
   }, 60_000);
