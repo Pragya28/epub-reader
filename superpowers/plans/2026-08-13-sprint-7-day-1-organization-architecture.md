@@ -218,13 +218,12 @@ git commit -m "feat(epub): parse calibre series metadata from OPF"
 - Modify: `src/services/storage/storage-types.ts:41-57` (`StoredBook`)
 - Modify: `src/services/storage/storage-types.ts` (add `Grouping`, `GroupingMember`)
 - Modify: `src/services/storage/db.ts`
-- Create: `src/utils/create-grouping-id.ts`
 - Create: `src/services/storage/groupings.ts`
 - Test: `src/services/storage/__tests__/groupings.test.ts`
 
 **Interfaces:**
 
-- Consumes: `db` from `@/services/storage/db`; `Grouping`, `GroupingMember` from `@/services/storage/storage-types`; `createGroupingId(): string` from `@/utils/create-grouping-id`.
+- Consumes: `db` from `@/services/storage/db`; `Grouping`, `GroupingMember` from `@/services/storage/storage-types`; `createId(): string` from `@/utils/create-id` (the generic id util — renamed from `create-book-id.ts`/`createBookId()`, its only prior caller, ahead of this plan so `groupings.ts` doesn't need its own id helper).
 - Produces (all from `@/services/storage/groupings`, consumed by Tasks 3-5):
   - `getGrouping(id: string): Promise<Grouping | undefined>`
   - `listGroupings(type?: "series" | "collection"): Promise<Grouping[]>`
@@ -384,16 +383,6 @@ export interface GroupingMember {
 }
 ```
 
-Create `src/utils/create-grouping-id.ts`:
-
-```ts
-import { v7 as uuidv7 } from "uuid";
-
-export function createGroupingId() {
-  return uuidv7();
-}
-```
-
 In `src/services/storage/db.ts`, add the two new table declarations after `chapterText!: Table<StoredChapterText>;` (line 15):
 
 ```ts
@@ -510,7 +499,7 @@ Expected: PASS, all tests in the file green.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/services/storage/storage-types.ts src/services/storage/db.ts src/services/storage/groupings.ts src/services/storage/__tests__/groupings.test.ts src/utils/create-grouping-id.ts
+git add src/services/storage/storage-types.ts src/services/storage/db.ts src/services/storage/groupings.ts src/services/storage/__tests__/groupings.test.ts
 git commit -m "feat(storage): add groupings/groupingMembers schema (v6) and CRUD module"
 ```
 
@@ -606,7 +595,7 @@ export async function upsertSeriesMembership(
     (grouping) => grouping.name.toLowerCase() === seriesName.toLowerCase(),
   );
 
-  const groupingId = match?.id ?? createGroupingId();
+  const groupingId = match?.id ?? createId();
 
   if (!match) {
     await putGrouping({
@@ -621,10 +610,10 @@ export async function upsertSeriesMembership(
 }
 ```
 
-Add the `createGroupingId` import at the top of `src/services/storage/groupings.ts`:
+Add the `createId` import at the top of `src/services/storage/groupings.ts`:
 
 ```ts
-import { createGroupingId } from "@/utils/create-grouping-id";
+import { createId } from "@/utils/create-id";
 ```
 
 - [ ] **Step 4: Run test to verify it passes**
