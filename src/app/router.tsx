@@ -1,10 +1,10 @@
 import type { FC } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { LibraryScreen } from "./screens/library-screen";
-import { LibraryAuthorScreen } from "./screens/library-author-screen";
+import { LibraryScreen } from "./screens/library/library-screen";
+import { LibraryAuthorScreen } from "./screens/library/library-author-screen";
 import { ReaderScreen } from "./screens/reader/reader-screen";
 import { SearchScreen } from "./screens/search-screen";
-import { SettingsScreen } from "./screens/settings-screen";
+import { SettingsScreen } from "./screens/settings/settings-screen";
 import { ReaderErrorBoundary } from "./screens/reader/reader-error-boundary";
 import { ROUTES } from "@/utils/routes";
 
