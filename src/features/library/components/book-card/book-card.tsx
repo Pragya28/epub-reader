@@ -77,9 +77,9 @@ export const BookCard: FC<BookCardProps> = memo(function BookCard({
         )}
       </div>
       {/* Meta below cover */}
-      <div className="flex flex-col gap-0.5 pr-1">
-        {/* Title row */}
-        <div className="flex items-start justify-between gap-0.5">
+      <div className="flex items-start justify-between gap-0.5">
+        <div className="flex flex-col gap-0.5 pr-1">
+          {/* Title  */}
           <div
             className={[
               "flex-1 min-w-0 font-bold text-ui leading-tight text-foreground line-clamp-2",
@@ -88,45 +88,42 @@ export const BookCard: FC<BookCardProps> = memo(function BookCard({
           >
             {title}
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              aria-label="More options"
-              className="relative z-20 inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring outline-none"
-            >
-              <EllipsisVertical size={24} strokeWidth={1.5} />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {menuItems.map((entry) =>
-                entry.type === "separator" ? (
-                  <DropdownMenuSeparator key={entry.id} />
-                ) : (
-                  <DropdownMenuItem
-                    key={entry.id}
-                    variant={entry.variant}
-                    onClick={entry.onClick}
-                  >
-                    {entry.label}
-                  </DropdownMenuItem>
-                ),
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Author */}
+          {author && (
+            <p className="min-w-0 text-ui-sm text-muted-foreground leading-snug line-clamp-1">
+              {author}
+            </p>
+          )}
+
+          {/* Reading progress text */}
+          {statusText && (
+            <p className="text-meta text-muted-foreground">{statusText}</p>
+          )}
         </div>
 
-        {/* Author */}
-        {author && (
-          <p className="text-ui-sm text-muted-foreground leading-snug">
-            {author}
-          </p>
-        )}
-
-        {/* Reading progress text */}
-        {statusText && (
-          <p className="text-meta text-muted-foreground">{statusText}</p>
-        )}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            aria-label="More options"
+            className="relative z-20 inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring outline-none"
+          >
+            <EllipsisVertical size={24} strokeWidth={1.5} />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+            {menuItems.map((entry) =>
+              entry.type === "separator" ? (
+                <DropdownMenuSeparator key={entry.id} />
+              ) : (
+                <DropdownMenuItem
+                  key={entry.id}
+                  variant={entry.variant}
+                  onClick={entry.onClick}
+                >
+                  {entry.label}
+                </DropdownMenuItem>
+              ),
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <AboutBookSheet
