@@ -36,7 +36,7 @@ export function useBookCard(
 
   const statusText = isFinished
     ? "Finished"
-    : isReading && progress !== undefined
+    : isReading && progress !== undefined && progress !== 0
       ? `${progress}% read`
       : null;
 
