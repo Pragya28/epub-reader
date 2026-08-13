@@ -152,6 +152,42 @@ Legend: ✅ done · 🟡 partial · ❌ missing
 
 ---
 
+## Post-Sprint Follow-up — Search Performance (2026-08-12)
+
+Sprint 6 was marked complete on 2026-08-11 (Day 7, items 27–30). The next day the user reported the search screen felt slow in real use — after the sprint's own gate suite (29) and live pass (30) had both passed. Numbered continuing from 30, following the existing pattern for work found after the fact.
+
+31. ✅ **Retyping a query left the previous term's results on screen.** `displayResults` in `use-search-screen.ts` didn't check that `results` belonged to the current `query`, so results for "Harr" stayed visible while the box read "Harry" until the new search resolved. Now gated on `settledQuery === query`. _(done 2026-08-12)_
+
+32. ✅ **Search result covers stretched, and had no gradient fallback.** `search-result-row.tsx` used `object-cover` (crops) instead of the library grid's `object-contain`, and rendered nothing for books without cover art. Fixed by routing search rows through a shared `BookCover` component instead of duplicating cover logic — moved to `src/components/book-cover/`, since `src/components/ui/` is strictly shadcn primitives (a new rule this added to `CLAUDE.md`). At thumbnail size (56px) the existing gradient ornament was illegible, so the compact variant shows the title's initial instead. The gradient itself was already derived from `bookId`, not stored — confirmed as the right call rather than changed: storing it would need a v5 migration, a backfill for existing books, and still a derived fallback for pre-feature books. _(done 2026-08-12)_
+
+33. ✅ **Pre-search empty view.** The results area was blank before typing; now explains what the screen searches, using the same `Empty` primitive as the no-results state. _(done 2026-08-12)_
+
+34. ✅ **Search felt slow — root cause was never the index.** Investigated live rather than assumed: `findChapterMatches` measured 14ms, matching item 21's benchmark exactly — but building the 39 display rows for that result set took **~3.7s**. `loadContentMatchDisplay` ran per match, so N results in one book meant N full fetches + JSZip unzips of the same EPUB (~94ms/row: 10ms fetch + 59ms parse + 25ms chapter load). Fixed in three parts:
+    - **Parse once per search, not once per row** — a book cache owned by the caller so paging doesn't re-parse either. Extracted into `loadSearchResultDisplays()` (`features/library/actions/`), since the logic had to be importable to be tested and didn't belong in `app/screens/search-screen.tsx` (thin composition, no business logic, per `CLAUDE.md`).
+    - **Page results (10 at a time) via an `IntersectionObserver` sentinel** — first paint no longer waits on rows nobody scrolled to.
+    - **Debounce input 250ms, require 3 characters** — every keystroke ran a full search before this; "Harry" fired five, and single-letter queries are the most expensive possible (match nearly every chapter). The 3-char minimum was a direct user request, applied uniformly rather than only to content search, to avoid two different behaviors on one screen — traded off explicitly: short titles ("It", "Q") become unsearchable by title until 3 characters are typed.
+
+    Measured end-to-end, keystroke to rendered rows, against a real 40-chapter book: first row 998ms → 49ms, fully settled ~14s → 764ms (including the debounce), main-thread block per keystroke ~1000ms → ~5ms. _(done 2026-08-12)_
+
+35. ✅ **`search.perf.test.ts` extended to cover result-row building, not just the index query.** Item 22's benchmark measured only `findChapterMatches` and stayed green throughout item 34's bug — a benchmark that misses the slow layer reads as evidence a feature is fast when it isn't. Two new guards, both structural (`parseBook` call counts) rather than timing-based, because a duration budget is exactly what let the original bug hide on a fast machine: each book is parsed exactly once regardless of row count, and a caller-owned cache survives paging. Both were verified to fail against the pre-fix implementation (30 parses and 3 parses respectively) before being committed, then reverted — a guard that can't fail is worthless. The file's header now states explicitly that a green index benchmark alone is not evidence a search is fast. _(done 2026-08-12)_
+
+36. ✅ **Chapter plain-text cache — the deferred Day 1 "Future note" revisited under its own stated condition.** Item 34's fix still left ~25ms/row (`loadChapter`'s decompress + sanitize), and every _distinct_ book in a result set paid the full ~94ms at least once. Day 1's decision explicitly named the revisit condition: "if profiling after Sprint 6 ships shows JSZip extraction is a measured bottleneck... try a per-chapter plain-text cache in IndexedDB... rather than full OPFS files." That measurement now exists.
+    - New schema v5 table `chapterText` (`bookId`, `chapter`, plain text, TOC label), keyed `[bookId+chapter]` with `bookId` indexed for bulk delete — same shape as `searchIndex`.
+    - `buildIndex()` already calls `loadChapter()` per chapter to tokenize it, then discarded the text; it's now cached alongside the word index as a byproduct of work already being done, at no extra parsing cost.
+    - `loadSearchResultDisplays()` tries the cache first (a Dexie read, no file fetch, no JSZip unzip); a miss falls back to the pre-existing full-parse path unchanged, so a book indexed before this shipped isn't broken — it just doesn't benefit until reindexed, same graceful-degrade shape as every other index-failure path this sprint.
+    - A shared `toPlainText()` helper (`html-text.ts`) now backs tokenizing, snippet extraction, and the cache, replacing three separate strip-tags implementations.
+    - `getBook()` (metadata only, no file) is reintroduced in `book-repository.ts` — deleted as dead code in item 28's cleanup pass, genuinely needed now so a cache-hit row doesn't hold the raw EPUB blob just to read a title.
+
+    Measured live against a real 12-chapter book (`valid-book-2.epub`, imported via the dev server): **4.3ms/row**, down from ~94ms — about 22× on the row-building layer specifically. Verified with a guard test that fails when the cache path is bypassed (rows come back empty instead of built), so this can't silently regress to the per-match parsing bug. _(done 2026-08-12)_
+
+### Done Criteria
+
+✅ Done — six fixes (31–36) closing the gap between what item 21/22 measured and what the feature actually felt like in use. Full suite green at 543 tests / 58 files throughout.
+
+**Deferred, recorded rather than built:** testing search across many _distinct_ books in one result set. Every fix in this section is O(results) against a single book with many matches — nothing here has been measured against, say, 20 different books each contributing a few hits. Downloading a batch of public-domain EPUBs (Project Gutenberg) alongside the existing fixtures would close this gap. Not pursued now because nothing in 31–36 is expected to behave differently at that scale — each distinct book still gets exactly one parse (or one cache read) regardless of how many _other_ books are in the result set — but it's the one scenario this round of fixes has no direct evidence for.
+
+---
+
 # Suggested Sequencing
 
 Days 1–2 (infrastructure + indexing) are sequential — indexing needs the store schema and lifecycle functions from Day 1 first. Day 3 (search engine) depends on Day 2's persisted index existing. Day 4 (reader integration) depends on Day 3's results shape (needs a chapter index and match position to jump to and highlight) — could start in parallel once Day 3's data shape is settled, even before ranking/snippets are fully polished. Day 5 (index maintenance, including the Platform-01 fix) depends on Day 1's lifecycle functions but is otherwise independent of Days 2–4 and could run in parallel with them. Day 6 (performance) needs Days 1–5 complete to benchmark against real indexed data. Day 7 is integration once everything else lands — same shape as every prior sprint's Day 7.
