@@ -1,7 +1,7 @@
 import { EpubParser } from "@/services/epub/epub-parser";
 import { buildIndex } from "@/services/search/search-service";
 import { saveImportedBook } from "@/services/storage/book-repository";
-import { createBookId } from "@/utils/create-book-id";
+import { createId } from "@/utils/create-id";
 import { hashFile } from "@/utils/hash";
 import { logger as rootLogger } from "@/shared/logger/logger";
 import { libraryStore } from "../store/library-store";
@@ -32,7 +32,7 @@ export async function importBook(file: File) {
     } = parsed;
 
     // 3. Generate app ID
-    const bookId = createBookId();
+    const bookId = createId();
 
     // 4. Hash file for duplicate detection
     const fileHash = await hashFile(file);

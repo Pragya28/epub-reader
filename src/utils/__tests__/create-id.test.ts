@@ -1,27 +1,27 @@
 import { describe, expect, it } from "vitest";
-import { createBookId } from "../create-book-id";
+import { createId } from "../create-id";
 
-describe("createBookId", () => {
+describe("createId", () => {
   it("creates unique ids", () => {
     const ids = new Set<string>();
 
     for (let i = 0; i < 100; i++) {
-      ids.add(createBookId());
+      ids.add(createId());
     }
 
     expect(ids.size).toBe(100);
   });
 
   it("returns a non-empty string", () => {
-    const id = createBookId();
+    const id = createId();
 
     expect(typeof id).toBe("string");
     expect(id.length).toBeGreaterThan(0);
   });
 
   it("creates different ids on consecutive calls", () => {
-    const first = createBookId();
-    const second = createBookId();
+    const first = createId();
+    const second = createId();
 
     expect(first).not.toBe(second);
   });
