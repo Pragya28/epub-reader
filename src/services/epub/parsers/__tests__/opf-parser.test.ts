@@ -81,6 +81,94 @@ describe("OpfParser", () => {
     expect(result.metadata.description).toBe("A book about testing.");
   });
 
+  it("extracts calibre series metadata when present", () => {
+    const xml = `
+      <package>
+        <metadata>
+          <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">Foundation</dc:title>
+          <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Isaac Asimov</dc:creator>
+          <meta name="calibre:series" content="Foundation Series" />
+          <meta name="calibre:series_index" content="2" />
+        </metadata>
+
+        <manifest>
+          <item
+            id="chapter-1"
+            href="text/chapter-1.xhtml"
+            media-type="application/xhtml+xml"
+          />
+        </manifest>
+
+        <spine>
+          <itemref idref="chapter-1" />
+        </spine>
+      </package>
+    `;
+
+    const result = parser.parse(parseXml(xml));
+
+    expect(result.metadata.seriesName).toBe("Foundation Series");
+    expect(result.metadata.seriesIndex).toBe(2);
+  });
+
+  it("leaves series fields undefined when calibre series metadata is absent", () => {
+    const xml = `
+      <package>
+        <metadata>
+          <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">Test Book</dc:title>
+          <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Test Author</dc:creator>
+        </metadata>
+
+        <manifest>
+          <item
+            id="chapter-1"
+            href="text/chapter-1.xhtml"
+            media-type="application/xhtml+xml"
+          />
+        </manifest>
+
+        <spine>
+          <itemref idref="chapter-1" />
+        </spine>
+      </package>
+    `;
+
+    const result = parser.parse(parseXml(xml));
+
+    expect(result.metadata.seriesName).toBeUndefined();
+    expect(result.metadata.seriesIndex).toBeUndefined();
+  });
+
+  it("treats a non-numeric series_index as absent while keeping the series name", () => {
+    const xml = `
+      <package>
+        <metadata>
+          <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">Foundation</dc:title>
+          <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Isaac Asimov</dc:creator>
+          <meta name="calibre:series" content="Foundation Series" />
+          <meta name="calibre:series_index" content="two" />
+        </metadata>
+
+        <manifest>
+          <item
+            id="chapter-1"
+            href="text/chapter-1.xhtml"
+            media-type="application/xhtml+xml"
+          />
+        </manifest>
+
+        <spine>
+          <itemref idref="chapter-1" />
+        </spine>
+      </package>
+    `;
+
+    const result = parser.parse(parseXml(xml));
+
+    expect(result.metadata.seriesName).toBe("Foundation Series");
+    expect(result.metadata.seriesIndex).toBeUndefined();
+  });
+
   it("strips HTML markup escaped inside the description text", () => {
     const xml = `
       <package>
