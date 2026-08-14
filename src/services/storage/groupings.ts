@@ -1,4 +1,5 @@
 import { db } from "@/services/storage/db";
+import { getBook } from "@/services/storage/book-repository";
 import { createId } from "@/utils/create-id";
 import type {
   Grouping,
@@ -123,4 +124,28 @@ export async function deleteMembersForBook(bookId: string): Promise<void> {
       await db.groupings.delete(groupingId);
     }
   }
+}
+
+/**
+ * Backfills series membership for books that predate this schema (or
+ * otherwise lost their membership row) — checked via a cheap
+ * hasSeriesMembership lookup per book, deriving from the seriesName
+ * already cached on StoredBook rather than re-reading/re-parsing the
+ * EPUB file. Mirrors ensureIndexesForBooks's shape (Sprint 6).
+ */
+export async function ensureSeriesGroupings(bookIds: string[]): Promise<void> {
+  await Promise.all(
+    bookIds.map(async (bookId) => {
+      if (await hasSeriesMembership(bookId)) return;
+
+      const book = await getBook(bookId);
+      if (!book?.seriesName) return;
+
+      await upsertSeriesMembership(
+        bookId,
+        book.seriesName,
+        book.seriesIndex ?? null,
+      );
+    }),
+  );
 }

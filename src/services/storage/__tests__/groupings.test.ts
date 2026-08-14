@@ -1,8 +1,9 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   addMember,
   deleteGrouping,
   deleteMembersForBook,
+  ensureSeriesGroupings,
   getGrouping,
   getMembersForBook,
   getMembersForGrouping,
@@ -13,12 +14,19 @@ import {
   removeMember,
   upsertSeriesMembership,
 } from "../groupings";
+import { EpubParser } from "@/services/epub/epub-parser";
+import * as bookRepository from "@/services/storage/book-repository";
+import { getAllBooks } from "@/services/storage/book-repository";
+import { importBook } from "@/features/library/actions/import-book";
+import { loadFixture } from "@/tests/utils/load-fixtures";
 import { resetTestDb } from "@/tests/utils/reset-test-db";
+import { resetLibraryStore } from "@/tests/utils/reset-store";
 import type { Grouping } from "../storage-types";
 
 describe("groupings", () => {
   beforeEach(async () => {
     await resetTestDb();
+    resetLibraryStore();
   });
 
   it("puts and gets a grouping", async () => {
@@ -168,6 +176,72 @@ describe("groupings", () => {
 
       expect(await getGrouping("series-1")).toBeUndefined();
       expect(await getGrouping("collection-1")).toBeDefined();
+    });
+  });
+
+  describe("ensureSeriesGroupings", () => {
+    const mockSeriesMetadata = () => {
+      vi.spyOn(EpubParser.prototype, "parseLibraryBook").mockResolvedValueOnce({
+        metadata: {
+          title: "Dune",
+          author: "Frank Herbert",
+          language: "en",
+          description: null,
+          seriesName: "Dune Saga",
+          seriesIndex: 1,
+        },
+        cover: undefined,
+        chapterCount: 1,
+        wordCount: 100,
+        chapterWordCounts: [100],
+        readingTimeMinutes: 1,
+      });
+    };
+
+    it("derives series membership from a book's cached seriesName without reading the file", async () => {
+      mockSeriesMetadata();
+      const file = await loadFixture("valid-book.epub");
+      await importBook(file);
+      const [book] = await getAllBooks();
+
+      // Simulate a lost/pre-existing membership row while the cached
+      // seriesName survives on StoredBook (import already wrote it).
+      const [member] = await getMembersForBook(book.id);
+      await removeMember(member.groupingId, book.id);
+      expect(await getMembersForBook(book.id)).toHaveLength(0);
+
+      const getBookFileSpy = vi.spyOn(bookRepository, "getBookFile");
+
+      await ensureSeriesGroupings([book.id]);
+
+      expect(getBookFileSpy).not.toHaveBeenCalled();
+      const members = await getMembersForBook(book.id);
+      expect(members).toHaveLength(1);
+      const grouping = await getGrouping(members[0].groupingId);
+      expect(grouping?.name).toBe("Dune Saga");
+    });
+
+    it("skips books that already have a series membership", async () => {
+      mockSeriesMetadata();
+      const file = await loadFixture("valid-book.epub");
+      await importBook(file);
+      const [book] = await getAllBooks();
+
+      const before = await getMembersForBook(book.id);
+
+      await ensureSeriesGroupings([book.id]);
+
+      expect(await getMembersForBook(book.id)).toEqual(before);
+    });
+
+    it("does nothing for a book with no cached seriesName", async () => {
+      const file = await loadFixture("valid-book.epub");
+      await importBook(file);
+      const [book] = await getAllBooks();
+
+      await ensureSeriesGroupings([book.id]);
+
+      expect(await getMembersForBook(book.id)).toHaveLength(0);
     });
   });
 });
