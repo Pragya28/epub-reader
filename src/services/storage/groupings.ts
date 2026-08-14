@@ -1,4 +1,5 @@
 import { db } from "@/services/storage/db";
+import { createId } from "@/utils/create-id";
 import type {
   Grouping,
   GroupingMember,
@@ -58,4 +59,44 @@ export async function removeMember(
  */
 export function isCollection(grouping: Grouping): boolean {
   return grouping.type === "collection";
+}
+
+export async function hasSeriesMembership(bookId: string): Promise<boolean> {
+  const members = await getMembersForBook(bookId);
+  if (members.length === 0) return false;
+
+  const groupings = await Promise.all(
+    members.map((member) => getGrouping(member.groupingId)),
+  );
+  return groupings.some((grouping) => grouping?.type === "series");
+}
+
+/**
+ * Upserts series membership for a book: reuses an existing series
+ * grouping matched case-insensitively by name, or creates one. Called
+ * from import (new books) and the backfill (pre-existing books) — see
+ * ensureSeriesGroupings.
+ */
+export async function upsertSeriesMembership(
+  bookId: string,
+  seriesName: string,
+  seriesIndex: number | null,
+): Promise<void> {
+  const existing = await listGroupings("series");
+  const match = existing.find(
+    (grouping) => grouping.name.toLowerCase() === seriesName.toLowerCase(),
+  );
+
+  const groupingId = match?.id ?? createId();
+
+  if (!match) {
+    await putGrouping({
+      id: groupingId,
+      type: "series",
+      name: seriesName,
+      createdAt: Date.now(),
+    });
+  }
+
+  await addMember(groupingId, bookId, seriesIndex);
 }
