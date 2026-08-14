@@ -49,6 +49,8 @@ export interface StoredBook {
   /** Per-chapter word counts, same order as the spine — see ParsedLibraryBook. */
   chapterWordCounts?: number[];
   readingTimeMinutes?: number;
+  seriesName?: string;
+  seriesIndex?: number;
   createdAt: number;
   fileHash: string;
   coverBg?: string;
@@ -85,4 +87,28 @@ export interface StoredChapterText {
   chapter: number;
   text: string;
   label: string;
+}
+
+/**
+ * One row per series or user-created collection, discriminated by `type`.
+ * A series has no independent lifecycle beyond "the set of books sharing
+ * this metadata value" — it reuses the same shape rather than a separate
+ * model, and read-only enforcement lives in isCollection()/the action
+ * layer, not in the schema.
+ */
+export interface Grouping {
+  id: string;
+  type: "series" | "collection";
+  name: string;
+  createdAt: number;
+}
+
+/**
+ * Join row for book membership in a grouping. `order` carries series
+ * reading order (the book's seriesIndex) and is unused for collections.
+ */
+export interface GroupingMember {
+  groupingId: string;
+  bookId: string;
+  order: number | null;
 }
