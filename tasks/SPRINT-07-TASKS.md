@@ -21,28 +21,28 @@ What _does_ already exist and is directly reusable scaffolding for this sprint:
 
 ## Day 1 — Organization Architecture
 
-1. ❌ **Series/collection data model** — no types exist. `StoredBook` (`src/services/storage/storage-types.ts`) has no series or collection fields.
-2. ❌ **Storage schema (IndexedDB)** — still v5, no `series`/`collections` table or fields. Needs a `db.version(6).stores(...)` block; per the existing pattern, no data migration needed since Dexie only reindexes on next write.
-3. ❌ **Navigation structure for grouped views** — no route exists for series or collection browsing in `src/app/router.tsx` (currently: `LIBRARY`, `LIBRARY_AUTHOR`, `READER`, `SEARCH`, `SETTINGS`).
+1. ✅ **Series/collection data model** — unified `Grouping`/`GroupingMember` types (`src/services/storage/storage-types.ts`), discriminated by `type: "series" | "collection"`. `StoredBook` gains cached `seriesName`/`seriesIndex` fields. `isCollection(grouping)` is the one read-only guard the (future Day 3) action layer and UI will share.
+2. ✅ **Storage schema (IndexedDB)** — `db.version(6).stores(...)` adds `groupings` and `groupingMembers` (`src/services/storage/db.ts`), no data migration needed. `src/services/storage/groupings.ts` is the Dexie-access module — CRUD, membership add/remove, `deleteMembersForBook()` (cascade delete on book removal, with an emptied series grouping auto-deleted but an emptied collection kept), and `ensureSeriesGroupings()` (lazy backfill for pre-existing libraries, mirroring `ensureIndexesForBooks` from Sprint 6).
+3. ✅ **Navigation structure for grouped views** — `ROUTES.LIBRARY_SERIES`/`ROUTES.LIBRARY_COLLECTION` added to `src/utils/routes.ts`. No screens or `router.tsx` wiring yet — that's Day 4, reusing the `LibraryAuthorScreen` pattern.
 
 ### Done Criteria
 
-❌ Not started — this is the sprint's foundational day; everything after it depends on the data model and schema decided here.
+✅ Done — full design in `superpowers/specs/2026-08-13-collections-series-data-model-design.md`, implementation plan in `superpowers/plans/2026-08-13-sprint-7-day-1-organization-architecture.md`. Also folded in ahead of schedule: Calibre-only series metadata parsing (`opf-parser.ts`, originally Day 2 item 4) and the full series build-on-import/delete-cleanup/lazy-backfill lifecycle (originally split across Days 2 and 6), since the schema needed real data to validate against — see Day 2 below for what that leaves.
 
-**Related Gap (per spec):** [[Library-02 Backup and Export]] — worth deciding at data-model time whether collection membership is stored in a way that's easy to serialize for a future export, even though building export itself is out of scope for this sprint (see Deferred below).
+**Related Gap (per spec):** [[Library-02 Backup and Export]] — every field is a plain string/number (`Grouping`, `GroupingMember`, `StoredBook.seriesName`/`seriesIndex`), so a future export can serialize the schema directly; export itself remains out of scope for this sprint (see Deferred below).
 
 ---
 
 ## Day 2 — Series
 
-4. ❌ **Automatic series detection from metadata** — `parseMetadata()` in `src/services/epub/parsers/opf-parser.ts` (lines 25-46) extracts only `title`/`author`/`language`/`description` from named `dc:*` tags. It does not read generic `<meta>` elements at all, so neither Calibre's `calibre:series`/`calibre:series_index` `<meta name>` convention nor EPUB3's `belongs-to-collection`/`group-position` refinements are captured today. This is the actual first build item — nothing to detect series from yet.
-5. ❌ **Read-only series (system-detected, not user-editable)** — no series concept exists to be read-only.
-6. ❌ **Series browsing view** — no screen exists.
-7. ❌ **Reading order within a series** — depends on series-index metadata from item 4, which isn't parsed yet.
+4. ✅ **Automatic series detection from metadata** — `parseMetadata()` (`src/services/epub/parsers/opf-parser.ts`) now reads `<meta name="calibre:series">`/`calibre:series_index">` via a new `getMetaContent()` helper. Calibre-only, no EPUB3 `belongs-to-collection` support (deliberate scope call, see the Day 1 spec). A malformed/non-numeric `series_index` is treated as absent rather than failing the parse. Wired into `import-book.ts`: a book with `seriesName` gets its series grouping created/reused (case-insensitive name match) and membership row added, in a try/catch that logs rather than fails the import (same shape as the search-index build).
+5. ✅ **Read-only series (system-detected, not user-editable)** — enforced via `isCollection()`; no `renameSeries`/`deleteSeries` action exists or will, so there's nothing for a future caller to mistakenly call.
+6. ❌ **Series browsing view** — no screen exists yet. This is what's actually left of Day 2 — detection, read-only enforcement, and reading order (item 7) are done; only the UI remains.
+7. ✅ **Reading order within a series** — `GroupingMember.order` carries the book's `seriesIndex`, populated at series-membership creation time (both on import and via backfill).
 
 ### Done Criteria
 
-❌ Not started — blocked on Day 1's data model and, more fundamentally, on extending the OPF parser to actually read series metadata, which today it silently ignores.
+🟡 Partial — the data/lifecycle side (items 4, 5, 7) shipped early as part of Day 1's foundational work (see above); only the browsing view (item 6) remains, which needs the `LibraryAuthorScreen`-style screen Day 4 builds.
 
 ---
 
