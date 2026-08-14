@@ -100,3 +100,27 @@ export async function upsertSeriesMembership(
 
   await addMember(groupingId, bookId, seriesIndex);
 }
+
+/**
+ * Removes every grouping membership for a deleted book. A series
+ * grouping that loses its last member is deleted too — a series only
+ * exists because books with that metadata exist, so an empty one is
+ * meaningless. Collections are never auto-deleted this way; a
+ * user-created shelf is deliberately kept around empty.
+ */
+export async function deleteMembersForBook(bookId: string): Promise<void> {
+  const members = await db.groupingMembers.where({ bookId }).toArray();
+  const groupingIds = members.map((member) => member.groupingId);
+
+  await db.groupingMembers.where({ bookId }).delete();
+
+  for (const groupingId of groupingIds) {
+    const grouping = await db.groupings.get(groupingId);
+    if (grouping?.type !== "series") continue;
+
+    const remaining = await db.groupingMembers.where({ groupingId }).count();
+    if (remaining === 0) {
+      await db.groupings.delete(groupingId);
+    }
+  }
+}

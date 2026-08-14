@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import {
   addMember,
   deleteGrouping,
+  deleteMembersForBook,
   getGrouping,
   getMembersForBook,
   getMembersForGrouping,
@@ -130,6 +131,43 @@ describe("groupings", () => {
       await upsertSeriesMembership("book-1", "Foundation Series", 1);
 
       expect(await hasSeriesMembership("book-1")).toBe(true);
+    });
+  });
+
+  describe("deleteMembersForBook", () => {
+    it("removes all of a book's memberships", async () => {
+      await addMember("g1", "book-1", null);
+      await addMember("g2", "book-1", null);
+      await addMember("g1", "book-2", null);
+
+      await deleteMembersForBook("book-1");
+
+      expect(await getMembersForBook("book-1")).toHaveLength(0);
+      expect(await getMembersForGrouping("g1")).toEqual([
+        { groupingId: "g1", bookId: "book-2", order: null },
+      ]);
+    });
+
+    it("deletes an emptied series grouping but keeps an emptied collection", async () => {
+      await putGrouping({
+        id: "series-1",
+        type: "series",
+        name: "Foundation Series",
+        createdAt: 1,
+      });
+      await putGrouping({
+        id: "collection-1",
+        type: "collection",
+        name: "Favorites",
+        createdAt: 2,
+      });
+      await addMember("series-1", "book-1", 1);
+      await addMember("collection-1", "book-1", null);
+
+      await deleteMembersForBook("book-1");
+
+      expect(await getGrouping("series-1")).toBeUndefined();
+      expect(await getGrouping("collection-1")).toBeDefined();
     });
   });
 });
