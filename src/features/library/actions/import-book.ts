@@ -1,6 +1,7 @@
 import { EpubParser } from "@/services/epub/epub-parser";
 import { buildIndex } from "@/services/search/search-service";
 import { saveImportedBook } from "@/services/storage/book-repository";
+import { upsertSeriesMembership } from "@/services/storage/groupings";
 import { createId } from "@/utils/create-id";
 import { hashFile } from "@/utils/hash";
 import { logger as rootLogger } from "@/shared/logger/logger";
@@ -56,6 +57,8 @@ export async function importBook(file: File) {
       wordCount,
       chapterWordCounts,
       readingTimeMinutes,
+      seriesName: metadata.seriesName,
+      seriesIndex: metadata.seriesIndex,
       createdAt,
       fileHash,
       progress: {
@@ -88,6 +91,24 @@ export async function importBook(file: File) {
       await buildIndex(bookId, file);
     } catch (error) {
       logger.error("failed to build search index for imported book", error);
+    }
+
+    // Mirrors the search-index try/catch above: series membership is
+    // derived data, and a failure here must not fail an otherwise-good
+    // import. ensureSeriesGroupings (Task 5) backfills it on next use.
+    if (metadata.seriesName) {
+      try {
+        await upsertSeriesMembership(
+          bookId,
+          metadata.seriesName,
+          metadata.seriesIndex ?? null,
+        );
+      } catch (error) {
+        logger.error(
+          "failed to upsert series grouping for imported book",
+          error,
+        );
+      }
     }
 
     return {

@@ -27,6 +27,8 @@ export interface ParsedEpubMetadata {
   author: string;
   language: string | null;
   description: string | null;
+  seriesName?: string;
+  seriesIndex?: number;
 }
 
 export interface ManifestItem {

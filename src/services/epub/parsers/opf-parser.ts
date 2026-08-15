@@ -42,7 +42,30 @@ export class OpfParser {
       ? this.stripHtml(rawDescription)
       : rawDescription;
 
-    return { title, author, language, description };
+    const seriesName =
+      this.getMetaContent(metadata, "calibre:series") ?? undefined;
+    const seriesIndexRaw = this.getMetaContent(
+      metadata,
+      "calibre:series_index",
+    );
+    const seriesIndex =
+      seriesIndexRaw !== null && !Number.isNaN(Number(seriesIndexRaw))
+        ? Number(seriesIndexRaw)
+        : undefined;
+
+    return { title, author, language, description, seriesName, seriesIndex };
+  }
+
+  /**
+   * Reads a generic `<meta name="...">` element's `content` attribute —
+   * distinct from `getTextContent`, which only reads named tags' own text.
+   * Calibre's series convention (and EPUB2's cover convention, see
+   * findCover) is expressed this way rather than as a dedicated tag.
+   */
+  private getMetaContent(metadata: Element, name: string): string | null {
+    const meta = metadata.querySelector(`meta[name="${name}"]`);
+    const content = meta?.getAttribute("content")?.trim();
+    return content ? content : null;
   }
 
   /**

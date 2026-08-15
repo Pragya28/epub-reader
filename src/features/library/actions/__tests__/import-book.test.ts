@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { EpubParser } from "@/services/epub/epub-parser";
 import { hasIndex } from "@/services/search/search-index";
 import { buildIndex } from "@/services/search/search-service";
 import { getAllBooks } from "@/services/storage/book-repository";
+import { getGrouping, getMembersForBook } from "@/services/storage/groupings";
 import { importBook } from "../import-book";
 import { loadFixture } from "@/tests/utils/load-fixtures";
 import { resetTestDb } from "@/tests/utils/reset-test-db";
@@ -129,5 +131,48 @@ describe("importBook", () => {
     await expect(importBook(file)).rejects.toThrow("Book already imported");
     const books = await getAllBooks();
     expect(books).toHaveLength(1);
+  });
+
+  it("creates a series grouping when the book has series metadata", async () => {
+    vi.spyOn(EpubParser.prototype, "parseLibraryBook").mockResolvedValueOnce({
+      metadata: {
+        title: "Foundation",
+        author: "Isaac Asimov",
+        language: "en",
+        description: null,
+        seriesName: "Foundation Series",
+        seriesIndex: 1,
+      },
+      cover: undefined,
+      chapterCount: 1,
+      wordCount: 100,
+      chapterWordCounts: [100],
+      readingTimeMinutes: 1,
+    });
+
+    const file = await loadFixture("valid-book.epub");
+    await importBook(file);
+
+    const [book] = await getAllBooks();
+    expect(book.seriesName).toBe("Foundation Series");
+    expect(book.seriesIndex).toBe(1);
+
+    const members = await getMembersForBook(book.id);
+    expect(members).toHaveLength(1);
+
+    const grouping = await getGrouping(members[0].groupingId);
+    expect(grouping).toMatchObject({
+      type: "series",
+      name: "Foundation Series",
+    });
+  });
+
+  it("does not create a series grouping when the book has no series metadata", async () => {
+    const file = await loadFixture("valid-book.epub");
+    await importBook(file);
+
+    const [book] = await getAllBooks();
+    expect(book.seriesName).toBeUndefined();
+    expect(await getMembersForBook(book.id)).toHaveLength(0);
   });
 });

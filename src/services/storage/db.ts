@@ -1,5 +1,7 @@
 import Dexie, { type Table } from "dexie";
 import type {
+  Grouping,
+  GroupingMember,
   StoredBook,
   StoredBookCover,
   StoredBookFile,
@@ -13,6 +15,8 @@ class LibruneDB extends Dexie {
   bookCovers!: Table<StoredBookCover>;
   searchIndex!: Table<StoredSearchIndexEntry>;
   chapterText!: Table<StoredChapterText>;
+  groupings!: Table<Grouping>;
+  groupingMembers!: Table<GroupingMember>;
 
   constructor() {
     super("librune-db");
@@ -56,6 +60,23 @@ class LibruneDB extends Dexie {
       bookCovers: "bookId",
       searchIndex: "++id, word, bookId",
       chapterText: "[bookId+chapter], bookId",
+    });
+
+    // v6: adds series/collection grouping tables (Sprint 7). One `groupings`
+    // row per series or user collection, discriminated by `type`; membership
+    // lives in a separate `groupingMembers` join table so a book can belong
+    // to many collections. `order` carries series reading order and is
+    // unused for collections. No data migration — existing books simply
+    // have no grouping rows until series backfill runs or a user creates a
+    // collection.
+    this.version(6).stores({
+      books: "id, title, author, createdAt, &fileHash, progress.updatedAt",
+      bookFiles: "bookId",
+      bookCovers: "bookId",
+      searchIndex: "++id, word, bookId",
+      chapterText: "[bookId+chapter], bookId",
+      groupings: "id, type, name",
+      groupingMembers: "[groupingId+bookId], groupingId, bookId",
     });
   }
 }
