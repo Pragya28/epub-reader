@@ -2,7 +2,19 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import type { ReaderStore } from "../types/reader-types";
 
-const initialState: Partial<ReaderStore> = {
+const initialState: Pick<
+  ReaderStore,
+  | "readerDocument"
+  | "parsedBook"
+  | "currentChapterIndex"
+  | "isLoading"
+  | "error"
+  | "loadedChapterIndices"
+  | "isMountingChapter"
+  | "isJumping"
+  | "progressPercent"
+  | "footnoteBackStack"
+> = {
   readerDocument: null,
   parsedBook: null,
   currentChapterIndex: 0,
