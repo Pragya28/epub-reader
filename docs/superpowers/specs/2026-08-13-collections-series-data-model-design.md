@@ -2,10 +2,10 @@
 
 ## Context
 
-Sprint 7 (`docs/06 - Implementation/Sprint - 07 Library Organization & Collections.md`)
+Sprint 7 (`central-docs/06 - Implementation/Sprint - 07 Library Organization & Collections.md`)
 adds two grouping concepts to the library: **Series** (auto-detected from
 EPUB metadata, read-only) and **Collections** (user-created, full CRUD).
-`tasks/SPRINT-07-TASKS.md`'s Day 1 items (data model, storage schema,
+`docs/tasks/SPRINT-07-TASKS.md`'s Day 1 items (data model, storage schema,
 navigation structure) plus the OPF-parsing and backfill groundwork Days 2
 and 5 depend on are all designed here, since the schema can't be validated
 without a working write path — same reasoning Sprint 6 Day 1 used to fold

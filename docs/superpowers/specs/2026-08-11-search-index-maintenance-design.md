@@ -5,7 +5,7 @@
 Days 1–4 of Sprint 6 built the search index (`services/search/`) and the
 results UI, but nothing yet builds, deletes, or backfills the index as books
 are imported, deleted, or already existed before this sprint. This is
-tracked as items 16–18 in `tasks/SPRINT-06-TASKS.md`'s Day 5 section.
+tracked as items 16–18 in `docs/tasks/SPRINT-06-TASKS.md`'s Day 5 section.
 
 Most of the lifecycle plumbing already exists in `search-index.ts` /
 `search-service.ts` (`hasIndex`, `putIndexEntries`, `deleteIndex`,

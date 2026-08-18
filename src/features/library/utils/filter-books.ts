@@ -8,7 +8,7 @@ export function filterBooksByAuthor(
 }
 
 /**
- * Book-length buckets from docs/07 - Gaps/Library-01 Sort and Filter.md —
+ * Book-length buckets from central-docs/07 - Gaps/Library-01 Sort and Filter.md —
  * word count is the chosen size metric (chapter count varies too much
  * across publishers, page count isn't stable across screen/font sizes).
  */

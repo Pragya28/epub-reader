@@ -26,8 +26,9 @@ dev-dist
 
 src/tests/dev/*
 
-# Symlink
-docs
+# Symlink to the external notes vault (renamed from `docs` — that name now
+# belongs to the real, tracked docs/ folder holding superpowers/ and tasks/)
+central-docs
 UI_REPORT.md
 # Added by code-review-graph
 .code-review-graph/

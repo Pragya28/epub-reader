@@ -1,6 +1,6 @@
 # Sprint 3 — Task List (Gap Analysis vs Codebase)
 
-Generated 2026-07-31 by comparing `docs/06 - Implementation/Sprint - 03 Reader Performance & Stability.md` against the current codebase.
+Generated 2026-07-31 by comparing `central-docs/06 - Implementation/Sprint - 03 Reader Performance & Stability.md` against the current codebase.
 
 Legend: ✅ done · 🟡 partial · ❌ missing
 
@@ -82,9 +82,9 @@ All four done:
 
 # Deferred to a Later Sprint
 
-## OPFS-based normalized storage (was docs/04, never implemented)
+## OPFS-based normalized storage (was central-docs/04, never implemented)
 
-`docs/04 - Implementation Planning/02 - Storage Architecture.md` and
+`central-docs/04 - Implementation Planning/02 - Storage Architecture.md` and
 `04 - Normalized EPUB Format.md` describe a hybrid storage model that
 was designed but never built: on import, extract + normalize the EPUB
 into individual files written to **OPFS** (Origin Private File System)

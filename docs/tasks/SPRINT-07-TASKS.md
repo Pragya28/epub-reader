@@ -1,6 +1,6 @@
 # Sprint 7 — Task List (Gap Analysis vs Codebase)
 
-Generated 2026-08-13 by comparing `docs/06 - Implementation/Sprint - 07 Library Organization & Collections.md` against the current codebase, following the format of `tasks/SPRINT-06-TASKS.md`.
+Generated 2026-08-13 by comparing `central-docs/06 - Implementation/Sprint - 07 Library Organization & Collections.md` against the current codebase, following the format of `docs/tasks/SPRINT-06-TASKS.md`.
 
 Legend: ✅ done · 🟡 partial · ❌ missing
 
@@ -27,7 +27,7 @@ What _does_ already exist and is directly reusable scaffolding for this sprint:
 
 ### Done Criteria
 
-✅ Done — full design in `superpowers/specs/2026-08-13-collections-series-data-model-design.md`, implementation plan in `superpowers/plans/2026-08-13-sprint-7-day-1-organization-architecture.md`. Also folded in ahead of schedule: Calibre-only series metadata parsing (`opf-parser.ts`, originally Day 2 item 4) and the full series build-on-import/delete-cleanup/lazy-backfill lifecycle (originally split across Days 2 and 6), since the schema needed real data to validate against — see Day 2 below for what that leaves.
+✅ Done — full design in `docs/superpowers/specs/2026-08-13-collections-series-data-model-design.md`, implementation plan in `docs/superpowers/plans/2026-08-13-sprint-7-day-1-organization-architecture.md`. Also folded in ahead of schedule: Calibre-only series metadata parsing (`opf-parser.ts`, originally Day 2 item 4) and the full series build-on-import/delete-cleanup/lazy-backfill lifecycle (originally split across Days 2 and 6), since the schema needed real data to validate against — see Day 2 below for what that leaves.
 
 **Related Gap (per spec):** [[Library-02 Backup and Export]] — every field is a plain string/number (`Grouping`, `GroupingMember`, `StoredBook.seriesName`/`seriesIndex`), so a future export can serialize the schema directly; export itself remains out of scope for this sprint (see Deferred below).
 

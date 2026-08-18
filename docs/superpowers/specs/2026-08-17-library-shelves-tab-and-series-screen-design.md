@@ -2,7 +2,7 @@
 
 ## Context
 
-`tasks/SPRINT-07-TASKS.md`'s Day 2 has one item left after Day 1's early
+`docs/tasks/SPRINT-07-TASKS.md`'s Day 2 has one item left after Day 1's early
 groundwork: the series **browsing view** (detection, read-only enforcement,
 and reading order all shipped in Day 1). Scoping just "a series screen"
 surfaced a bigger decision during brainstorming: the library's main screen

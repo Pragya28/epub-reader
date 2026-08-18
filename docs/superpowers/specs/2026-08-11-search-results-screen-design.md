@@ -10,7 +10,7 @@ Sprint 6 Days 1–3 built the search engine (`services/search/`) and `searchLibr
 (`src/features/library/actions/search-library.ts`), but nothing renders it. This spec
 covers the new results screen only — Day 4's actual reader-integration items (jump to
 chapter, highlight match, return-to-reading nav) build on top of it and are scoped
-separately in `tasks/SPRINT-06-TASKS.md`.
+separately in `docs/tasks/SPRINT-06-TASKS.md`.
 
 The design went through two rounds of Figma/Stitch mocks, both revised down to what the
 search engine actually returns — no fabricated match counts, page numbers, or multi-word
@@ -107,7 +107,7 @@ with the app's real warm foreground/muted-foreground from the start).
 
 - Clicking a content-match row (has a chapter) navigates to the reader and jumps to that
   chapter — thin wrapper around the existing `jumpToTocItem()` primitive, per
-  `tasks/SPRINT-06-TASKS.md` Day 4 item 13.
+  `docs/tasks/SPRINT-06-TASKS.md` Day 4 item 13.
 - Clicking a metadata-only row (book match, no chapter) opens the book normally (existing
   "open book" action) — there's no specific chapter target to jump to.
 - Highlighting the matched word inside the mounted reader chapter, and back-navigation

@@ -8,11 +8,15 @@ Always work in ponytail mode (full intensity) in this repo — favor the simples
 
 When executing a superpowers plan in this repo, default to: a feature branch in the current directory (not an isolated worktree), and inline execution (not subagent-driven-development) — unless the user asks for isolation or subagent dispatch for that specific task.
 
+When asked to implement a plan "one task at a time," stop after each plan task completes (implementation, tests passing, and commit) and wait for explicit go-ahead before starting the next task — do not chain into the next task automatically.
+
+Superpowers plans live in `docs/superpowers/plans/` (tracked in this repo), not at the project root.
+
 ## Project
 
 Librune — a local-first EPUB reader PWA (React 19 + TypeScript + Vite). All book data (files, covers, reading progress) lives in IndexedDB; nothing is uploaded to a server.
 
-`docs/` is a symlink to `~/Personal/some-any-every-thing/04-Projects/Epub Reader` (planning notes, sprint specs) — not tracked in this repo's git history.
+`central-docs/` is a symlink to `~/Personal/some-any-every-thing/04-Projects/Epub Reader` (planning notes, sprint specs) — not tracked in this repo's git history.
 
 ## Commands
 
@@ -121,8 +125,8 @@ Within a flex/grid container, space children with the container's `gap` utility,
 
 When kicking off work on a new sprint, follow this process:
 
-1. Read the sprint spec from `docs/06 - Implementation/Sprint - NN <name>.md`.
-2. Compare it against the current codebase and write `tasks/SPRINT-NN-TASKS.md` — a gap list (✅ done / 🟡 partial / ❌ missing) of what the spec asks for vs. what already exists, following the format of prior `tasks/SPRINT-*-TASKS.md` files.
+1. Read the sprint spec from `central-docs/06 - Implementation/Sprint - NN <name>.md`.
+2. Compare it against the current codebase and write `docs/tasks/SPRINT-NN-TASKS.md` — a gap list (✅ done / 🟡 partial / ❌ missing) of what the spec asks for vs. what already exists, following the format of prior `docs/tasks/SPRINT-*-TASKS.md` files.
 3. Run `/impeccable audit` to get a fresh `AUDIT_REPORT.md`.
 4. Reconcile the audit findings into the sprint task list:
    - If a finding overlaps a task already in the list (e.g. a dead button that's really an unbuilt feature), cross-reference it there instead of duplicating.
@@ -133,7 +137,7 @@ When kicking off work on a new sprint, follow this process:
 
 When asked to create a sprint status document (e.g. `Sprint - NNB – Implementation Status.md`) for the current/most recent sprint:
 
-1. Write it to `docs/06 - Implementation/Sprint - NNB – Implementation Status.md`, following the format of prior `Sprint - NNB` files (grouped by architectural area, each item with a description, "Architectural Areas", and an "Originally Planned" line).
+1. Write it to `central-docs/06 - Implementation/Sprint - NNB – Implementation Status.md`, following the format of prior `Sprint - NNB` files (grouped by architectural area, each item with a description, "Architectural Areas", and an "Originally Planned" line).
 2. Only include items that were **not specifically planned** or are **completely new** — i.e. the sprint doc didn't call for that exact mechanism, or it wasn't in the sprint doc at all. Leave out anything that was implemented as the sprint spec literally described it; those don't need a status entry.
 3. If the sprint is still in progress when the doc is created, say so explicitly in the intro (don't imply the sprint is done), and **remind the user to update the document once the sprint actually finishes** — later days may add more unplanned/new items worth folding in.
 
