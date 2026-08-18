@@ -9,14 +9,22 @@ export type ShelvesViewMode = "merged" | "grouped";
 
 // GroupingCard renders one large cover plus two stacked small ones — a
 // 4th cover would have nowhere to go.
-const MAX_COVERS = 3;
+const MAX_COVER_SLOTS = 3;
+
+/** One cover-stack slot: a real cover URL when the book has one, otherwise
+ * just the book id so the card can fall back to that book's own derived
+ * gradient (see getBookCoverVisual) instead of a generic placeholder. */
+export interface GroupingCoverSlot {
+  bookId: string;
+  coverUrl?: string;
+}
 
 export interface GroupingWithMeta {
   grouping: Grouping;
   memberBookIds: string[];
   effectiveCreatedAt: number;
   effectiveUpdatedAt: number;
-  covers: string[];
+  coverSlots: GroupingCoverSlot[];
 }
 
 /**
@@ -24,9 +32,11 @@ export interface GroupingWithMeta {
  * createdAt/updatedAt on the Grouping row itself, so both are derived from
  * its member books' createdAt (earliest = created, latest = updated) —
  * see decision 3/4 of the Shelves tab spec. A collection uses its own
- * stored fields directly. Cover art is derived here too (member order,
- * capped at MAX_COVERS, skipping books with no cover) so downstream
- * consumers read a plain field instead of recomputing it per render.
+ * stored fields directly. Cover slots are derived here too: members with a
+ * real cover fill slots first, then members without one (their gradient is
+ * derived client-side from their id), capped at MAX_COVER_SLOTS — a slot
+ * simply doesn't exist once there are fewer members than slots, which is
+ * the only case GroupingCard falls back to a plain placeholder.
  */
 export function buildGroupingsWithMeta(
   groupings: Grouping[],
@@ -36,10 +46,17 @@ export function buildGroupingsWithMeta(
   return groupings.map((grouping) => {
     const members = membersByGrouping.get(grouping.id) ?? [];
     const memberBookIds = members.map((member) => member.bookId);
-    const covers = memberBookIds
-      .map((bookId) => booksById.get(bookId)?.coverBg)
-      .filter((url): url is string => !!url)
-      .slice(0, MAX_COVERS);
+
+    const withCover: GroupingCoverSlot[] = [];
+    const withoutCover: GroupingCoverSlot[] = [];
+    for (const bookId of memberBookIds) {
+      const coverUrl = booksById.get(bookId)?.coverBg;
+      (coverUrl ? withCover : withoutCover).push({ bookId, coverUrl });
+    }
+    const coverSlots = [...withCover, ...withoutCover].slice(
+      0,
+      MAX_COVER_SLOTS,
+    );
 
     if (grouping.type === "collection") {
       return {
@@ -47,7 +64,7 @@ export function buildGroupingsWithMeta(
         memberBookIds,
         effectiveCreatedAt: grouping.createdAt,
         effectiveUpdatedAt: grouping.updatedAt,
-        covers,
+        coverSlots,
       };
     }
 
@@ -66,7 +83,7 @@ export function buildGroupingsWithMeta(
         memberCreatedAts.length > 0
           ? Math.max(...memberCreatedAts)
           : grouping.updatedAt,
-      covers,
+      coverSlots,
     };
   });
 }

@@ -3,21 +3,37 @@ import { Link } from "react-router-dom";
 import { Bookmark, Layers } from "lucide-react";
 
 import { ROUTES } from "@/utils/routes";
-import type { GroupingWithMeta } from "../../utils/sort-groupings";
+import { getBookCoverVisual } from "@/shared/ornaments";
+import type {
+  GroupingCoverSlot,
+  GroupingWithMeta,
+} from "../../utils/sort-groupings";
 
 interface GroupingCardProps {
   item: GroupingWithMeta;
 }
 
-// One large cover (real, when available) plus two smaller stacked covers —
-// real covers always fill these slots first (covers[] only ever holds real
-// URLs), so a grey gradient only ever appears for a slot with no real book
-// behind it, never in place of one that has one.
-function CoverSlot({ url }: { url?: string }) {
-  if (url) {
+// One large cover (real, when available) plus two smaller stacked covers.
+// Real covers fill these slots first (see buildGroupingsWithMeta), so a
+// slot without one still belongs to a real member book — that book's own
+// derived gradient (same one BookCover shows) fills it instead of a plain
+// placeholder. Only a slot with no book behind it at all (fewer members
+// than slots) falls back to the generic grey gradient.
+function CoverSlot({ slot }: { slot?: GroupingCoverSlot }) {
+  if (slot?.coverUrl) {
     return (
-      <img src={url} alt="" loading="lazy" className="size-full object-cover" />
+      <img
+        src={slot.coverUrl}
+        alt=""
+        loading="lazy"
+        className="size-full object-cover"
+      />
     );
+  }
+
+  if (slot) {
+    const { palette } = getBookCoverVisual(slot.bookId);
+    return <div className={`size-full ${palette.gradient}`} />;
   }
 
   return (
@@ -26,7 +42,7 @@ function CoverSlot({ url }: { url?: string }) {
 }
 
 export const GroupingCard: FC<GroupingCardProps> = ({ item }) => {
-  const { grouping, memberBookIds, covers } = item;
+  const { grouping, memberBookIds, coverSlots } = item;
   const Icon = grouping.type === "series" ? Layers : Bookmark;
   const href =
     grouping.type === "series"
@@ -41,10 +57,10 @@ export const GroupingCard: FC<GroupingCardProps> = ({ item }) => {
       <div className="relative aspect-2/3 overflow-hidden rounded-xl border border-border/40 elevated-soft transition-shadow group-hover:shadow-lg">
         <div className="grid size-full grid-cols-[2fr_1fr] grid-rows-2 gap-0.5">
           <div className="row-span-2">
-            <CoverSlot url={covers[0]} />
+            <CoverSlot slot={coverSlots[0]} />
           </div>
-          <CoverSlot url={covers[1]} />
-          <CoverSlot url={covers[2]} />
+          <CoverSlot slot={coverSlots[1]} />
+          <CoverSlot slot={coverSlots[2]} />
         </div>
       </div>
 

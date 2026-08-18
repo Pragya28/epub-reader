@@ -47,7 +47,10 @@ describe("buildGroupingsWithMeta", () => {
     expect(result.effectiveCreatedAt).toBe(100);
     expect(result.effectiveUpdatedAt).toBe(300);
     expect(result.memberBookIds).toEqual(["b1", "b2"]);
-    expect(result.covers).toEqual(["cover-1", "cover-2"]);
+    expect(result.coverSlots).toEqual([
+      { bookId: "b1", coverUrl: "cover-1" },
+      { bookId: "b2", coverUrl: "cover-2" },
+    ]);
   });
 
   it("uses a collection's own createdAt/updatedAt directly", () => {
@@ -68,10 +71,10 @@ describe("buildGroupingsWithMeta", () => {
     expect(result.effectiveCreatedAt).toBe(50);
     expect(result.effectiveUpdatedAt).toBe(75);
     expect(result.memberBookIds).toEqual([]);
-    expect(result.covers).toEqual([]);
+    expect(result.coverSlots).toEqual([]);
   });
 
-  it("caps covers at 3 and skips books with no cover", () => {
+  it("caps cover slots at 3, real covers first", () => {
     const series: Grouping = {
       id: "g1",
       type: "series",
@@ -97,7 +100,40 @@ describe("buildGroupingsWithMeta", () => {
       books,
     );
 
-    expect(result.covers).toEqual(["cover-1", "cover-3", "cover-4"]);
+    expect(result.coverSlots).toEqual([
+      { bookId: "b1", coverUrl: "cover-1" },
+      { bookId: "b3", coverUrl: "cover-3" },
+      { bookId: "b4", coverUrl: "cover-4" },
+    ]);
+  });
+
+  it("fills a slot with a coverless member's bookId (no coverUrl) once real covers run out", () => {
+    const series: Grouping = {
+      id: "g1",
+      type: "series",
+      name: "Foundation",
+      createdAt: 1,
+      updatedAt: 1,
+    };
+    const members: GroupingMember[] = [
+      { groupingId: "g1", bookId: "b1", order: 1 },
+      { groupingId: "g1", bookId: "b2", order: 2 },
+    ];
+    const books = new Map([
+      ["b1", makeBook({ id: "b1", coverBg: "cover-1" })],
+      ["b2", makeBook({ id: "b2", coverBg: undefined })],
+    ]);
+
+    const [result] = buildGroupingsWithMeta(
+      [series],
+      new Map([["g1", members]]),
+      books,
+    );
+
+    expect(result.coverSlots).toEqual([
+      { bookId: "b1", coverUrl: "cover-1" },
+      { bookId: "b2", coverUrl: undefined },
+    ]);
   });
 });
 

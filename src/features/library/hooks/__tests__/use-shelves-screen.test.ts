@@ -57,7 +57,10 @@ describe("useShelvesScreen", () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     expect(result.current.merged).toHaveLength(1);
-    expect(result.current.merged[0].covers).toEqual(["cover-1", "cover-2"]);
+    expect(result.current.merged[0].coverSlots).toEqual([
+      { bookId: "b1", coverUrl: "cover-1" },
+      { bookId: "b2", coverUrl: "cover-2" },
+    ]);
     expect(result.current.isEmpty).toBe(false);
   });
 
