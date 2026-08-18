@@ -175,4 +175,36 @@ describe("importBook", () => {
     expect(book.seriesName).toBeUndefined();
     expect(await getMembersForBook(book.id)).toHaveLength(0);
   });
+
+  it("sets seriesGroupingId on the book in the same save as the rest of the metadata", async () => {
+    vi.spyOn(EpubParser.prototype, "parseLibraryBook").mockResolvedValueOnce({
+      metadata: {
+        title: "Dune",
+        author: "Frank Herbert",
+        language: "en",
+        description: null,
+        seriesName: "Dune Saga",
+        seriesIndex: 1,
+      },
+      cover: undefined,
+      chapterCount: 1,
+      wordCount: 100,
+      chapterWordCounts: [100],
+      readingTimeMinutes: 1,
+    });
+
+    const file = await loadFixture("valid-book.epub");
+    await importBook(file);
+
+    const [book] = await getAllBooks();
+    expect(book.seriesGroupingId).toBeTypeOf("string");
+
+    const grouping = await getGrouping(book.seriesGroupingId!);
+    expect(grouping?.name).toBe("Dune Saga");
+
+    const members = await getMembersForBook(book.id);
+    expect(members).toEqual([
+      { groupingId: book.seriesGroupingId, bookId: book.id, order: 1 },
+    ]);
+  });
 });

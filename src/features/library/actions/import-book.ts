@@ -47,6 +47,29 @@ export async function importBook(file: File) {
 
     const createdAt = Date.now();
 
+    // Resolved before the main save so its id can be embedded directly
+    // into the book row — closes the Day 1 gap where StoredBook had no
+    // seriesGroupingId to build a "View Series" link from. Its own
+    // try/catch: a failure here must not fail an otherwise-good import,
+    // it just leaves seriesGroupingId undefined until a future backfill
+    // (ensureSeriesGroupings) fixes it — same degraded-not-broken shape
+    // as the index-build try/catch below.
+    let seriesGroupingId: string | undefined;
+    if (metadata.seriesName) {
+      try {
+        seriesGroupingId = await upsertSeriesMembership(
+          bookId,
+          metadata.seriesName,
+          metadata.seriesIndex ?? null,
+        );
+      } catch (error) {
+        logger.error(
+          "failed to upsert series grouping for imported book",
+          error,
+        );
+      }
+    }
+
     const book: StoredBook = {
       id: bookId,
       title: metadata.title,
@@ -59,6 +82,7 @@ export async function importBook(file: File) {
       readingTimeMinutes,
       seriesName: metadata.seriesName,
       seriesIndex: metadata.seriesIndex,
+      seriesGroupingId,
       createdAt,
       fileHash,
       progress: {
@@ -91,24 +115,6 @@ export async function importBook(file: File) {
       await buildIndex(bookId, file);
     } catch (error) {
       logger.error("failed to build search index for imported book", error);
-    }
-
-    // Mirrors the search-index try/catch above: series membership is
-    // derived data, and a failure here must not fail an otherwise-good
-    // import. ensureSeriesGroupings (Task 5) backfills it on next use.
-    if (metadata.seriesName) {
-      try {
-        await upsertSeriesMembership(
-          bookId,
-          metadata.seriesName,
-          metadata.seriesIndex ?? null,
-        );
-      } catch (error) {
-        logger.error(
-          "failed to upsert series grouping for imported book",
-          error,
-        );
-      }
     }
 
     return {

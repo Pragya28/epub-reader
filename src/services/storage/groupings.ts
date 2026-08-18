@@ -75,14 +75,21 @@ export async function hasSeriesMembership(bookId: string): Promise<boolean> {
 /**
  * Upserts series membership for a book: reuses an existing series
  * grouping matched case-insensitively by name, or creates one. Called
- * from import (new books) and the backfill (pre-existing books) — see
- * ensureSeriesGroupings.
+ * from import (new books, before the book row is saved — see
+ * import-book.ts) and the backfill (pre-existing books, where the book
+ * row already exists) — see ensureSeriesGroupings. Returns the resolved
+ * grouping id so a caller that runs before its own book save (import)
+ * can embed the id directly instead of depending on the write-back
+ * below, which also runs here for the backfill's benefit: Dexie has no
+ * foreign-key constraint between groupingMembers and books, so writing
+ * membership before the book row exists is safe either way — the
+ * db.books.update() call is simply a no-op when there's no row yet.
  */
 export async function upsertSeriesMembership(
   bookId: string,
   seriesName: string,
   seriesIndex: number | null,
-): Promise<void> {
+): Promise<string> {
   const existing = await listGroupings("series");
   const match = existing.find(
     (grouping) => grouping.name.toLowerCase() === seriesName.toLowerCase(),
@@ -96,10 +103,14 @@ export async function upsertSeriesMembership(
       type: "series",
       name: seriesName,
       createdAt: Date.now(),
+      updatedAt: Date.now(),
     });
   }
 
   await addMember(groupingId, bookId, seriesIndex);
+  await db.books.update(bookId, { seriesGroupingId: groupingId });
+
+  return groupingId;
 }
 
 /**

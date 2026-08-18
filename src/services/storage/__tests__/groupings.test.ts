@@ -16,11 +16,12 @@ import {
 } from "../groupings";
 import { EpubParser } from "@/services/epub/epub-parser";
 import * as bookRepository from "@/services/storage/book-repository";
-import { getAllBooks } from "@/services/storage/book-repository";
+import { getAllBooks, getBook } from "@/services/storage/book-repository";
 import { importBook } from "@/features/library/actions/import-book";
 import { loadFixture } from "@/tests/utils/load-fixtures";
 import { resetTestDb } from "@/tests/utils/reset-test-db";
 import { resetLibraryStore } from "@/tests/utils/reset-store";
+import { db } from "../db";
 import type { Grouping } from "../storage-types";
 
 describe("groupings", () => {
@@ -35,6 +36,7 @@ describe("groupings", () => {
       type: "collection",
       name: "Favorites",
       createdAt: 1,
+      updatedAt: 1,
     };
 
     await putGrouping(grouping);
@@ -48,12 +50,14 @@ describe("groupings", () => {
       type: "collection",
       name: "Favorites",
       createdAt: 1,
+      updatedAt: 1,
     });
     await putGrouping({
       id: "g2",
       type: "series",
       name: "Foundation",
       createdAt: 2,
+      updatedAt: 2,
     });
 
     const collections = await listGroupings("collection");
@@ -69,6 +73,7 @@ describe("groupings", () => {
       type: "collection",
       name: "Favorites",
       createdAt: 1,
+      updatedAt: 1,
     });
 
     await deleteGrouping("g1");
@@ -101,31 +106,74 @@ describe("groupings", () => {
 
   it("isCollection is true only for collection-type groupings", () => {
     expect(
-      isCollection({ id: "g1", type: "collection", name: "x", createdAt: 1 }),
+      isCollection({
+        id: "g1",
+        type: "collection",
+        name: "x",
+        createdAt: 1,
+        updatedAt: 1,
+      }),
     ).toBe(true);
     expect(
-      isCollection({ id: "g2", type: "series", name: "x", createdAt: 1 }),
+      isCollection({
+        id: "g2",
+        type: "series",
+        name: "x",
+        createdAt: 1,
+        updatedAt: 1,
+      }),
     ).toBe(false);
   });
 
   describe("upsertSeriesMembership", () => {
-    it("creates a new series grouping on first use", async () => {
-      await upsertSeriesMembership("book-1", "Foundation Series", 1);
+    it("creates a new series grouping, returns its id, and stamps updatedAt", async () => {
+      const groupingId = await upsertSeriesMembership(
+        "book-1",
+        "Foundation Series",
+        1,
+      );
 
       const series = await listGroupings("series");
       expect(series).toHaveLength(1);
+      expect(series[0].id).toBe(groupingId);
       expect(series[0].name).toBe("Foundation Series");
+      expect(series[0].updatedAt).toBeTypeOf("number");
 
       const members = await getMembersForBook("book-1");
-      expect(members).toEqual([
-        { groupingId: series[0].id, bookId: "book-1", order: 1 },
-      ]);
+      expect(members).toEqual([{ groupingId, bookId: "book-1", order: 1 }]);
+    });
+
+    it("stamps the book's seriesGroupingId when the book row already exists", async () => {
+      await db.books.put({
+        id: "book-1",
+        title: "Foundation",
+        createdAt: 1,
+        fileHash: "h1",
+      });
+
+      const groupingId = await upsertSeriesMembership(
+        "book-1",
+        "Foundation Series",
+        1,
+      );
+
+      const book = await getBook("book-1");
+      expect(book?.seriesGroupingId).toBe(groupingId);
     });
 
     it("reuses an existing series matched case-insensitively", async () => {
-      await upsertSeriesMembership("book-1", "Foundation Series", 1);
-      await upsertSeriesMembership("book-2", "foundation series", 2);
+      const first = await upsertSeriesMembership(
+        "book-1",
+        "Foundation Series",
+        1,
+      );
+      const second = await upsertSeriesMembership(
+        "book-2",
+        "foundation series",
+        2,
+      );
 
+      expect(second).toBe(first);
       const series = await listGroupings("series");
       expect(series).toHaveLength(1);
 
@@ -162,12 +210,14 @@ describe("groupings", () => {
         type: "series",
         name: "Foundation Series",
         createdAt: 1,
+        updatedAt: 1,
       });
       await putGrouping({
         id: "collection-1",
         type: "collection",
         name: "Favorites",
         createdAt: 2,
+        updatedAt: 2,
       });
       await addMember("series-1", "book-1", 1);
       await addMember("collection-1", "book-1", null);
