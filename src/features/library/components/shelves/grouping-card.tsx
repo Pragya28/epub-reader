@@ -46,13 +46,14 @@ export const GroupingCard: FC<GroupingCardProps> = ({ item }) => {
           <CoverSlot url={covers[1]} />
           <CoverSlot url={covers[2]} />
         </div>
-        <div className="absolute top-0 right-0 flex items-center justify-center rounded-bl-xl bg-background/95 p-1.5">
-          <Icon strokeWidth={1.5} className="size-4 text-foreground" />
-        </div>
       </div>
 
       <div className="flex flex-col gap-0.5">
-        <p className="font-bold text-ui leading-tight text-foreground line-clamp-2">
+        <p className="flex items-center gap-1.5 font-bold text-ui leading-tight text-foreground line-clamp-2">
+          <Icon
+            strokeWidth={1.5}
+            className="size-4 shrink-0 text-muted-foreground"
+          />
           {grouping.name}
         </p>
         <p className="text-ui-sm text-muted-foreground">
