@@ -48,17 +48,20 @@ export const GroupingCard: FC<GroupingCardProps> = ({ item }) => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-0.5">
-        <p className="flex items-center gap-1.5 font-bold text-ui leading-tight text-foreground line-clamp-2">
-          <Icon
-            strokeWidth={1.5}
-            className="size-4 shrink-0 text-muted-foreground"
-          />
-          {grouping.name}
-        </p>
-        <p className="text-ui-sm text-muted-foreground">
-          {memberBookIds.length} {memberBookIds.length === 1 ? "book" : "books"}
-        </p>
+      <div className="flex items-start gap-1.5">
+        <Icon
+          strokeWidth={1.5}
+          className="size-4 shrink-0 text-muted-foreground"
+        />
+        <div className="flex flex-col gap-0.5">
+          <p className="font-bold text-ui leading-tight text-foreground line-clamp-2">
+            {grouping.name}
+          </p>
+          <p className="text-ui-sm text-muted-foreground">
+            {memberBookIds.length}{" "}
+            {memberBookIds.length === 1 ? "book" : "books"}
+          </p>
+        </div>
       </div>
     </Link>
   );
