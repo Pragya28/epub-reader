@@ -9,20 +9,18 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { CardGrid } from "@/components/card-grid/card-grid";
 import { useShelvesScreen } from "../../hooks/use-shelves-screen";
 import { GroupingCard } from "./grouping-card";
 import type { GroupingWithMeta } from "../../utils/sort-groupings";
 
 function Grid({ items }: { items: GroupingWithMeta[] }) {
   return (
-    <div
-      className="grid gap-x-4 gap-y-5"
-      style={{ gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))" }}
-    >
-      {items.map((item) => (
-        <GroupingCard key={item.grouping.id} item={item} />
-      ))}
-    </div>
+    <CardGrid
+      items={items}
+      getKey={(item) => item.grouping.id}
+      renderItem={(item) => <GroupingCard item={item} />}
+    />
   );
 }
 
