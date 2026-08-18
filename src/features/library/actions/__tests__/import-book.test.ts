@@ -3,7 +3,11 @@ import { EpubParser } from "@/services/epub/epub-parser";
 import { hasIndex } from "@/services/search/search-index";
 import { buildIndex } from "@/services/search/search-service";
 import { getAllBooks } from "@/services/storage/book-repository";
-import { getGrouping, getMembersForBook } from "@/services/storage/groupings";
+import {
+  getGrouping,
+  getMembersForBook,
+  getMembersForGrouping,
+} from "@/services/storage/groupings";
 import { importBook } from "../import-book";
 import { loadFixture } from "@/tests/utils/load-fixtures";
 import { resetTestDb } from "@/tests/utils/reset-test-db";
@@ -174,6 +178,55 @@ describe("importBook", () => {
     const [book] = await getAllBooks();
     expect(book.seriesName).toBeUndefined();
     expect(await getMembersForBook(book.id)).toHaveLength(0);
+  });
+
+  it("imports two distinct real books into the same series grouping", async () => {
+    vi.spyOn(EpubParser.prototype, "parseLibraryBook").mockResolvedValueOnce({
+      metadata: {
+        title: "The Wonderful Wizard of Oz",
+        author: "L. Frank Baum",
+        language: "en",
+        description: null,
+        seriesName: "Oz",
+        seriesIndex: 1,
+      },
+      cover: undefined,
+      chapterCount: 1,
+      wordCount: 100,
+      chapterWordCounts: [100],
+      readingTimeMinutes: 1,
+    });
+    vi.spyOn(EpubParser.prototype, "parseLibraryBook").mockResolvedValueOnce({
+      metadata: {
+        title: "The Marvelous Land of Oz",
+        author: "L. Frank Baum",
+        language: "en",
+        description: null,
+        seriesName: "Oz",
+        seriesIndex: 2,
+      },
+      cover: undefined,
+      chapterCount: 1,
+      wordCount: 100,
+      chapterWordCounts: [100],
+      readingTimeMinutes: 1,
+    });
+
+    const first = await loadFixture("series-1.epub");
+    const second = await loadFixture("series-2.epub");
+    await importBook(first);
+    await importBook(second);
+
+    const books = await getAllBooks();
+    expect(books).toHaveLength(2);
+    expect(books[0].seriesGroupingId).toBe(books[1].seriesGroupingId);
+
+    const series = await getGrouping(books[0].seriesGroupingId!);
+    expect(series).toMatchObject({ type: "series", name: "Oz" });
+
+    const members = await getMembersForGrouping(books[0].seriesGroupingId!);
+    expect(members).toHaveLength(2);
+    expect(members.map((m) => m.order).sort()).toEqual([1, 2]);
   });
 
   it("sets seriesGroupingId on the book in the same save as the rest of the metadata", async () => {
