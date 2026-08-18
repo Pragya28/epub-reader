@@ -13,6 +13,7 @@ export const Router: FC = () => {
     <Routes>
       <Route path="/" element={<Navigate to={ROUTES.LIBRARY} replace />} />
       <Route path={ROUTES.LIBRARY} element={<LibraryScreen />} />
+      <Route path={ROUTES.LIBRARY_SHELVES} element={<LibraryScreen />} />
       <Route path={ROUTES.LIBRARY_AUTHOR} element={<LibraryAuthorScreen />} />
       <Route
         path={ROUTES.READER}
