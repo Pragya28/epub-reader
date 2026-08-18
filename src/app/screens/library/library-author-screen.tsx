@@ -5,9 +5,13 @@ import { ChevronLeft } from "lucide-react";
 import { ROUTES } from "@/utils/routes";
 import { Button } from "@/components/ui/button";
 import { BookGrid } from "@/features/library/components/book-grid";
-import { LibraryFilterSheet } from "@/features/library/components/library-filter-sheet";
+import { FilterSheet } from "@/features/library/components/filter-sheet";
 import { SortFilterButton } from "@/features/library/components/sort-filter-button";
 import { useAuthorScreen } from "@/features/library/hooks/use-author-screen";
+import {
+  buildLibraryFilterSections,
+  buildSortSection,
+} from "@/features/library/utils/filter-sections";
 
 export const LibraryAuthorScreen: FC = () => {
   const {
@@ -56,15 +60,16 @@ export const LibraryAuthorScreen: FC = () => {
         />
       </main>
 
-      <LibraryFilterSheet
+      <FilterSheet
         open={filterOpen}
         onOpenChange={setFilterOpen}
-        sortBy={sortBy}
-        onSortByChange={setSortBy}
-        filters={filters}
-        onFiltersChange={setFilters}
+        title="Sort & Filter"
+        sections={[
+          buildSortSection(sortBy, setSortBy),
+          ...buildLibraryFilterSections(filters, setFilters, languages),
+        ]}
         onReset={resetFilters}
-        languages={languages}
+        showReset={isFiltering}
       />
     </div>
   );
