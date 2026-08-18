@@ -71,7 +71,7 @@ describe("buildGroupingsWithMeta", () => {
     expect(result.covers).toEqual([]);
   });
 
-  it("caps covers at 4 and skips books with no cover", () => {
+  it("caps covers at 3 and skips books with no cover", () => {
     const series: Grouping = {
       id: "g1",
       type: "series",
@@ -87,7 +87,7 @@ describe("buildGroupingsWithMeta", () => {
     const books = new Map(
       [1, 2, 3, 4, 5].map((n) => [
         `b${n}`,
-        makeBook({ id: `b${n}`, coverBg: n === 3 ? undefined : `cover-${n}` }),
+        makeBook({ id: `b${n}`, coverBg: n === 2 ? undefined : `cover-${n}` }),
       ]),
     );
 
@@ -97,7 +97,7 @@ describe("buildGroupingsWithMeta", () => {
       books,
     );
 
-    expect(result.covers).toEqual(["cover-1", "cover-2", "cover-4", "cover-5"]);
+    expect(result.covers).toEqual(["cover-1", "cover-3", "cover-4"]);
   });
 });
 

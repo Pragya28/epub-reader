@@ -7,7 +7,9 @@ import type {
 export type ShelvesSortOption = "alphabetical" | "createdAt" | "updatedAt";
 export type ShelvesViewMode = "merged" | "grouped";
 
-const MAX_COVERS = 4;
+// GroupingCard renders one large cover plus two stacked small ones — a
+// 4th cover would have nowhere to go.
+const MAX_COVERS = 3;
 
 export interface GroupingWithMeta {
   grouping: Grouping;
