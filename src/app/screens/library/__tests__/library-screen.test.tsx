@@ -34,21 +34,22 @@ describe("LibraryScreen tabs", () => {
   it("shows the Books grid and marks Books active at /library", () => {
     renderAt(ROUTES.LIBRARY);
 
-    expect(screen.getByRole("link", { name: "Books" })).toHaveAttribute(
-      "aria-current",
-      "page",
+    expect(screen.getByRole("tab", { name: "Books" })).toHaveAttribute(
+      "aria-selected",
+      "true",
     );
-    expect(screen.getByRole("link", { name: "Shelves" })).not.toHaveAttribute(
-      "aria-current",
+    expect(screen.getByRole("tab", { name: "Shelves" })).toHaveAttribute(
+      "aria-selected",
+      "false",
     );
   });
 
   it("shows the Shelves content and marks Shelves active at /library/shelves", async () => {
     renderAt(ROUTES.LIBRARY_SHELVES);
 
-    expect(screen.getByRole("link", { name: "Shelves" })).toHaveAttribute(
-      "aria-current",
-      "page",
+    expect(screen.getByRole("tab", { name: "Shelves" })).toHaveAttribute(
+      "aria-selected",
+      "true",
     );
     expect(await screen.findByText("No shelves yet")).toBeInTheDocument();
   });

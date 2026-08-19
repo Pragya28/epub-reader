@@ -1,6 +1,6 @@
 import { ROUTES } from "@/utils/routes";
 import type { FC } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useShallow } from "zustand/react/shallow";
 import { useLibraryScreen } from "@/features/library/hooks/use-library-screen";
 import { BookGrid } from "@/features/library/components/book-grid";
@@ -24,6 +24,7 @@ import type {
 import { Search, Settings } from "lucide-react";
 import { WordMark } from "@/assets/word-mark";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const SHELVES_SORT_OPTIONS: { value: ShelvesSortOption; label: string }[] = [
   { value: "alphabetical", label: "A–Z" },
@@ -56,6 +57,7 @@ export const LibraryScreen: FC = () => {
   } = useLibraryScreen();
 
   const location = useLocation();
+  const navigate = useNavigate();
   const isShelves = location.pathname === ROUTES.LIBRARY_SHELVES;
 
   const {
@@ -149,30 +151,20 @@ export const LibraryScreen: FC = () => {
       {/* Extra bottom padding keeps content clear of the fixed bottom bar;
           top padding clears the fixed header above. */}
       <main className="flex-1 px-4 pt-(--header-height) pb-36">
-        <nav className="mb-5 flex gap-2" aria-label="Library sections">
-          <Link
-            to={ROUTES.LIBRARY}
-            aria-current={!isShelves ? "page" : undefined}
-            className={`text-ui font-semibold px-3 py-1.5 rounded-full transition-colors ${
-              !isShelves
-                ? "bg-foreground text-background"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Books
-          </Link>
-          <Link
-            to={ROUTES.LIBRARY_SHELVES}
-            aria-current={isShelves ? "page" : undefined}
-            className={`text-ui font-semibold px-3 py-1.5 rounded-full transition-colors ${
-              isShelves
-                ? "bg-foreground text-background"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Shelves
-          </Link>
-        </nav>
+        <Tabs
+          value={isShelves ? "shelves" : "books"}
+          onValueChange={(value) =>
+            navigate(
+              value === "shelves" ? ROUTES.LIBRARY_SHELVES : ROUTES.LIBRARY,
+            )
+          }
+          className="mb-5"
+        >
+          <TabsList variant="line" aria-label="Library sections">
+            <TabsTrigger value="books">Books</TabsTrigger>
+            <TabsTrigger value="shelves">Shelves</TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         {isShelves ? (
           <ShelvesGrid />
