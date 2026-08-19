@@ -37,12 +37,12 @@ What _does_ already exist and is directly reusable scaffolding for this sprint:
 
 4. ✅ **Automatic series detection from metadata** — `parseMetadata()` (`src/services/epub/parsers/opf-parser.ts`) now reads `<meta name="calibre:series">`/`calibre:series_index">` via a new `getMetaContent()` helper. Calibre-only, no EPUB3 `belongs-to-collection` support (deliberate scope call, see the Day 1 spec). A malformed/non-numeric `series_index` is treated as absent rather than failing the parse. Wired into `import-book.ts`: a book with `seriesName` gets its series grouping created/reused (case-insensitive name match) and membership row added, in a try/catch that logs rather than fails the import (same shape as the search-index build).
 5. ✅ **Read-only series (system-detected, not user-editable)** — enforced via `isCollection()`; no `renameSeries`/`deleteSeries` action exists or will, so there's nothing for a future caller to mistakenly call.
-6. ❌ **Series browsing view** — no screen exists yet. This is what's actually left of Day 2 — detection, read-only enforcement, and reading order (item 7) are done; only the UI remains.
-7. ✅ **Reading order within a series** — `GroupingMember.order` carries the book's `seriesIndex`, populated at series-membership creation time (both on import and via backfill).
+6. ✅ **Series browsing view** — scoping "a series screen" surfaced that the library's main screen had no way to browse groupings at all, so this grew into a new **Shelves tab** on the library screen (`ROUTES.LIBRARY_SHELVES`) showing a merged Series+Collection grid (`ShelvesGrid`/`GroupingCard`, icon-differentiated, cover-stack preview with real-cover-then-book-gradient-then-placeholder priority), backed by a persisted `shelves-store.ts` sort/view-mode. Series detail itself is `library-series-screen.tsx` (`ROUTES.LIBRARY_SERIES`), the `LibraryAuthorScreen` shape exactly as anticipated, reached from a book card's new "View Series" action (`use-book-card.ts`). Full design/plan: `docs/superpowers/specs/2026-08-17-library-shelves-tab-and-series-screen-design.md` / `docs/superpowers/plans/2026-08-17-library-shelves-tab-and-series-screen.md`. _(done 2026-08-18)_
+7. ✅ **Reading order within a series** — `GroupingMember.order` carries the book's `seriesIndex`, populated at series-membership creation time (both on import and via backfill). Enforced in the UI too: `use-series-detail-screen.ts` always orders by `GroupingMember.order` (title as tiebreak), never user-sortable.
 
 ### Done Criteria
 
-🟡 Partial — the data/lifecycle side (items 4, 5, 7) shipped early as part of Day 1's foundational work (see above); only the browsing view (item 6) remains, which needs the `LibraryAuthorScreen`-style screen Day 4 builds.
+✅ Done — all four items now shipped. Items 4, 5, 7 (data/lifecycle) landed early as part of Day 1's foundational work; item 6 (browsing view) landed 2026-08-18 as the Shelves tab + series detail screen. One incidental platform change came with it: the book-grid sort/filter sheet was generalized into a common `FilterSheet` component (config-driven via a `sections` prop), replacing the old book-grid-specific `LibraryFilterSheet` across the Books tab, author screen, Shelves tab, and series screen — not scoped by the sprint spec, but needed once a fourth screen (Shelves) needed sort/filter UI of its own shape.
 
 ---
 
@@ -61,14 +61,14 @@ What _does_ already exist and is directly reusable scaffolding for this sprint:
 
 ## Day 4 — Library Navigation
 
-12. ❌ **Browse by series** — no route/screen.
-13. ❌ **Browse by collection** — no route/screen.
-14. ❌ **Grouped library views** — the author-screen pattern (see Baseline) is the closest precedent but nothing series/collection-specific exists.
-15. ❌ **"Next in series" affordance** — no series data to derive it from.
+12. ✅ **Browse by series** — `library-series-screen.tsx` (`ROUTES.LIBRARY_SERIES`), folded into Day 2's delivery (see above) rather than built here — scoping "a series screen" surfaced the Shelves tab as its natural entry point, so both landed together. _(done 2026-08-18)_
+13. 🟡 **Browse by collection** — `ROUTES.LIBRARY_COLLECTION` route constant exists (Day 1) and `GroupingCard`/`ShelvesGrid` already render a `type: "collection"` `Grouping` identically to a series (icon-differentiated, same cover-stack card) — the Shelves spec confirms "Day 3 needs zero changes to this grid." What's still missing: a collection detail screen to route to, and any actual collections to browse, since Day 3's create/rename/delete/add-book/remove-book CRUD hasn't shipped yet.
+14. ✅ **Grouped library views** — the Shelves tab's merged grid (`ShelvesGrid`) is exactly this: one grouped view spanning both series and collections, with a `merged`/`grouped` (split-by-type) toggle. Folded into Day 2's delivery. _(done 2026-08-18)_
+15. ❌ **"Next in series" affordance** — no series data to derive it from. Not addressed by the Shelves/series-screen work — out of scope there (the series screen shows the whole ordered list, not a "next book" prompt elsewhere in the UI).
 
 ### Done Criteria
 
-❌ Not started — but low architectural risk, since the author-screen + filter-store-factory patterns from Sprint 6 directly cover "grouped view screen" and "per-screen persisted sort/filter," leaving mostly series/collection-specific wiring rather than new UI infrastructure.
+🟡 Partial — items 12 and 14 landed 2026-08-18, folded into Day 2's Shelves tab + series screen work rather than built separately here (scoping "a series screen" surfaced the tab-bar restructuring as the natural home for both). Item 13 is grid-ready but has nothing to browse until Day 3 ships collection CRUD and its own detail screen. Item 15 remains unstarted.
 
 ---
 
