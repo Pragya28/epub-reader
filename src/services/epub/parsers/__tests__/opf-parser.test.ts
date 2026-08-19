@@ -111,6 +111,163 @@ describe("OpfParser", () => {
     expect(result.metadata.seriesIndex).toBe(2);
   });
 
+  it("extracts EPUB3 belongs-to-collection series metadata when present", () => {
+    const xml = `
+      <package>
+        <metadata>
+          <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">The Marvelous Land of Oz</dc:title>
+          <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">L. Frank Baum</dc:creator>
+          <meta id="collection-1" property="belongs-to-collection">Oz</meta>
+          <meta property="collection-type" refines="#collection-1">series</meta>
+          <meta property="group-position" refines="#collection-1">2</meta>
+        </metadata>
+
+        <manifest>
+          <item
+            id="chapter-1"
+            href="text/chapter-1.xhtml"
+            media-type="application/xhtml+xml"
+          />
+        </manifest>
+
+        <spine>
+          <itemref idref="chapter-1" />
+        </spine>
+      </package>
+    `;
+
+    const result = parser.parse(parseXml(xml));
+
+    expect(result.metadata.seriesName).toBe("Oz");
+    expect(result.metadata.seriesIndex).toBe(2);
+  });
+
+  it("prefers calibre series metadata over belongs-to-collection when both are present", () => {
+    const xml = `
+      <package>
+        <metadata>
+          <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">Foundation</dc:title>
+          <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Isaac Asimov</dc:creator>
+          <meta name="calibre:series" content="Foundation Series" />
+          <meta name="calibre:series_index" content="1" />
+          <meta id="collection-1" property="belongs-to-collection">Foundation</meta>
+          <meta property="collection-type" refines="#collection-1">series</meta>
+          <meta property="group-position" refines="#collection-1">1</meta>
+        </metadata>
+
+        <manifest>
+          <item
+            id="chapter-1"
+            href="text/chapter-1.xhtml"
+            media-type="application/xhtml+xml"
+          />
+        </manifest>
+
+        <spine>
+          <itemref idref="chapter-1" />
+        </spine>
+      </package>
+    `;
+
+    const result = parser.parse(parseXml(xml));
+
+    expect(result.metadata.seriesName).toBe("Foundation Series");
+  });
+
+  it("ignores a belongs-to-collection typed as a set, not a series", () => {
+    const xml = `
+      <package>
+        <metadata>
+          <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">Test Book</dc:title>
+          <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Test Author</dc:creator>
+          <meta id="collection-1" property="belongs-to-collection">Boxed Set</meta>
+          <meta property="collection-type" refines="#collection-1">set</meta>
+        </metadata>
+
+        <manifest>
+          <item
+            id="chapter-1"
+            href="text/chapter-1.xhtml"
+            media-type="application/xhtml+xml"
+          />
+        </manifest>
+
+        <spine>
+          <itemref idref="chapter-1" />
+        </spine>
+      </package>
+    `;
+
+    const result = parser.parse(parseXml(xml));
+
+    expect(result.metadata.seriesName).toBeUndefined();
+    expect(result.metadata.seriesIndex).toBeUndefined();
+  });
+
+  it("picks the series-typed collection when multiple collections are present", () => {
+    const xml = `
+      <package>
+        <metadata>
+          <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">Test Book</dc:title>
+          <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Test Author</dc:creator>
+          <meta id="collection-1" property="belongs-to-collection">Boxed Set</meta>
+          <meta property="collection-type" refines="#collection-1">set</meta>
+          <meta id="collection-2" property="belongs-to-collection">Oz</meta>
+          <meta property="collection-type" refines="#collection-2">series</meta>
+          <meta property="group-position" refines="#collection-2">3</meta>
+        </metadata>
+
+        <manifest>
+          <item
+            id="chapter-1"
+            href="text/chapter-1.xhtml"
+            media-type="application/xhtml+xml"
+          />
+        </manifest>
+
+        <spine>
+          <itemref idref="chapter-1" />
+        </spine>
+      </package>
+    `;
+
+    const result = parser.parse(parseXml(xml));
+
+    expect(result.metadata.seriesName).toBe("Oz");
+    expect(result.metadata.seriesIndex).toBe(3);
+  });
+
+  it("treats a non-numeric group-position as absent while keeping the series name", () => {
+    const xml = `
+      <package>
+        <metadata>
+          <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">Test Book</dc:title>
+          <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Test Author</dc:creator>
+          <meta id="collection-1" property="belongs-to-collection">Oz</meta>
+          <meta property="collection-type" refines="#collection-1">series</meta>
+          <meta property="group-position" refines="#collection-1">two</meta>
+        </metadata>
+
+        <manifest>
+          <item
+            id="chapter-1"
+            href="text/chapter-1.xhtml"
+            media-type="application/xhtml+xml"
+          />
+        </manifest>
+
+        <spine>
+          <itemref idref="chapter-1" />
+        </spine>
+      </package>
+    `;
+
+    const result = parser.parse(parseXml(xml));
+
+    expect(result.metadata.seriesName).toBe("Oz");
+    expect(result.metadata.seriesIndex).toBeUndefined();
+  });
+
   it("leaves series fields undefined when calibre series metadata is absent", () => {
     const xml = `
       <package>

@@ -42,18 +42,64 @@ export class OpfParser {
       ? this.stripHtml(rawDescription)
       : rawDescription;
 
-    const seriesName =
-      this.getMetaContent(metadata, "calibre:series") ?? undefined;
-    const seriesIndexRaw = this.getMetaContent(
-      metadata,
-      "calibre:series_index",
-    );
-    const seriesIndex =
-      seriesIndexRaw !== null && !Number.isNaN(Number(seriesIndexRaw))
-        ? Number(seriesIndexRaw)
-        : undefined;
+    const { seriesName, seriesIndex } = this.parseSeries(metadata);
 
     return { title, author, language, description, seriesName, seriesIndex };
+  }
+
+  /**
+   * Series come from either Calibre's `calibre:series` convention or the
+   * EPUB3 standard `belongs-to-collection` (with a `collection-type` of
+   * "series", refined via `refines="#id"`). Calibre wins when both are
+   * present since it's unambiguous; belongs-to-collection entries typed
+   * "set" (not "series") are ignored.
+   */
+  private parseSeries(metadata: Element): {
+    seriesName?: string;
+    seriesIndex?: number;
+  } {
+    const calibreName = this.getMetaContent(metadata, "calibre:series");
+    if (calibreName) {
+      const indexRaw = this.getMetaContent(metadata, "calibre:series_index");
+      const seriesIndex =
+        indexRaw !== null && !Number.isNaN(Number(indexRaw))
+          ? Number(indexRaw)
+          : undefined;
+      return { seriesName: calibreName, seriesIndex };
+    }
+
+    const collections = Array.from(
+      metadata.querySelectorAll('meta[property="belongs-to-collection"]'),
+    );
+    const collectionType = (el: Element): string | undefined => {
+      const id = el.getAttribute("id");
+      const typeMeta = id
+        ? metadata.querySelector(
+            `meta[property="collection-type"][refines="#${id}"]`,
+          )
+        : null;
+      return typeMeta?.textContent?.trim();
+    };
+    const seriesCollection =
+      collections.find((el) => collectionType(el) === "series") ??
+      collections.find((el) => collectionType(el) === undefined);
+
+    const seriesName = seriesCollection?.textContent?.trim() || undefined;
+    if (!seriesName) return {};
+
+    const collectionId = seriesCollection?.getAttribute("id");
+    const positionMeta = collectionId
+      ? metadata.querySelector(
+          `meta[property="group-position"][refines="#${collectionId}"]`,
+        )
+      : null;
+    const positionRaw = positionMeta?.textContent?.trim();
+    const seriesIndex =
+      positionRaw && !Number.isNaN(Number(positionRaw))
+        ? Number(positionRaw)
+        : undefined;
+
+    return { seriesName, seriesIndex };
   }
 
   /**
