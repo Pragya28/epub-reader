@@ -151,7 +151,7 @@ export const LibraryScreen: FC = () => {
       {/* Extra bottom padding keeps content clear of the fixed bottom bar;
           top padding clears the fixed header above. */}
       <main className="flex-1 pt-(--header-height) pb-36">
-        <div className="sticky top-(--header-height) z-40 bg-background px-4">
+        <div className="sticky top-0 z-40 bg-background px-4">
           <Tabs
             value={isShelves ? "shelves" : "books"}
             onValueChange={(value) =>
