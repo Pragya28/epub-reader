@@ -26,10 +26,23 @@ export function useBookCard(
   book: BookWithProgress,
   hideMoreByAuthor?: boolean,
 ) {
-  const { id, author, isFinished, isReading, progress } = book;
+  const {
+    id,
+    author,
+    isFinished,
+    isReading,
+    progress,
+    seriesName,
+    seriesGroupingId,
+  } = book;
   const navigate = useNavigate();
   const booksByAuthorCount = libraryStore((state) =>
     author ? state.books.filter((b) => b.author === author).length : 0,
+  );
+  const booksInSeriesCount = libraryStore((state) =>
+    seriesName
+      ? state.books.filter((b) => b.seriesName === seriesName).length
+      : 0,
   );
   const [aboutOpen, setAboutOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -41,6 +54,7 @@ export function useBookCard(
       : null;
 
   const hasMoreByAuthor = !hideMoreByAuthor && booksByAuthorCount > 1;
+  const hasSeriesLink = booksInSeriesCount > 1 && !!seriesGroupingId;
 
   const openInReader = () => navigate(ROUTES.READER.replace(":bookId", id));
   const markFinished = () => void markBookFinished(id);
@@ -53,6 +67,8 @@ export function useBookCard(
     navigate(
       ROUTES.LIBRARY_AUTHOR.replace(":author", encodeURIComponent(author!)),
     );
+  const openViewSeries = () =>
+    navigate(ROUTES.LIBRARY_SERIES.replace(":groupingId", seriesGroupingId!));
 
   const menuItems: BookCardMenuEntry[] = [
     { type: "item", id: "open", label: "Open", onClick: openInReader },
@@ -104,6 +120,16 @@ export function useBookCard(
           },
         ] as const)
       : []),
+    ...(hasSeriesLink
+      ? ([
+          {
+            type: "item",
+            id: "view-series",
+            label: "View Series",
+            onClick: openViewSeries,
+          },
+        ] as const)
+      : []),
     { type: "separator", id: "sep-3" },
     {
       type: "item",
@@ -123,6 +149,8 @@ export function useBookCard(
     confirmDelete,
     hasMoreByAuthor,
     openMoreByAuthor,
+    hasSeriesLink,
+    openViewSeries,
     menuItems,
   };
 }

@@ -51,6 +51,7 @@ export interface StoredBook {
   readingTimeMinutes?: number;
   seriesName?: string;
   seriesIndex?: number;
+  seriesGroupingId?: string;
   createdAt: number;
   fileHash: string;
   coverBg?: string;
@@ -101,6 +102,7 @@ export interface Grouping {
   type: "series" | "collection";
   name: string;
   createdAt: number;
+  updatedAt: number;
 }
 
 /**

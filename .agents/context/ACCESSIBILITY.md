@@ -2,7 +2,7 @@
 
 Librune's accessibility contract. Hand-maintained — unlike `DESIGN.md`, this file is **not** derived from the shipped artifact, and `/impeccable document` must not regenerate it. Lines here are targets: some describe what the app already does, some describe what it must do before Sprint 8's validation pass. Each is marked.
 
-Written 2026-08-07 as the prerequisite for Sprint 5 `#27`, resolving the open questions in `docs/07 - Gaps/Accessibility-01 Accessibility Scope.md`.
+Written 2026-08-07 as the prerequisite for Sprint 5 `#27`, resolving the open questions in `central-docs/07 - Gaps/Accessibility-01 Accessibility Scope.md`.
 
 ## Target
 
@@ -54,4 +54,4 @@ Continuously, not as a Sprint 8 bolt-on — retrofitting the interaction pattern
 ## Relationship to other docs
 
 - `DESIGN.md` — visual system. Its contrast-affecting Named Rules defer to this file for minimums; it does not restate them.
-- `docs/07 - Gaps/Accessibility-01` — the deliberation this file resolves. Kept in the notes vault, not in the repo.
+- `central-docs/07 - Gaps/Accessibility-01` — the deliberation this file resolves. Kept in the notes vault, not in the repo.

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the search results screen (per `superpowers/specs/2026-08-11-search-results-screen-design.md`) and wire it to the reader — clicking a chapter match jumps to that chapter and highlights the matched word; clicking a book match opens the book normally.
+**Goal:** Build the search results screen (per `docs/superpowers/specs/2026-08-11-search-results-screen-design.md`) and wire it to the reader — clicking a chapter match jumps to that chapter and highlights the matched word; clicking a book match opens the book normally.
 
 **Architecture:** A new `ROUTES.SEARCH` screen replaces the library's inline search toggle. It renders `searchLibrary()`'s two result lists (`metadataMatches`, `contentMatches`) as one row list. Clicking a content-match row navigates to the reader with `router` location state carrying `{ chapterIndex, word }`; the reader engine, on seeing that state, seeds its initial chapter (same mechanism `loadReaderBook` already uses to seed from saved progress) and highlights the word in the DOM once that chapter's section mounts, instead of restoring saved scroll position. Clicking a book-only row is a normal open-book navigation.
 
@@ -871,9 +871,9 @@ Expected: no errors.
 Run: `pnpm test:run`
 Expected: all pass.
 
-- [ ] **Step 4: Update `tasks/SPRINT-06-TASKS.md` Day 4 checkboxes**
+- [ ] **Step 4: Update `docs/tasks/SPRINT-06-TASKS.md` Day 4 checkboxes**
 
-Mark items 13, 14, 15 as ✅ (done) in `tasks/SPRINT-06-TASKS.md`'s Day 4 section, matching the file's existing ✅/🟡/❌ convention.
+Mark items 13, 14, 15 as ✅ (done) in `docs/tasks/SPRINT-06-TASKS.md`'s Day 4 section, matching the file's existing ✅/🟡/❌ convention.
 
 - [ ] **Step 5: Commit**
 

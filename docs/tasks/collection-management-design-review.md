@@ -1,6 +1,6 @@
 # Collection Management — Figma Design Review
 
-Reviewed 2026-08-13 against `tasks/stitch-collection-management-prompt.md`'s 8 requirements and Sprint 7 Day 3/5's spec (create/rename/delete collections, add/remove books, empty states).
+Reviewed 2026-08-13 against `docs/tasks/stitch-collection-management-prompt.md`'s 8 requirements and Sprint 7 Day 3/5's spec (create/rename/delete collections, add/remove books, empty states).
 
 Figma: [Collection Management](https://www.figma.com/design/ohsm1arYYCfzARM2RuNBI5/Librune?node-id=103-535), node `103:535`.
 
@@ -28,7 +28,7 @@ Delete-button styling (near-black rather than `destructive-clay`) was flagged bu
 
 ## Net effect on Sprint 7 tasks
 
-`tasks/SPRINT-07-TASKS.md` Day 3 (Collections CRUD) and Day 5 (UX Polish, empty states, delete-flow distinction) items are all covered by this design — no new screens needed. Implementation should:
+`docs/tasks/SPRINT-07-TASKS.md` Day 3 (Collections CRUD) and Day 5 (UX Polish, empty states, delete-flow distinction) items are all covered by this design — no new screens needed. Implementation should:
 
 - Build one "Collection name" sheet component that serves both create and rename (title/button copy differ, field pre-fills for rename).
 - Extend the existing per-book library menu with a "Remove from collection" action, conditional on collection-detail context, rather than building a new affordance.

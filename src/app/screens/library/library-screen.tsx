@@ -1,15 +1,40 @@
 import { ROUTES } from "@/utils/routes";
 import type { FC } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useShallow } from "zustand/react/shallow";
 import { useLibraryScreen } from "@/features/library/hooks/use-library-screen";
 import { BookGrid } from "@/features/library/components/book-grid";
-import { LibraryFilterSheet } from "@/features/library/components/library-filter-sheet";
+import {
+  FilterSheet,
+  type FilterSheetSection,
+} from "@/features/library/components/filter-sheet";
 import { SortFilterButton } from "@/features/library/components/sort-filter-button";
 import { ContinueReadingBanner } from "@/features/library/components/continue-reading-banner";
 import { ImportBookFab } from "@/features/library/components/import-book-fab";
+import { shelvesStore } from "@/features/library/store/shelves-store";
+import { ShelvesGrid } from "@/features/library/components/shelves/shelves-grid";
+import {
+  buildLibraryFilterSections,
+  buildSortSection,
+} from "@/features/library/utils/filter-sections";
+import type {
+  ShelvesSortOption,
+  ShelvesViewMode,
+} from "@/features/library/utils/sort-groupings";
 import { Search, Settings } from "lucide-react";
 import { WordMark } from "@/assets/word-mark";
 import { Button } from "@/components/ui/button";
+
+const SHELVES_SORT_OPTIONS: { value: ShelvesSortOption; label: string }[] = [
+  { value: "alphabetical", label: "A–Z" },
+  { value: "createdAt", label: "Created" },
+  { value: "updatedAt", label: "Updated" },
+];
+
+const VIEW_MODE_OPTIONS: { value: ShelvesViewMode; label: string }[] = [
+  { value: "merged", label: "Merged" },
+  { value: "grouped", label: "Grouped" },
+];
 
 export const LibraryScreen: FC = () => {
   const {
@@ -29,6 +54,47 @@ export const LibraryScreen: FC = () => {
     resetFilters,
     languages,
   } = useLibraryScreen();
+
+  const location = useLocation();
+  const isShelves = location.pathname === ROUTES.LIBRARY_SHELVES;
+
+  const {
+    sortBy: shelvesSortBy,
+    viewMode: shelvesViewMode,
+    setSortBy: setShelvesSortBy,
+    setViewMode: setShelvesViewMode,
+  } = shelvesStore(
+    useShallow((state) => ({
+      sortBy: state.sortBy,
+      viewMode: state.viewMode,
+      setSortBy: state.setSortBy,
+      setViewMode: state.setViewMode,
+    })),
+  );
+
+  const shelvesSections: FilterSheetSection[] = [
+    {
+      type: "chips",
+      key: "sort",
+      label: "Sort By",
+      options: SHELVES_SORT_OPTIONS,
+      value: shelvesSortBy,
+      onChange: (value) => setShelvesSortBy(value as ShelvesSortOption),
+    },
+    {
+      type: "chips",
+      key: "view",
+      label: "View",
+      options: VIEW_MODE_OPTIONS,
+      value: shelvesViewMode,
+      onChange: (value) => setShelvesViewMode(value as ShelvesViewMode),
+    },
+  ];
+
+  const bookSections: FilterSheetSection[] = [
+    buildSortSection(sortBy, setSortBy),
+    ...buildLibraryFilterSections(filters, setFilters, languages),
+  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -60,7 +126,12 @@ export const LibraryScreen: FC = () => {
             <Search strokeWidth={1.5} className="size-5" />
           </Button>
           <SortFilterButton
-            isFiltering={isFiltering}
+            isFiltering={
+              isShelves
+                ? shelvesSortBy !== "alphabetical" ||
+                  shelvesViewMode !== "merged"
+                : isFiltering
+            }
             onClick={() => setFilterOpen(true)}
           />
           <Button
@@ -78,15 +149,41 @@ export const LibraryScreen: FC = () => {
       {/* Extra bottom padding keeps content clear of the fixed bottom bar;
           top padding clears the fixed header above. */}
       <main className="flex-1 px-4 pt-(--header-height) pb-36">
-        <h1 className="section-title font-semibold text-foreground mb-5 leading-tight">
-          Your Personal Collection
-        </h1>
-        <BookGrid
-          isLoading={isLoading}
-          isSearch={isFiltering}
-          error={error}
-          books={visibleBooks}
-        />
+        <nav className="mb-5 flex gap-2" aria-label="Library sections">
+          <Link
+            to={ROUTES.LIBRARY}
+            aria-current={!isShelves ? "page" : undefined}
+            className={`text-ui font-semibold px-3 py-1.5 rounded-full transition-colors ${
+              !isShelves
+                ? "bg-foreground text-background"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Books
+          </Link>
+          <Link
+            to={ROUTES.LIBRARY_SHELVES}
+            aria-current={isShelves ? "page" : undefined}
+            className={`text-ui font-semibold px-3 py-1.5 rounded-full transition-colors ${
+              isShelves
+                ? "bg-foreground text-background"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Shelves
+          </Link>
+        </nav>
+
+        {isShelves ? (
+          <ShelvesGrid />
+        ) : (
+          <BookGrid
+            isLoading={isLoading}
+            isSearch={isFiltering}
+            error={error}
+            books={visibleBooks}
+          />
+        )}
       </main>
 
       {/* ── Continue Reading — fixed, fills width minus FAB ─────────────── */}
@@ -95,15 +192,13 @@ export const LibraryScreen: FC = () => {
       {/* ── FAB — fixed bottom-right ─────────────────────────────────────── */}
       <ImportBookFab />
 
-      <LibraryFilterSheet
+      <FilterSheet
         open={filterOpen}
         onOpenChange={setFilterOpen}
-        sortBy={sortBy}
-        onSortByChange={setSortBy}
-        filters={filters}
-        onFiltersChange={setFilters}
-        onReset={resetFilters}
-        languages={languages}
+        title={isShelves ? "Sort & View" : "Sort & Filter"}
+        sections={isShelves ? shelvesSections : bookSections}
+        onReset={isShelves ? undefined : resetFilters}
+        showReset={!isShelves && isFiltering}
       />
     </div>
   );

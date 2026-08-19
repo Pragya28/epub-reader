@@ -1,6 +1,6 @@
 # Sprint 5 — Task List (Gap Analysis vs Codebase)
 
-Generated 2026-08-04 by comparing `docs/06 - Implementation/Sprint - 05 Theming & Typography.md` against the current codebase.
+Generated 2026-08-04 by comparing `central-docs/06 - Implementation/Sprint - 05 Theming & Typography.md` against the current codebase.
 
 Legend: ✅ done · 🟡 partial · ❌ missing
 
@@ -142,7 +142,7 @@ Also fixed as part of the same pass: `continue-reading-banner.tsx`'s progress ba
 
     **Perf:** no new perf test added, and that's a deliberate call, not an omission — checked the Day 3/4 hot paths (`use-chrome-visibility`'s scroll handler, `get-chapter-sections.ts`) before deciding: `getChapterSections` is already `WeakMap`-cached per iframe document (`// ponytail:` comment marks this as intentional), so a scroll tick is O(1) amortized against at most `MAX_WINDOW_SIZE` (5) mounted sections, not O(chapters). Sprint 4's perf tests (`load-library.perf.test.ts`, `epub-parser.perf.test.ts`) guard genuine O(n)-over-data-scale operations; a scroll-handler perf test would mostly be testing jsdom's `getBoundingClientRect` timing, which isn't representative of real layout cost — not a useful guard. Flagging one pre-existing, unrelated observation instead: `pnpm build` warns the main JS chunk is 872 KB (274 KB gzipped) — not new this sprint (no bundling-relevant dependency changed), not previously flagged in any sprint doc or `AUDIT_REPORT.md`, and genuine code-splitting is out of scope for a hardening pass — noting it here so it doesn't quietly stay undocumented.
 
-    **Docs:** `CLAUDE.md` gained a pointer to `ACCESSIBILITY.md` (existed since `#27` but wasn't cross-referenced from the project's own instructions file). `tasks/SPRINT-05-TASKS.md` (this file) is current through `#28`.
+    **Docs:** `CLAUDE.md` gained a pointer to `ACCESSIBILITY.md` (existed since `#27` but wasn't cross-referenced from the project's own instructions file). `docs/tasks/SPRINT-05-TASKS.md` (this file) is current through `#28`.
 
     **Gap docs — light look, per the spec's own "light look during hardening, full resolution scoped to Sprint 8" framing** (implementing either in full here would be scope creep past what a Day 7 pass calls for, and would risk building the wrong shape ahead of Sprint 8's actual design):
     - **Onboarding-01 (First-Run Experience) — largely already satisfied**, not new work needed: `book-grid.tsx`'s empty-library state already matches the gap doc's own recommendation almost exactly — an icon, "Your library is empty," and a plain-text CTA ("Tap + to import your first book"), no tutorial walkthrough. The doc's two remaining open items are real but explicitly Sprint 8 Day 2 scope: no PWA install-prompt handling exists at all yet (so there's no "wrong timing" to fix, just an unbuilt feature), and no first-run persistent-storage request. Nothing built here — assessed and confirmed still correctly deferred.
@@ -154,7 +154,7 @@ Also fixed as part of the same pass: `continue-reading-banner.tsx`'s progress ba
 
 # Deferred (carried over from Sprint 4, now in-scope territory)
 
-- **`prefers-reduced-motion` support** (flagged in `tasks/SPRINT-04-TASKS.md` Deferred section) — Sprint 4 explicitly deferred this here because Sprint 5 is "where user customization through theming and typography becomes the primary focus." Fold into Day 6 (Accessibility Foundations) rather than treating as new scope.
+- **`prefers-reduced-motion` support** (flagged in `docs/tasks/SPRINT-04-TASKS.md` Deferred section) — Sprint 4 explicitly deferred this here because Sprint 5 is "where user customization through theming and typography becomes the primary focus." Fold into Day 6 (Accessibility Foundations) rather than treating as new scope.
 - **Font sizes drifted off the DESIGN.md type ramp** (also flagged in Sprint 4) — fold into Day 5 (UI Polish) typography hierarchy pass.
 
 ---
@@ -180,7 +180,7 @@ Numbered tasks:
 - `#27` ✅ done 2026-08-07 (full contrast + focus pass against ACCESSIBILITY.md — see the item itself)
 - `#22` ✅ done 2026-08-07 · `#24` ✅ covered by the 2026-08-07 `/impeccable audit` (18/20); re-run once `#27`/`#28`/`#29` land if a final clean baseline is wanted.
 
-Spec-flagged gap docs (`docs/07 - Gaps/`) — cross-referenced above. The spec's own language is "worth considering," so these are close-out candidates, not blockers:
+Spec-flagged gap docs (`central-docs/07 - Gaps/`) — cross-referenced above. The spec's own language is "worth considering," so these are close-out candidates, not blockers:
 
 - ✅ **[[Accessibility-01 Accessibility Scope|Accessibility Scope]]** (see Day 6, line ~110) — resolved 2026-08-07: `.agents/context/ACCESSIBILITY.md` written (WCAG 2.2 AA target, standing contrast/focus/motion/target-size rules, the decorative-cover-art exception, and five named reader-engine a11y gaps with the iframe's missing `lang` and generic title flagged as cheap fixes for `#27`/`#29`). `DESIGN.md` now defers to it for contrast minimums. Original ask was: write the short standards doc (target WCAG conformance level, how the iframe reader's custom scroll engine affects the accessibility tree, whether reduced-motion/contrast controls are user-facing). The spec asks for this _before_ `#27`, so it's the one gap with real ordering weight; without it `#27` has no defined target to validate against.
 - ❌ **[[Platform-01 Multi-Tab Concurrency|Multi-Tab Concurrency]]** (see Day 4, line ~86) — `library-filter-store.ts` persists per-tab with no `storage`-event or `BroadcastChannel` sync, so sort/filter set in one tab is invisible to another until reload; same gap applies to reading-progress writes.

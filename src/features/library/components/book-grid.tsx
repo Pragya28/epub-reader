@@ -1,5 +1,6 @@
 import { memo, type FC } from "react";
 import { BookCard } from "./book-card/book-card";
+import { CardGrid } from "@/components/card-grid/card-grid";
 import type { BookWithProgress } from "../types/library.types";
 import { LibraryBig, TriangleAlert } from "lucide-react";
 
@@ -74,13 +75,12 @@ export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
   }
 
   return (
-    <div
-      className="grid gap-x-4 gap-y-5"
-      style={{ gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))" }}
-    >
-      {books.map((book) => (
-        <BookCard key={book.id} {...book} hideMoreByAuthor={hideMoreByAuthor} />
-      ))}
-    </div>
+    <CardGrid
+      items={books}
+      getKey={(book) => book.id}
+      renderItem={(book) => (
+        <BookCard {...book} hideMoreByAuthor={hideMoreByAuthor} />
+      )}
+    />
   );
 });

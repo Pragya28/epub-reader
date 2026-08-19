@@ -352,7 +352,7 @@ git commit -m "feat(search): lazily backfill search index for pre-existing books
 
 **Files:**
 
-- Modify: `tasks/SPRINT-06-TASKS.md:82-96` (Day 5 section)
+- Modify: `docs/tasks/SPRINT-06-TASKS.md:82-96` (Day 5 section)
 
 **Interfaces:**
 
@@ -361,7 +361,7 @@ git commit -m "feat(search): lazily backfill search index for pre-existing books
 
 - [ ] **Step 1: Mark Day 5 items done**
 
-In `tasks/SPRINT-06-TASKS.md`, update the Day 5 section (items 16–18 and the Done Criteria line) to ✅, briefly noting: build-on-import and delete-on-removal are wired into `import-book.ts`/`delete-book.ts`; backfill is lazy via `ensureIndexesForBooks()` called from `searchLibrary()`; re-import-rebuild was scoped out (blocked by the existing `fileHash` duplicate check, so unreachable); the multi-tab race was already covered by the pre-existing `hasIndex` check-before-build pattern, reused by `ensureIndexesForBooks()`.
+In `docs/tasks/SPRINT-06-TASKS.md`, update the Day 5 section (items 16–18 and the Done Criteria line) to ✅, briefly noting: build-on-import and delete-on-removal are wired into `import-book.ts`/`delete-book.ts`; backfill is lazy via `ensureIndexesForBooks()` called from `searchLibrary()`; re-import-rebuild was scoped out (blocked by the existing `fileHash` duplicate check, so unreachable); the multi-tab race was already covered by the pre-existing `hasIndex` check-before-build pattern, reused by `ensureIndexesForBooks()`.
 
 - [ ] **Step 2: Commit**
 

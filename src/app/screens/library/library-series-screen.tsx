@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 
 import { ROUTES } from "@/utils/routes";
@@ -7,28 +7,28 @@ import { Button } from "@/components/ui/button";
 import { BookGrid } from "@/features/library/components/book-grid";
 import { FilterSheet } from "@/features/library/components/filter-sheet";
 import { SortFilterButton } from "@/features/library/components/sort-filter-button";
-import { useAuthorScreen } from "@/features/library/hooks/use-author-screen";
-import {
-  buildLibraryFilterSections,
-  buildSortSection,
-} from "@/features/library/utils/filter-sections";
+import { useSeriesDetailScreen } from "@/features/library/hooks/use-series-detail-screen";
+import { buildLibraryFilterSections } from "@/features/library/utils/filter-sections";
 
-export const LibraryAuthorScreen: FC = () => {
+export const LibrarySeriesScreen: FC = () => {
   const {
-    author,
+    groupingName,
+    redirectToShelves,
     isLoading,
     error,
     books,
     isFiltering,
     filterOpen,
     setFilterOpen,
-    sortBy,
-    setSortBy,
     filters,
     setFilters,
     resetFilters,
     languages,
-  } = useAuthorScreen();
+  } = useSeriesDetailScreen();
+
+  if (redirectToShelves) {
+    return <Navigate to={ROUTES.LIBRARY_SHELVES} replace />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -37,12 +37,12 @@ export const LibraryAuthorScreen: FC = () => {
           variant="ghost"
           size="icon"
           aria-label="Back to library"
-          render={<Link to={ROUTES.LIBRARY} />}
+          render={<Link to={ROUTES.LIBRARY_SHELVES} />}
         >
           <ChevronLeft strokeWidth={1.5} className="size-6" />
         </Button>
         <span className="section-title font-semibold text-foreground mr-auto truncate">
-          {author}
+          {groupingName}
         </span>
         <SortFilterButton
           isFiltering={isFiltering}
@@ -56,18 +56,14 @@ export const LibraryAuthorScreen: FC = () => {
           isSearch={isFiltering}
           error={error}
           books={books}
-          hideMoreByAuthor
         />
       </main>
 
       <FilterSheet
         open={filterOpen}
         onOpenChange={setFilterOpen}
-        title="Sort & Filter"
-        sections={[
-          buildSortSection(sortBy, setSortBy),
-          ...buildLibraryFilterSections(filters, setFilters, languages),
-        ]}
+        title="Filter"
+        sections={buildLibraryFilterSections(filters, setFilters, languages)}
         onReset={resetFilters}
         showReset={isFiltering}
       />

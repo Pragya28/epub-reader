@@ -8,7 +8,7 @@
 
 **Tech Stack:** TypeScript, Dexie (IndexedDB), Vitest, existing `services/epub/`, `services/storage/`, `features/library/actions/` modules.
 
-**Spec:** `superpowers/specs/2026-08-13-collections-series-data-model-design.md`
+**Spec:** `docs/superpowers/specs/2026-08-13-collections-series-data-model-design.md`
 
 ## Global Constraints
 
@@ -1109,7 +1109,7 @@ git commit -m "feat(library): add route constants for series and collection brow
 
 **Files:**
 
-- Modify: `tasks/SPRINT-07-TASKS.md` (Day 1 section)
+- Modify: `docs/tasks/SPRINT-07-TASKS.md` (Day 1 section)
 
 **Interfaces:**
 
@@ -1118,7 +1118,7 @@ git commit -m "feat(library): add route constants for series and collection brow
 
 - [ ] **Step 1: Mark Day 1 items done**
 
-In `tasks/SPRINT-07-TASKS.md`, update the Day 1 section (items 1-3 and the Done Criteria line) to ✅, noting: the unified `groupings`/`groupingMembers` schema (v6) with `isCollection()` read-only guard; Calibre-only series metadata parsing folded in from Day 2 since the schema needed real data to validate against; series build-on-import/delete-cleanup/lazy-backfill lifecycle (backfill moved into Day 1 per decision during brainstorming); route constants added with no screens/router wiring yet (Day 4 scope). Cross-reference that Day 2's "automatic series detection" and "reading order within a series" items are now largely satisfied by this day's work, leaving Day 2 mostly the series _browsing view_ itself.
+In `docs/tasks/SPRINT-07-TASKS.md`, update the Day 1 section (items 1-3 and the Done Criteria line) to ✅, noting: the unified `groupings`/`groupingMembers` schema (v6) with `isCollection()` read-only guard; Calibre-only series metadata parsing folded in from Day 2 since the schema needed real data to validate against; series build-on-import/delete-cleanup/lazy-backfill lifecycle (backfill moved into Day 1 per decision during brainstorming); route constants added with no screens/router wiring yet (Day 4 scope). Cross-reference that Day 2's "automatic series detection" and "reading order within a series" items are now largely satisfied by this day's work, leaving Day 2 mostly the series _browsing view_ itself.
 
 - [ ] **Step 2: Commit**
 
