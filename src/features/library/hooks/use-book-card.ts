@@ -25,6 +25,9 @@ export type BookCardMenuEntry =
 export function useBookCard(
   book: BookWithProgress,
   hideMoreByAuthor?: boolean,
+  /** Set only when rendered inside a collection detail screen — adds a
+   * "Remove from Collection" entry distinct from deleting the book itself. */
+  onRemoveFromCollection?: (bookId: string) => void,
 ) {
   const {
     id,
@@ -46,6 +49,7 @@ export function useBookCard(
   );
   const [aboutOpen, setAboutOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
 
   const statusText = isFinished
     ? "Finished"
@@ -62,6 +66,7 @@ export function useBookCard(
   const startAtBeginning = () => void startBookAtBeginning(id);
   const openAboutSheet = () => setAboutOpen(true);
   const openDeleteConfirm = () => setDeleteOpen(true);
+  const openAddToCollection = () => setAddToCollectionOpen(true);
   const confirmDelete = () => void deleteBook(id);
   const openMoreByAuthor = () =>
     navigate(
@@ -130,6 +135,22 @@ export function useBookCard(
           },
         ] as const)
       : []),
+    {
+      type: "item",
+      id: "add-to-collection",
+      label: "Add to Collection",
+      onClick: openAddToCollection,
+    },
+    ...(onRemoveFromCollection
+      ? ([
+          {
+            type: "item",
+            id: "remove-from-collection",
+            label: "Remove from Collection",
+            onClick: () => onRemoveFromCollection(id),
+          },
+        ] as const)
+      : []),
     { type: "separator", id: "sep-3" },
     {
       type: "item",
@@ -147,6 +168,8 @@ export function useBookCard(
     deleteOpen,
     setDeleteOpen,
     confirmDelete,
+    addToCollectionOpen,
+    setAddToCollectionOpen,
     hasMoreByAuthor,
     openMoreByAuthor,
     hasSeriesLink,

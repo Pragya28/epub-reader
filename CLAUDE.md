@@ -37,7 +37,7 @@ Git hooks (husky) already enforce quality gates — don't skip them:
 - `pre-commit`: `lint-staged` — eslint --fix + prettier, then `vitest related --run` on staged `.ts`/`.tsx` (every test that _imports_ a staged file, whether or not the test itself changed). Not the full suite: that's pre-push's job.
 - `pre-push`: `pnpm build` then `pnpm test:run` (single pass — `pnpm test` is watch mode and can hang a hook)
 
-Both hooks `set -e`, so a failure in any step blocks the commit/push rather than being masked by the last command's exit code.
+Both hooks `set -e`, so a failure in any step blocks the commit/push rather than being masked by the last command's exit code. `git push` routinely takes 2-3+ minutes because of the pre-push hook's build+full-suite run — give it a long timeout (e.g. 5+ minutes) rather than treating a slow push as hung.
 
 Package manager is pnpm (`packageManager` pinned in package.json) — don't use npm/yarn.
 

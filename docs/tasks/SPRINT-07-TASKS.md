@@ -48,52 +48,57 @@ What _does_ already exist and is directly reusable scaffolding for this sprint:
 
 ## Day 3 — Collections
 
-8. ❌ **Create collections** — no CRUD exists.
-9. ❌ **Rename collections** — no CRUD exists.
-10. ❌ **Delete collections** — no CRUD exists.
-11. ❌ **Add/remove books from collections** — no membership model exists.
+8. ✅ **Create collections** — `createCollection()` (`src/features/library/actions/collections.ts`), a thin wrapper over `putGrouping()`. Triggered from the library's new speed-dial FAB (see below) via `CollectionNameSheet`, a bottom sheet shared with rename.
+9. ✅ **Rename collections** — `renameCollection()`, guarded by `isCollection()` so a series id can't be passed by mistake. Reuses `CollectionNameSheet` pre-filled with the current name, from the collection detail screen's "⋮" menu.
+10. ✅ **Delete collections** — `deleteCollection()` cascades membership-row cleanup (`db.groupingMembers.where({groupingId}).delete()`) before deleting the grouping. Confirmation via `ConfirmDeleteDialog` (generalized from the book-only `delete-book-dialog.tsx`), with explicit reassurance copy — "This will delete the grouping. Your books will remain safe in your library." — per the Figma design review's requirement 4.
+11. ✅ **Add/remove books from collections** — `addBookToCollection()`/`removeBookFromCollection()`, with `order` assigned sequentially at add-time so collections sort by add-order via the same `GroupingMember.order` field series already uses (no separate reordering mechanism, no manual drag-reorder — out of scope per the spec's "calm, minimal" framing). Add is a multi-select checklist sheet (`AddToCollectionSheet`) from the book card's new "Add to Collection" menu action; remove is a "Remove from Collection" menu action shown only inside a collection's detail screen, distinct from deleting the book itself.
 
 ### Done Criteria
 
-❌ Not started.
+✅ Done — full design pulled forward from Figma (`https://www.figma.com/design/ohsm1arYYCfzARM2RuNBI5/Librune?node-id=103-535`, reconciled in `docs/tasks/collection-management-design-review.md`) and implemented end-to-end, including Day 4's collection browsing/detail screen and Day 5's management UI/empty-state items (see below — pulled forward in the same pass rather than split across days, since the CRUD action layer and its UI are one coherent unit of work). _(done 2026-08-20)_
+
+Two platform changes came with it, not scoped by the sprint spec but needed once collections existed as a second grouping type with its own detail screen:
+
+- **`useGroupingBooks` + `GroupingDetailScreen` extraction** — the series and collection detail screens share identical fetch/order/enrich logic and header/grid/filter-sheet layout; rather than duplicating `use-series-detail-screen.ts`/`library-series-screen.tsx` wholesale, that shared logic was extracted so both screens are thin compositions on top. `delete-book-dialog.tsx` was similarly generalized into `confirm-delete-dialog.tsx` (title/description as props) rather than building a second near-identical delete dialog for collections.
+- **Library FAB became a 3-action speed-dial** — the old Books-tab-only `ImportBookFab` and the Shelves tab's separate "New Collection" button were replaced by one arc-expanded FAB (Import Book / Import Multiple / Create Collection) on both tabs — one creation entry point instead of two scattered ones. This also added **Import Multiple** as a new capability (not previously requested by any sprint), which loops the existing `importBook()` per file, continues past individual failures, and reports one summary toast rather than one per file.
 
 ---
 
 ## Day 4 — Library Navigation
 
 12. ✅ **Browse by series** — `library-series-screen.tsx` (`ROUTES.LIBRARY_SERIES`), folded into Day 2's delivery (see above) rather than built here — scoping "a series screen" surfaced the Shelves tab as its natural entry point, so both landed together. _(done 2026-08-18)_
-13. 🟡 **Browse by collection** — `ROUTES.LIBRARY_COLLECTION` route constant exists (Day 1) and `GroupingCard`/`ShelvesGrid` already render a `type: "collection"` `Grouping` identically to a series (icon-differentiated, same cover-stack card) — the Shelves spec confirms "Day 3 needs zero changes to this grid." What's still missing: a collection detail screen to route to, and any actual collections to browse, since Day 3's create/rename/delete/add-book/remove-book CRUD hasn't shipped yet.
+13. ✅ **Browse by collection** — `library-collection-screen.tsx` (`ROUTES.LIBRARY_COLLECTION`), landed as part of Day 3's delivery (see above) — `GroupingCard`/`ShelvesGrid` needed zero changes as anticipated, the detail screen was the only missing piece. _(done 2026-08-20)_
 14. ✅ **Grouped library views** — the Shelves tab's merged grid (`ShelvesGrid`) is exactly this: one grouped view spanning both series and collections, with a `merged`/`grouped` (split-by-type) toggle. Folded into Day 2's delivery. _(done 2026-08-18)_
 15. ❌ **"Next in series" affordance** — no series data to derive it from. Not addressed by the Shelves/series-screen work — out of scope there (the series screen shows the whole ordered list, not a "next book" prompt elsewhere in the UI).
 
 ### Done Criteria
 
-🟡 Partial — items 12 and 14 landed 2026-08-18, folded into Day 2's Shelves tab + series screen work rather than built separately here (scoping "a series screen" surfaced the tab-bar restructuring as the natural home for both). Item 13 is grid-ready but has nothing to browse until Day 3 ships collection CRUD and its own detail screen. Item 15 remains unstarted.
+🟡 Partial — items 12, 13, and 14 are done (13 landed 2026-08-20 as part of Day 3's collection detail screen; 12 and 14 landed 2026-08-18 with the Shelves tab). Item 15 ("Next in series") remains unstarted — no sprint day has picked it up yet.
 
 ---
 
 ## Day 5 — UX Polish
 
-16. ❌ **Collection management UI** — no UI exists.
-17. ❌ **Empty states (no series, no collections yet)** — shadcn's `Empty` primitive (`src/components/ui/empty.tsx`) was added in Sprint 6 for the search screen's pre-search/no-results states and is directly reusable here, but no series/collection-specific empty state has been built.
-18. ❌ **Delete flows (collection delete vs. book delete distinction)** — no delete flow exists for collections; book delete (`delete-book.ts`) has no collection-cleanup step to distinguish from yet (see Day 6).
-19. ❌ **Navigation polish** — N/A until Days 2-4 ship something to polish. **Audit finding folded in**: `search-screen.tsx:146-153`/`:169-175` uses bare `<button>` icon controls below the WCAG 2.2 AA 24px touch-target minimum, inconsistent with the rest of the app's sized `Button` component (see Impeccable Audit Reconciliation). If any new series/collection screen header copies that pattern rather than the compliant `LibraryAuthorScreen`/`Button` approach, fix both at once here rather than propagating the gap to a second screen.
+16. ✅ **Collection management UI** — rename/delete via the collection detail screen's "⋮" menu, add/remove via `AddToCollectionSheet`/"Remove from Collection", create via the library FAB. Landed as part of Day 3's delivery (see above). _(done 2026-08-20)_
+17. ✅ **Empty states (no series, no collections yet)** — `Empty` (Sprint 6) now covers both levels: "No shelves yet" on the Shelves tab (points at the FAB) and "This shelf is empty" on an empty collection's detail screen, distinct copy at each level per the Figma design review. _(done 2026-08-20)_
+18. ✅ **Delete flows (collection delete vs. book delete distinction)** — `ConfirmDeleteDialog` (generalized from the book-only dialog) carries collection-specific reassurance copy distinct from the book-delete dialog; "Remove from Collection" (unlinks a book from the collection) is a separate book-card menu action from "Delete" (removes the book from the library entirely), so the two are never conflated in the UI. _(done 2026-08-20)_
+19. ❌ **Navigation polish** — still unaddressed. **Audit finding folded in**: `search-screen.tsx:146-153`/`:169-175` uses bare `<button>` icon controls below the WCAG 2.2 AA 24px touch-target minimum, inconsistent with the rest of the app's sized `Button` component (see Impeccable Audit Reconciliation). The series/collection screens that did ship (`GroupingDetailScreen`, shared by both) followed the compliant `LibraryAuthorScreen`/`Button` pattern throughout, not the search-screen anti-pattern — so this gap did not propagate to a second screen, but the original search-screen instance itself is still unfixed.
 
 ### Done Criteria
 
-❌ Not started.
+🟡 Partial — items 16–18 landed 2026-08-20 as part of Day 3's collection CRUD/UI delivery. Item 19 (the pre-existing search-screen touch-target gap) remains unstarted; nothing in Sprint 7 propagated it further, but nothing fixed the original instance either.
 
 ---
 
 ## Day 6 — Integration
 
-20. ❌ **Delete behavior (book delete removes it from series/collections cleanly)** — `deleteBook()` (`src/features/library/actions/delete-book.ts`) is a 4-line action: deletes book from storage, deletes search index, deletes cached chapter text, removes from `libraryStore`. No series/collection cleanup step exists — expected, since no such data exists yet, but this file will need a line added once collection membership is introduced. The existing pattern (search index + chapter-text cache both get their own delete call here) is the template to follow.
+20. 🟡 **Delete behavior (book delete removes it from series/collections cleanly)** — `deleteBook()` already calls `deleteMembersForBook()` unconditionally (added in Day 1, ahead of schedule, since the cascade needed to be grouping-type-agnostic from the start) — it removes every membership row for the book regardless of series vs. collection, only auto-deleting the parent grouping when it's an emptied _series_ (a collection is kept even when its last book is removed, per `deleteMembersForBook`'s own doc comment). Now that collections actually exist, this path is exercisable but only test-covered for series (`delete-book.test.ts`'s "removes series membership..." case) — no test yet asserts a book delete removes it from a collection while leaving the (now-empty) collection intact.
 21. ❌ **Metadata synchronization (series metadata changes on re-import)** — moot until series metadata is parsed at all (Day 2). Also worth noting: `importBook()` currently throws `"Book already imported"` on a `fileHash` match before any write happens (established in Sprint 6, item 17) — so "re-import" as a concept may not exist yet as a code path; confirm whether this day assumes a re-import flow that needs building first, or only applies if/when one exists.
 22. ❌ **Performance optimization for grouped views** — no grouped views exist yet to optimize. Sprint 6's hard-won lesson applies directly: _"a green index/query benchmark alone is not evidence a search is fast"_ — the actual Sprint 6 slowdown was in per-row display-building, not the index query. If grouped views end up fetching book/series display data per row (covers, snippets, progress), measure that path specifically before assuming it's fine. **Audit finding folded in**: `use-library-screen.ts`'s enrich→sort→filter→search derivation pipeline is unmemoized today (P2, pre-existing) — if grouped-by-series/collection views are built as another derivation stage in this same hook (the natural place to add them), they'd inherit an already-flagged perf gap rather than a clean baseline. Worth memoizing as part of this day's work regardless of whether grouping reuses this exact hook, since it's the most likely integration point.
 
 ### Done Criteria
 
-❌ Not started.
+🟡 Partial — item 20's mechanism is implemented and correct by inspection but missing a collection-specific test (see above). Items 21 and 22 remain unstarted.
 
 **Related Gap (per spec):** [[Library-02 Backup and Export]] — if export ships this sprint, this is where it'd need validating against delete/sync behavior. Per the Deferred section below, export itself is not being built this sprint, so this checkpoint doesn't apply yet.
 

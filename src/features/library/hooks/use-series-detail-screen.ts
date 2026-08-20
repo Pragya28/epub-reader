@@ -1,19 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import {
-  getGrouping,
-  getMembersForGrouping,
-  isCollection,
-} from "@/services/storage/groupings";
-import type {
-  Grouping,
-  GroupingMember,
-} from "@/services/storage/storage-types";
-import { libraryStore } from "../store/library-store";
+import { isCollection } from "@/services/storage/groupings";
 import { seriesFilterStore } from "../store/filter-store";
-import { enrichBookWithProgress } from "../utils/derive-book-status";
 import { filterBooksByCriteria, hasActiveFilters } from "../utils/filter-books";
+import { useGroupingBooks } from "./use-grouping-books";
 import { useLibraryFilters } from "./use-library-filters";
 
 /**
@@ -26,49 +16,7 @@ import { useLibraryFilters } from "./use-library-filters";
  */
 export function useSeriesDetailScreen() {
   const { groupingId } = useParams<{ groupingId: string }>();
-  const { books } = libraryStore();
-
-  const [grouping, setGrouping] = useState<Grouping | null | undefined>(
-    undefined,
-  );
-  const [members, setMembers] = useState<GroupingMember[]>([]);
-
-  useEffect(() => {
-    if (!groupingId) return;
-    let cancelled = false;
-
-    void Promise.all([
-      getGrouping(groupingId),
-      getMembersForGrouping(groupingId),
-    ]).then(([foundGrouping, foundMembers]) => {
-      if (cancelled) return;
-      setGrouping(foundGrouping ?? null);
-      setMembers(foundMembers);
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [groupingId]);
-
-  const orderById = useMemo(
-    () => new Map(members.map((member) => [member.bookId, member.order])),
-    [members],
-  );
-
-  const enriched = useMemo(() => books.map(enrichBookWithProgress), [books]);
-
-  const seriesBooks = useMemo(() => {
-    const inSeries = enriched.filter((book) => orderById.has(book.id));
-    // Nulls (missing order) sort last; ties (including two nulls) fall
-    // back to title. `?? Infinity` does the "nulls last" half in one
-    // expression instead of three separate null-check branches.
-    return [...inSeries].sort(
-      (a, b) =>
-        (orderById.get(a.id) ?? Infinity) - (orderById.get(b.id) ?? Infinity) ||
-        a.title.localeCompare(b.title),
-    );
-  }, [enriched, orderById]);
+  const { grouping, orderedBooks, isLoading } = useGroupingBooks(groupingId);
 
   const {
     filterOpen,
@@ -78,7 +26,7 @@ export function useSeriesDetailScreen() {
     resetFilters,
     languages,
     isFiltering,
-  } = useLibraryFilters(seriesBooks, seriesFilterStore);
+  } = useLibraryFilters(orderedBooks, seriesFilterStore);
 
   // Per-instance default: series screens declutter differently from the
   // main library, so a fresh (never-touched) filter state should show
@@ -90,13 +38,13 @@ export function useSeriesDetailScreen() {
     ? { ...filters, hideFinished: false }
     : filters;
 
-  const visibleBooks = filterBooksByCriteria(seriesBooks, effectiveFilters);
+  const visibleBooks = filterBooksByCriteria(orderedBooks, effectiveFilters);
 
   return {
     groupingName: grouping?.name ?? null,
     redirectToShelves:
       grouping === null || (grouping ? isCollection(grouping) : false),
-    isLoading: grouping === undefined,
+    isLoading,
     error: null,
     books: visibleBooks,
     isFiltering,

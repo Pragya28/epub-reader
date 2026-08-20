@@ -50,7 +50,7 @@ export const ShelvesGrid: FC = () => {
           <EmptyTitle>No shelves yet</EmptyTitle>
           <EmptyDescription>
             Series are detected automatically from a book's metadata as you
-            import more of them.
+            import more of them. Or use the + button to start a collection.
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent />

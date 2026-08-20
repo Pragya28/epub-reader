@@ -10,7 +10,7 @@ import {
 } from "@/features/library/components/filter-sheet";
 import { SortFilterButton } from "@/features/library/components/sort-filter-button";
 import { ContinueReadingBanner } from "@/features/library/components/continue-reading-banner";
-import { ImportBookFab } from "@/features/library/components/import-book-fab";
+import { LibraryFab } from "@/features/library/components/library-fab";
 import { shelvesStore } from "@/features/library/store/shelves-store";
 import { ShelvesGrid } from "@/features/library/components/shelves/shelves-grid";
 import {
@@ -186,7 +186,7 @@ export const LibraryScreen: FC = () => {
       {currentBook && <ContinueReadingBanner book={currentBook} />}
 
       {/* ── FAB — fixed bottom-right ─────────────────────────────────────── */}
-      <ImportBookFab />
+      <LibraryFab />
 
       <FilterSheet
         open={filterOpen}
