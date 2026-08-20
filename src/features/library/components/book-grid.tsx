@@ -10,6 +10,12 @@ interface BookGridProps {
   error: string | null;
   books: BookWithProgress[];
   hideMoreByAuthor?: boolean;
+  onRemoveFromCollection?: (bookId: string) => void;
+  /** Overrides the default "Your library is empty" copy — used by the
+   * collection detail screen ("This shelf is empty"). Only shown when
+   * there's no search/filter active, same as the default copy. */
+  emptyTitle?: string;
+  emptyDescription?: string;
 }
 
 export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
@@ -18,6 +24,9 @@ export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
   error,
   books,
   hideMoreByAuthor,
+  onRemoveFromCollection,
+  emptyTitle,
+  emptyDescription,
 }) {
   if (error) {
     return (
@@ -63,11 +72,13 @@ export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
           className="text-muted-foreground/30"
         />
         <p className="text-ui uppercase tracking-[0.15em] text-muted-foreground font-heading">
-          {isSearch ? "No books found" : "Your library is empty"}
+          {isSearch
+            ? "No books found"
+            : (emptyTitle ?? "Your library is empty")}
         </p>
         {!isSearch && (
           <p className="text-ui-sm text-muted-foreground opacity-60">
-            Tap + to import your first book.
+            {emptyDescription ?? "Tap + to import your first book."}
           </p>
         )}
       </div>
@@ -79,7 +90,11 @@ export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
       items={books}
       getKey={(book) => book.id}
       renderItem={(book) => (
-        <BookCard {...book} hideMoreByAuthor={hideMoreByAuthor} />
+        <BookCard
+          {...book}
+          hideMoreByAuthor={hideMoreByAuthor}
+          onRemoveFromCollection={onRemoveFromCollection}
+        />
       )}
     />
   );

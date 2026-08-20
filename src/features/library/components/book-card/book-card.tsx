@@ -13,7 +13,9 @@ import {
 import { EllipsisVertical } from "lucide-react";
 import { AboutBookSheet } from "../about-book-sheet";
 import { useBookCard } from "../../hooks/use-book-card";
-import { DeleteBookDialog } from "./delete-book-dialog";
+import { useAddToCollection } from "../../hooks/use-add-to-collection";
+import { ConfirmDeleteDialog } from "../confirm-delete-dialog";
+import { AddToCollectionSheet } from "../collections/add-to-collection-sheet";
 
 // Wrapped in memo: BookGrid re-renders on every LibraryScreen update
 // (search input, scroll-driven header toggle, etc.) — without this,
@@ -22,10 +24,12 @@ import { DeleteBookDialog } from "./delete-book-dialog";
 // so each book's prop values stay referentially stable across renders.
 interface BookCardProps extends BookWithProgress {
   hideMoreByAuthor?: boolean;
+  onRemoveFromCollection?: (bookId: string) => void;
 }
 
 export const BookCard: FC<BookCardProps> = memo(function BookCard({
   hideMoreByAuthor,
+  onRemoveFromCollection,
   ...book
 }) {
   const { id, isNew, isFinished, author, title } = book;
@@ -36,10 +40,16 @@ export const BookCard: FC<BookCardProps> = memo(function BookCard({
     deleteOpen,
     setDeleteOpen,
     confirmDelete,
+    addToCollectionOpen,
+    setAddToCollectionOpen,
     hasMoreByAuthor,
     openMoreByAuthor,
     menuItems,
-  } = useBookCard(book, hideMoreByAuthor);
+  } = useBookCard(book, hideMoreByAuthor, onRemoveFromCollection);
+  const { collections, selectedIds, toggle, createAndAdd } = useAddToCollection(
+    id,
+    addToCollectionOpen,
+  );
 
   return (
     <div className="group relative z-0 flex flex-col gap-2">
@@ -134,11 +144,21 @@ export const BookCard: FC<BookCardProps> = memo(function BookCard({
         onMoreByAuthor={openMoreByAuthor}
       />
 
-      <DeleteBookDialog
+      <ConfirmDeleteDialog
         open={deleteOpen}
-        title={title}
+        title={`Delete "${title}"?`}
+        description="This removes the book, its cover, and your reading progress. This can't be undone."
         onConfirm={confirmDelete}
         onOpenChange={setDeleteOpen}
+      />
+
+      <AddToCollectionSheet
+        open={addToCollectionOpen}
+        onOpenChange={setAddToCollectionOpen}
+        collections={collections}
+        selectedIds={selectedIds}
+        onToggle={toggle}
+        onCreateAndAdd={createAndAdd}
       />
     </div>
   );

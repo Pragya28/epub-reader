@@ -37,3 +37,6 @@ function createFilterStore(name: string) {
 export const libraryFilterStore = createFilterStore("library-filter-store");
 export const authorFilterStore = createFilterStore("author-filter-store");
 export const seriesFilterStore = createFilterStore("series-filter-store");
+export const collectionFilterStore = createFilterStore(
+  "collection-filter-store",
+);

@@ -10,16 +10,20 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-interface DeleteBookDialogProps {
+interface ConfirmDeleteDialogProps {
   open: boolean;
   title: string;
+  description: string;
   onConfirm: () => void;
   onOpenChange: (open: boolean) => void;
 }
 
-export const DeleteBookDialog: FC<DeleteBookDialogProps> = ({
+/** Shared by book delete and collection delete — same confirm/cancel shape,
+ * only the copy differs per caller. */
+export const ConfirmDeleteDialog: FC<ConfirmDeleteDialogProps> = ({
   open,
   title,
+  description,
   onConfirm,
   onOpenChange,
 }) => {
@@ -27,11 +31,8 @@ export const DeleteBookDialog: FC<DeleteBookDialogProps> = ({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent onClick={(e) => e.stopPropagation()}>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete "{title}"?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This removes the book, its cover, and your reading progress. This
-            can't be undone.
-          </AlertDialogDescription>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>

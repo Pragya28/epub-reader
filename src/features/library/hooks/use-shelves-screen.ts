@@ -42,22 +42,27 @@ export function useShelvesScreen() {
     })),
   );
 
+  const load = async (
+    onResult: (all: Grouping[], m: Map<string, GroupingMember[]>) => void,
+  ) => {
+    const all = await listGroupings();
+    const entries = await Promise.all(
+      all.map(
+        async (grouping) =>
+          [grouping.id, await getMembersForGrouping(grouping.id)] as const,
+      ),
+    );
+    onResult(all, new Map(entries));
+  };
+
   useEffect(() => {
     let cancelled = false;
-
-    void listGroupings().then(async (all) => {
-      const entries = await Promise.all(
-        all.map(
-          async (grouping) =>
-            [grouping.id, await getMembersForGrouping(grouping.id)] as const,
-        ),
-      );
+    void load((all, members) => {
       if (cancelled) return;
       setGroupings(all);
-      setMembersByGrouping(new Map(entries));
+      setMembersByGrouping(members);
       setIsLoading(false);
     });
-
     return () => {
       cancelled = true;
     };
@@ -92,5 +97,10 @@ export function useShelvesScreen() {
     merged,
     series,
     collections,
+    reload: () =>
+      void load((all, members) => {
+        setGroupings(all);
+        setMembersByGrouping(members);
+      }),
   };
 }
