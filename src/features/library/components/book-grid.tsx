@@ -25,8 +25,8 @@ export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
   books,
   hideMoreByAuthor,
   onRemoveFromCollection,
-  emptyTitle,
-  emptyDescription,
+  emptyTitle = "Your library is empty",
+  emptyDescription = "Tap + to import your first book.",
 }) {
   if (error) {
     return (
@@ -72,13 +72,11 @@ export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
           className="text-muted-foreground/30"
         />
         <p className="text-ui uppercase tracking-[0.15em] text-muted-foreground font-heading">
-          {isSearch
-            ? "No books found"
-            : (emptyTitle ?? "Your library is empty")}
+          {isSearch ? "No books found" : emptyTitle}
         </p>
         {!isSearch && (
           <p className="text-ui-sm text-muted-foreground opacity-60">
-            {emptyDescription ?? "Tap + to import your first book."}
+            {emptyDescription}
           </p>
         )}
       </div>

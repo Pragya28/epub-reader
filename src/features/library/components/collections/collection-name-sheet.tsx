@@ -21,11 +21,14 @@ interface CollectionNameSheetProps {
 export const CollectionNameSheet: FC<CollectionNameSheetProps> = ({
   open,
   onOpenChange,
-  initialName,
+  initialName = "",
   onSubmit,
 }) => {
-  const isRename = initialName !== undefined;
-  const [name, setName] = useState(initialName ?? "");
+  // A collection name is never blank (createCollection/renameCollection
+  // both require a trimmed non-empty value), so "non-empty" is an exact
+  // stand-in for "the caller passed a rename target."
+  const isRename = initialName !== "";
+  const [name, setName] = useState(initialName);
 
   // Reset the field to the current initialName each time the sheet opens
   // (a rename re-open should show the up-to-date name, not a stale typed
@@ -34,7 +37,7 @@ export const CollectionNameSheet: FC<CollectionNameSheetProps> = ({
   const [wasOpen, setWasOpen] = useState(open);
   if (open !== wasOpen) {
     setWasOpen(open);
-    if (open) setName(initialName ?? "");
+    if (open) setName(initialName);
   }
 
   const trimmed = name.trim();
