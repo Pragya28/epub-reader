@@ -53,20 +53,20 @@ export const LibraryFab: FC = () => {
     <>
       <ArcFabGroup
         className="fixed bottom-5 right-2"
-        mainButtonSize={56}
+        mainButtonSize={48}
         buttonSize={44}
         actions={actions}
         icon={
           isLoading ? (
-            <Loader2 className="animate-spin size-7" />
+            <Loader2 className="animate-spin size-6" />
           ) : (
-            <Plus className="size-7" />
+            <Plus className="size-6" />
           )
         }
-        activeIcon={<X className="size-7" />}
+        activeIcon={<X className="size-6" />}
         ariaLabel="Add to library"
         disabled={isLoading}
-        mainButtonClassName="bg-warm-accent hover:bg-warm-accent text-warm-accent-foreground"
+        mainButtonClassName="bg-popover hover:bg-popover text-popover-foreground ring-1 ring-foreground/10"
       />
 
       <CollectionNameSheet
