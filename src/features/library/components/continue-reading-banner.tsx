@@ -23,26 +23,24 @@ export const ContinueReadingBanner: FC<ContinueReadingBannerProps> = ({
     <button
       onClick={() => navigate(ROUTES.READER.replace(":bookId", book.id))}
       aria-label={`Continue reading ${book.title}`}
-      className="fixed bottom-5 left-2 right-20 flex items-center gap-2 p-2 rounded-2xl border-none cursor-pointer text-left opacity-90 transition-opacity hover:opacity-100 active:opacity-100 z-40 bg-warm-accent shadow-(--shadow-floating)"
+      className="fixed bottom-5 left-2 right-[68px] flex items-center gap-2 py-1.5 pl-1.5 pr-2 rounded-xl border-none cursor-pointer text-left opacity-90 transition-opacity hover:opacity-100 active:opacity-100 z-40 bg-warm-accent shadow-(--shadow-floating)"
     >
       {/* Book icon in a subtle tile atop the banner's own tone */}
-      <div className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-warm-accent-foreground/10 text-warm-accent-foreground">
-        <BookOpen />
+      <div className="shrink-0 size-9 rounded-lg flex items-center justify-center bg-warm-accent-foreground/10 text-warm-accent-foreground">
+        <BookOpen size={18} />
       </div>
 
-      {/* Text block */}
-      <div className="flex flex-col flex-1 min-w-0 gap-2">
-        <p className="text-meta font-semibold uppercase tracking-[0.14em] text-warm-accent-foreground/80 leading-none font-reading">
-          Continue Reading
-        </p>
-        <p className="text-title-sm font-semibold text-warm-accent-foreground leading-snug truncate">
+      {/* Text block: title + inline progress, one row each — no separate
+          "Continue Reading" label line, the icon/chevron already carry
+          that meaning, and the aria-label covers it for a11y. */}
+      <div className="flex flex-col flex-1 min-w-0 gap-1">
+        <p className="text-ui-sm font-semibold text-warm-accent-foreground leading-tight truncate">
           {book.title}
         </p>
-        {/* Sub-line: chapter + progress bar */}
-        <div className="flex flex-row items-center gap-2">
+        <div className="flex flex-row items-center gap-1.5">
           <Progress
             value={book.progress ?? 0}
-            className="flex-1"
+            className="flex-1 h-1"
             trackClassName="bg-warm-accent-foreground/20"
             indicatorClassName="bg-warm-accent-foreground"
           />
@@ -54,7 +52,7 @@ export const ContinueReadingBanner: FC<ContinueReadingBannerProps> = ({
 
       {/* Chevron */}
       <div className="shrink-0 text-warm-accent-foreground/70">
-        <ChevronRight size={36} strokeWidth={1.5} />
+        <ChevronRight size={20} strokeWidth={1.5} />
       </div>
     </button>
   );
