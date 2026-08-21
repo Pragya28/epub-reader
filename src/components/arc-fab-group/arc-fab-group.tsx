@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useRef,
   useState,
   type FC,
@@ -101,9 +102,19 @@ export const ArcFabGroup: FC<ArcFabGroupProps> = ({
     setPreviewAction(null);
   };
 
+  // Always routes through here to close, never a bare setOpen(false): a
+  // press can be mid-long-press (timer pending) or already confirmed
+  // (preview showing) when something else closes the group — the backdrop,
+  // Escape, running an action — and leaving that state behind is what let
+  // the preview overlay get stuck on screen after a drag-off-and-release.
+  const close = () => {
+    clearPress();
+    setOpen(false);
+  };
+
   const runAction = (action: ArcFabAction) => {
     action.onClick();
-    setOpen(false);
+    close();
   };
 
   const handlePointerDown = (
@@ -148,26 +159,48 @@ export const ArcFabGroup: FC<ArcFabGroupProps> = ({
     runAction(action);
   };
 
+  // Safety net: the per-button pointermove/pointerup handlers assume the
+  // browser keeps delivering pointer events to the button that started the
+  // press, but that isn't guaranteed once the pointer leaves the window (no
+  // more move events land anywhere) — without this, dragging off and
+  // releasing outside the button left the long-press preview stuck on
+  // screen with nothing left to clear it. A stray release at the window
+  // level always cancels (never confirms) since it means the release
+  // wasn't over any button.
+  useEffect(() => {
+    const onStrayRelease = () => {
+      if (pressRef.current.timer || pressRef.current.confirmed) clearPress();
+    };
+    window.addEventListener("pointerup", onStrayRelease);
+    window.addEventListener("pointercancel", onStrayRelease);
+    return () => {
+      window.removeEventListener("pointerup", onStrayRelease);
+      window.removeEventListener("pointercancel", onStrayRelease);
+    };
+  }, []);
+
   return (
     <>
       {open && (
         <button
           type="button"
           aria-label="Close"
-          onClick={() => setOpen(false)}
-          className="fixed inset-0 z-40 bg-black/40 transition-opacity duration-150"
+          onClick={close}
+          className="fixed inset-0 z-40 bg-black/70 transition-opacity duration-150"
         />
       )}
 
       {previewAction && (
-        <div className="pointer-events-none fixed inset-0 z-[45] flex flex-col items-center justify-center gap-2.5">
-          <div className="flex size-14 items-center justify-center rounded-2xl bg-foreground text-background">
-            {previewAction.icon}
+        <div className="pointer-events-none fixed inset-0 z-[45] flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2.5 rounded-2xl bg-popover px-8 py-6 text-popover-foreground shadow-xl">
+            <div className="flex size-14 items-center justify-center rounded-2xl bg-foreground text-background">
+              {previewAction.icon}
+            </div>
+            <p className="text-title-sm font-bold">{previewAction.label}</p>
+            <p className="text-ui-sm text-muted-foreground">
+              Release to perform
+            </p>
           </div>
-          <p className="text-title-sm font-bold text-foreground">
-            {previewAction.label}
-          </p>
-          <p className="text-ui-sm text-muted-foreground">Release to perform</p>
         </div>
       )}
 
@@ -210,7 +243,7 @@ export const ArcFabGroup: FC<ArcFabGroupProps> = ({
                   size="icon"
                   style={{ width: buttonSize, height: buttonSize }}
                   className={cn(
-                    "rounded-full shadow-floating transition-colors",
+                    "rounded-2xl shadow-floating transition-colors",
                     isPressed
                       ? "bg-foreground text-background"
                       : "bg-primary text-primary-foreground hover:bg-primary/90",
@@ -226,7 +259,8 @@ export const ArcFabGroup: FC<ArcFabGroupProps> = ({
         <Button
           onClick={(e) => {
             e.stopPropagation();
-            setOpen((v) => !v);
+            if (open) close();
+            else setOpen(true);
           }}
           disabled={disabled}
           aria-label={open ? "Close" : ariaLabel}
