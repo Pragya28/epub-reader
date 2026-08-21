@@ -21,7 +21,7 @@ interface FabAction {
 // — 12°/45°/78° spread evenly across the quarter circle. Distinct from a
 // vertical stack (constant angle, varying radius), which is what an
 // earlier, ad-hoc set of offsets accidentally produced.
-const ARC_RADIUS = 108;
+const ARC_RADIUS = 132;
 const ARC_ANGLES_DEG = [12, 45, 78];
 
 function arcOffset(angleDeg: number) {
@@ -95,14 +95,14 @@ export const LibraryFab: FC = () => {
             style={arcOffset(ARC_ANGLES_DEG[index])}
             className="fixed z-50 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-150"
           >
-            <span className="rounded-md border border-border bg-card px-3 py-1.5 text-ui-sm font-medium text-card-foreground shadow-soft whitespace-nowrap">
+            <span className="rounded-sm bg-popover px-3 py-1.5 text-ui-sm font-medium text-popover-foreground shadow-md ring-1 ring-foreground/10 whitespace-nowrap">
               {action.label}
             </span>
             <Button
               onClick={action.onClick}
               aria-label={action.label}
               size="icon"
-              className="size-12 rounded-full bg-primary text-primary-foreground shadow-floating hover:bg-primary/90"
+              className="size-12 bg-primary text-primary-foreground shadow-floating hover:bg-primary/90"
             >
               {action.icon}
             </Button>
