@@ -14,8 +14,22 @@ interface FabAction {
   label: string;
   icon: React.ReactNode;
   onClick: () => void;
-  /** Fan-out offset from the main FAB, closest action first. */
-  offset: { bottom: number; right: number };
+}
+
+// A true arc: each action sits the same radius from the main FAB's center,
+// only the angle (measured from straight up, sweeping toward left) differs
+// — 12°/45°/78° spread evenly across the quarter circle. Distinct from a
+// vertical stack (constant angle, varying radius), which is what an
+// earlier, ad-hoc set of offsets accidentally produced.
+const ARC_RADIUS = 108;
+const ARC_ANGLES_DEG = [12, 45, 78];
+
+function arcOffset(angleDeg: number) {
+  const radians = (angleDeg * Math.PI) / 180;
+  return {
+    right: Math.round(ARC_RADIUS * Math.sin(radians)),
+    bottom: Math.round(ARC_RADIUS * Math.cos(radians)),
+  };
 }
 
 /**
@@ -48,21 +62,18 @@ export const LibraryFab: FC = () => {
       label: "Import Book",
       icon: <UploadSimple className="size-5" />,
       onClick: () => run(() => void handleImportOne()),
-      offset: { bottom: 96, right: 12 },
     },
     {
       id: "import-multiple",
       label: "Import Multiple",
       icon: <Files className="size-5" />,
       onClick: () => run(() => void handleImportMany()),
-      offset: { bottom: 160, right: 56 },
     },
     {
       id: "create-collection",
       label: "Create Collection",
       icon: <Bookmark className="size-5" />,
       onClick: () => run(() => setCreateOpen(true)),
-      offset: { bottom: 192, right: 128 },
     },
   ];
 
@@ -78,10 +89,10 @@ export const LibraryFab: FC = () => {
       )}
 
       {expanded &&
-        actions.map((action) => (
+        actions.map((action, index) => (
           <div
             key={action.id}
-            style={{ bottom: action.offset.bottom, right: action.offset.right }}
+            style={arcOffset(ARC_ANGLES_DEG[index])}
             className="fixed z-50 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-150"
           >
             <span className="rounded-md border border-border bg-card px-3 py-1.5 text-ui-sm font-medium text-card-foreground shadow-soft whitespace-nowrap">
