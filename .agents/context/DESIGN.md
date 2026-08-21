@@ -111,13 +111,13 @@ A warm parchment-and-ink palette that inverts cleanly between a cream light mode
 
 ### Accent
 
-- **Warm Accent — Antique Gold** (`#a67c00` bg / `#1a1200` fg, fixed — does not change with theme): the continue-reading banner and import-book FAB. Deliberately theme-independent so these two floating call-to-action surfaces read as a consistent gold tile regardless of light/dark mode, rather than the primary-onyx ink/paper inversion used everywhere else. Foreground is a near-black brown, darker than a literal ink-black, chosen to clear 4.5:1 body-text contrast against this particular gold.
+- **Warm Accent — Antique Gold** (`#a67c00` bg / `#1a1200` fg, fixed — does not change with theme): reserved for a fixed, theme-independent gold tile, distinct from the primary-onyx ink/paper inversion used everywhere else. Currently unapplied — no surface in the app uses it. The continue-reading banner and the library's speed-dial FAB, its two prior applications, now use the neutral Parchment Low surface (see below) instead, matching the floating chrome elsewhere (dropdown menus, the FAB's own action labels) rather than standing out as gold CTAs.
 - **Selected** (`#9c7226` bg light / `#e0ac52` bg dark, tuned per theme for contrast — light value darkened 2026-08-07 to clear WCAG 1.4.11's 3:1 non-text minimum, verified at 3.5–3.7:1 against `card`/`surface-high`): the one color used to mark "this option is active" — switch checked-track, radio-row selected ring + checkmark, active-filter status dot. Distinct from Cover Gold so an amber accent never gets mistaken for "this is a book object."
 
 ### Neutral
 
 - **Paper Cream** (`#fff9ee` light / `#141210` dark): app background.
-- **Parchment Low/Mid/High/Highest** (`#fbf3df` → `#eae2ce` light; `#1a1713` → `#322b1e` dark): a four-step surface ramp for cards, popovers, and layered panels — each step a shade darker (light mode) or lighter (dark mode) than the background.
+- **Parchment Low/Mid/High/Highest** (`#fbf3df` → `#eae2ce` light; `#1a1713` → `#322b1e` dark): a four-step surface ramp for cards, popovers, and layered panels — each step a shade darker (light mode) or lighter (dark mode) than the background. Parchment Low is also `--popover`, so anything styled `bg-popover` (dropdown menus, the FAB action labels, the continue-reading banner, the library FAB) sits on this same step.
 - **Ink Black** (`#1f1c0f` light / `#f2ead8` dark): primary text.
 - **Muted Taupe** (`#444748` light / `#b3ada0` dark): secondary/meta text.
 - **Border Mist** (`#c4c7c7` light / `#3d3a34` dark): decorative hairlines only — section-card edges, sheet-header rules, cover frames. Deliberately below 3:1; never used on a control.
