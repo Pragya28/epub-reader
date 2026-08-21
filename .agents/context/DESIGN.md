@@ -151,8 +151,8 @@ A warm parchment-and-ink palette that inverts cleanly between a cream light mode
 - **Display** (Cinzel, 48px / 32px mobile, 0.08em tracking): screen-level titles.
 - **Headline** (Cinzel, 24px, 0.05em tracking, `.section-title`): section headers within screens.
 - **Reading Large/Medium** (Literata, 20px / 17px, 1.6 line-height): chapter body text inside the reader iframe; max width 68ch (`--reading-max-width`).
-- **Title Small** (Cinzel, 15px, 0.06em tracking, `text-title-sm`): compact display titles on small surfaces where the full Headline size (24px) would overwhelm the container — book-cover placeholder titles, the Continue Reading banner's book title, and drawer/sheet titles (`SheetTitle`, which carries this treatment by default at 0.18em tracking).
-- **UI** (Plus Jakarta Sans, 14px / 12px small): buttons, labels, nav, controls.
+- **Title Small** (Cinzel, 15px, 0.06em tracking, `text-title-sm`): compact display titles on small surfaces where the full Headline size (24px) would overwhelm the container — book-cover placeholder titles, and drawer/sheet titles (`SheetTitle`, which carries this treatment by default at 0.18em tracking).
+- **UI** (Plus Jakarta Sans, 14px / 12px small): buttons, labels, nav, controls, and the Continue Reading banner's book title — an exception to the pairing below driven by space, not category: at the banner's 48px row height there's no room for Cinzel's wider tracking without truncating harder than the sans already does.
 - **Meta** (Plus Jakarta Sans, 11px, 0.05em tracking, uppercase, `.metadata`, `text-meta`): timestamps, byline-style metadata, badges, cover-placeholder author labels.
 
 ### Named Rules
