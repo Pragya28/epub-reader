@@ -67,7 +67,7 @@ export function useBookCard(
   const openAboutSheet = () => setAboutOpen(true);
   const openDeleteConfirm = () => setDeleteOpen(true);
   const openAddToCollection = () => setAddToCollectionOpen(true);
-  const confirmDelete = () => void deleteBook(id);
+  const confirmDelete = () => deleteBook(id);
   const openMoreByAuthor = () =>
     navigate(
       ROUTES.LIBRARY_AUTHOR.replace(":author", encodeURIComponent(author!)),
