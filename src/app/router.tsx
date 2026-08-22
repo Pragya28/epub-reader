@@ -9,8 +9,11 @@ import { SearchScreen } from "./screens/search-screen";
 import { SettingsScreen } from "./screens/settings/settings-screen";
 import { ReaderErrorBoundary } from "./screens/reader/reader-error-boundary";
 import { ROUTES } from "@/utils/routes";
+import { useViewportZoomLock } from "@/shared/hooks/use-viewport-zoom-lock";
 
 export const Router: FC = () => {
+  useViewportZoomLock();
+
   return (
     <Routes>
       <Route path="/" element={<Navigate to={ROUTES.LIBRARY} replace />} />
