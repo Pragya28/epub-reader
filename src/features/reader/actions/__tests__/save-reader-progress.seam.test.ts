@@ -126,7 +126,7 @@ describe("reader progress → library seam", () => {
     expect(current?.id).toBe("newer");
   });
 
-  it("does not surface a finished book as the continue-reading candidate", async () => {
+  it("surfaces a finished book as the banner candidate, for the next-in-series banner", async () => {
     const finished = book({ id: "finished" });
     await saveBookMetadata(finished);
     libraryStore.getState().setBooks([finished]);
@@ -143,6 +143,9 @@ describe("reader progress → library seam", () => {
     const enriched = libraryStore.getState().books.map(enrichBookWithProgress);
     const current = pickCurrentlyReadingBook(enriched);
 
-    expect(current).toBeNull();
+    // The library screen branches on isFinished to show "next in series"
+    // instead of "continue reading" — see use-library-screen.ts.
+    expect(current?.id).toBe("finished");
+    expect(current?.isFinished).toBe(true);
   });
 });

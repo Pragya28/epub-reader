@@ -1,6 +1,8 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useChromeVisibility } from "@/shared/hooks/use-chrome-visibility";
+import { getNextInSeries } from "@/services/storage/groupings";
+import type { BookWithProgress } from "../types/library.types";
 import { libraryStore } from "../store/library-store";
 import { libraryFilterStore } from "../store/filter-store";
 import { loadLibrary } from "../actions/load-library";
@@ -69,6 +71,38 @@ export function useLibraryScreen() {
     [enriched],
   );
 
+  // When the banner candidate is finished rather than mid-book, the
+  // banner should point at the next book in its series instead of the
+  // book itself — resolved separately since it's an async lookup, not a
+  // sync derivation like everything else above.
+  const [nextBook, setNextBook] = useState<BookWithProgress | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function resolveNextBook() {
+      if (
+        !currentBook?.isFinished ||
+        !currentBook.seriesGroupingId ||
+        currentBook.seriesIndex === undefined
+      ) {
+        if (!cancelled) setNextBook(null);
+        return;
+      }
+
+      const book = await getNextInSeries(
+        currentBook.seriesGroupingId,
+        currentBook.seriesIndex,
+      );
+      if (!cancelled) setNextBook(book ? enrichBookWithProgress(book) : null);
+    }
+
+    void resolveNextBook();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentBook]);
+
   const {
     isFiltering,
     filterOpen,
@@ -92,6 +126,7 @@ export function useLibraryScreen() {
     isLoading,
     error,
     currentBook,
+    nextBook,
     visibleBooks,
     isFiltering,
     headerVisible,

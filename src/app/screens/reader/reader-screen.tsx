@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, Undo2 } from "lucide-react";
 import { Progress, ProgressValue } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { getBookCoverVisual } from "@/shared/ornaments";
+import { ContinueReadingBanner } from "@/features/library/components/continue-reading-banner";
 
 export const ReaderScreen: FC = () => {
   const {
@@ -23,6 +24,7 @@ export const ReaderScreen: FC = () => {
     isJumping,
     totalChapters,
     toc,
+    nextBook,
     coverUrl,
     coverChecked,
     pendingExternalHref,
@@ -210,6 +212,8 @@ export const ReaderScreen: FC = () => {
           </div>
         </div>
       </footer>
+
+      {nextBook && <ContinueReadingBanner book={nextBook} label="Next book" />}
 
       {/* External link confirmation */}
       <ExternalLinkDialog

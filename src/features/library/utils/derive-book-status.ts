@@ -34,16 +34,19 @@ function deriveReadingStatus(
 }
 
 /**
- * Picks the "continue reading" candidate: the most recently read book
- * that's still in progress. Real data from progress.updatedAt, not just
- * "the first 'reading' book found" in whatever order books arrived.
+ * Picks the library screen's banner candidate: the most recently read
+ * book that's either still in progress or was just finished. Real data
+ * from progress.updatedAt, not just "the first matching book found" in
+ * whatever order books arrived. The caller decides what to render based
+ * on isReading vs. isFinished — a finished pick surfaces "next in
+ * series" instead of "continue reading" the same book.
  */
 export function pickCurrentlyReadingBook(
   books: BookWithProgress[],
 ): BookWithProgress | null {
   return (
     [...books]
-      .filter((book) => book.isReading)
+      .filter((book) => book.isReading || book.isFinished)
       .sort(
         (a, b) => (b.progressUpdatedAt ?? 0) - (a.progressUpdatedAt ?? 0),
       )[0] ?? null

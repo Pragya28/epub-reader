@@ -7,10 +7,18 @@ import { BookOpen, ChevronRight } from "lucide-react";
 
 interface ContinueReadingBannerProps {
   book: BookWithProgress;
+  /**
+   * Caption shown above the title (e.g. "Next book") and folded into the
+   * aria-label in place of "Continue reading" — used by the "next in
+   * series" variant of this same banner. Omitted for the default
+   * continue-reading case, which reads as it always has.
+   */
+  label?: string;
 }
 
 export const ContinueReadingBanner: FC<ContinueReadingBannerProps> = ({
   book,
+  label,
 }) => {
   const navigate = useNavigate();
 
@@ -22,7 +30,7 @@ export const ContinueReadingBanner: FC<ContinueReadingBannerProps> = ({
   return (
     <button
       onClick={() => navigate(ROUTES.READER.replace(":bookId", book.id))}
-      aria-label={`Continue reading ${book.title}`}
+      aria-label={`${label ?? "Continue reading"} ${book.title}`}
       className="fixed bottom-5 left-2 right-[60px] flex items-center gap-2 py-1.5 pl-1.5 pr-2 rounded-xl border-none cursor-pointer text-left opacity-90 transition-opacity hover:opacity-100 active:opacity-100 z-40 bg-popover text-popover-foreground ring-1 ring-foreground/10 shadow-(--shadow-floating)"
     >
       {/* Book icon in a subtle tile atop the banner's own tone */}
@@ -30,10 +38,16 @@ export const ContinueReadingBanner: FC<ContinueReadingBannerProps> = ({
         <BookOpen size={18} />
       </div>
 
-      {/* Text block: title + inline progress, one row each — no separate
-          "Continue Reading" label line, the icon/chevron already carry
-          that meaning, and the aria-label covers it for a11y. */}
+      {/* Text block: optional caption + title + inline progress. The
+          default (no label) case is unchanged — just title + progress
+          row, the icon/chevron already carry "continue reading" and the
+          aria-label covers it for a11y. */}
       <div className="flex flex-col flex-1 min-w-0 gap-1">
+        {label && (
+          <p className="text-meta text-popover-foreground/70 leading-none">
+            {label}
+          </p>
+        )}
         <p className="text-ui-sm font-semibold text-popover-foreground leading-tight truncate">
           {book.title}
         </p>

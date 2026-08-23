@@ -3,12 +3,19 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { ROUTES } from "@/utils/routes";
 import { getBookCoverUrl } from "@/services/storage/book-repository";
+import { getNextInSeries } from "@/services/storage/groupings";
+import { enrichBookWithProgress } from "@/features/library/utils/derive-book-status";
+import type { BookWithProgress } from "@/features/library/types/library.types";
 import type { TocItem } from "@/services/epub/epub-types";
 import { loadReaderBook } from "../actions/load-reader-book";
 import { jumpToTocItem } from "../actions/jump-to-toc-item";
 import { readerStore } from "../store/reader-store";
 import { useReaderEngine } from "./use-reader-engine";
 import { useChromeVisibility } from "@/shared/hooks/use-chrome-visibility";
+
+/** Mirrors derive-book-status.ts's FINISHED_SCROLL_FRACTION_THRESHOLD (0.98),
+ * on the 0-100 percent scale progressPercent already uses. */
+const FINISHED_PROGRESS_PERCENT_THRESHOLD = 98;
 
 /**
  * All non-visual state behind ReaderScreen: loading the book and its cover,
@@ -46,6 +53,42 @@ export function useReaderScreen() {
   const totalChapters = parsedBook?.chapters.length ?? 0;
   const toc = parsedBook?.toc ?? [];
 
+  // "Next in series" banner: fires once the reader reaches the book's
+  // literal end this session, same threshold the library uses to mark a
+  // book "finished" (derive-book-status.ts), reusing getNextInSeries
+  // (Sprint 7 Day 4 item 15) rather than a second detection mechanism.
+  const isBookFinished =
+    totalChapters > 0 &&
+    currentChapterIndex >= totalChapters - 1 &&
+    progressPercent >= FINISHED_PROGRESS_PERCENT_THRESHOLD;
+  const [nextBook, setNextBook] = useState<BookWithProgress | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function resolveNextBook() {
+      const book = readerDocument?.book;
+      if (
+        !isBookFinished ||
+        !book?.seriesGroupingId ||
+        book.seriesIndex === undefined
+      ) {
+        return;
+      }
+
+      const next = await getNextInSeries(
+        book.seriesGroupingId,
+        book.seriesIndex,
+      );
+      if (!cancelled) setNextBook(next ? enrichBookWithProgress(next) : null);
+    }
+
+    void resolveNextBook();
+    return () => {
+      cancelled = true;
+    };
+  }, [isBookFinished, readerDocument?.book]);
+
   const [coverUrl, setCoverUrl] = useState<string | undefined>(undefined);
   const [coverChecked, setCoverChecked] = useState(false);
 
@@ -67,9 +110,12 @@ export function useReaderScreen() {
   useEffect(() => {
     if (!bookId) return;
 
-    void loadReaderBook(bookId, searchJump?.chapterIndex).catch(() => {
-      // errors are already captured in store.error by loadReaderBook
-    });
+    void loadReaderBook(bookId, searchJump?.chapterIndex)
+      .then(() => setNextBook(null))
+      .catch(() => {
+        // errors are already captured in store.error by loadReaderBook
+        setNextBook(null);
+      });
 
     return () => {
       // Revoke all chapter asset blob URLs (images, fonts) before clearing
@@ -179,6 +225,8 @@ export function useReaderScreen() {
     isJumping,
     totalChapters,
     toc,
+
+    nextBook,
 
     coverUrl,
     coverChecked,

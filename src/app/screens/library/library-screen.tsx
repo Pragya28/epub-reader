@@ -42,6 +42,7 @@ export const LibraryScreen: FC = () => {
     isLoading,
     error,
     currentBook,
+    nextBook,
     visibleBooks,
     isFiltering,
     headerVisible,
@@ -183,7 +184,14 @@ export const LibraryScreen: FC = () => {
       </main>
 
       {/* ── Continue Reading — fixed, fills width minus FAB ─────────────── */}
-      {currentBook && <ContinueReadingBanner book={currentBook} />}
+      {currentBook &&
+        (currentBook.isFinished ? (
+          nextBook && (
+            <ContinueReadingBanner book={nextBook} label="Next book" />
+          )
+        ) : (
+          <ContinueReadingBanner book={currentBook} />
+        ))}
 
       {/* ── FAB — fixed bottom-right ─────────────────────────────────────── */}
       <LibraryFab />

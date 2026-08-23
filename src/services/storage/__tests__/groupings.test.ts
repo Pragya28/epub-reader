@@ -7,6 +7,7 @@ import {
   getGrouping,
   getMembersForBook,
   getMembersForGrouping,
+  getNextInSeries,
   hasSeriesMembership,
   isCollection,
   listGroupings,
@@ -16,7 +17,11 @@ import {
 } from "../groupings";
 import { EpubParser } from "@/services/epub/epub-parser";
 import * as bookRepository from "@/services/storage/book-repository";
-import { getAllBooks, getBook } from "@/services/storage/book-repository";
+import {
+  getAllBooks,
+  getBook,
+  saveBookMetadata,
+} from "@/services/storage/book-repository";
 import { importBook } from "@/features/library/actions/import-book";
 import { loadFixture } from "@/tests/utils/load-fixtures";
 import { resetTestDb } from "@/tests/utils/reset-test-db";
@@ -102,6 +107,44 @@ describe("groupings", () => {
     expect(remaining).toEqual([
       { groupingId: "g1", bookId: "book-2", order: null },
     ]);
+  });
+
+  it("getNextInSeries returns the book with the next-higher order", async () => {
+    await putGrouping({
+      id: "series-1",
+      type: "series",
+      name: "The Trilogy",
+      createdAt: 1,
+      updatedAt: 1,
+    });
+    await addMember("series-1", "book-1", 1);
+    await addMember("series-1", "book-2", 2);
+    await addMember("series-1", "book-3", 3);
+    await saveBookMetadata({
+      id: "book-2",
+      title: "Book Two",
+      author: "Author",
+      language: "en",
+      createdAt: 1,
+      fileHash: "hash-2",
+    });
+
+    const next = await getNextInSeries("series-1", 1);
+
+    expect(next?.id).toBe("book-2");
+  });
+
+  it("getNextInSeries returns undefined for the last book in the series", async () => {
+    await putGrouping({
+      id: "series-1",
+      type: "series",
+      name: "The Trilogy",
+      createdAt: 1,
+      updatedAt: 1,
+    });
+    await addMember("series-1", "book-3", 3);
+
+    expect(await getNextInSeries("series-1", 3)).toBeUndefined();
   });
 
   it("isCollection is true only for collection-type groupings", () => {

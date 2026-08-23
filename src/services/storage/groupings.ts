@@ -4,6 +4,7 @@ import { createId } from "@/utils/create-id";
 import type {
   Grouping,
   GroupingMember,
+  StoredBook,
 } from "@/services/storage/storage-types";
 
 export async function getGrouping(id: string): Promise<Grouping | undefined> {
@@ -111,6 +112,27 @@ export async function upsertSeriesMembership(
   await db.books.update(bookId, { seriesGroupingId: groupingId });
 
   return groupingId;
+}
+
+/**
+ * The book immediately after `currentOrder` within a series, ordered by
+ * GroupingMember.order (the same field the series detail screen sorts
+ * by) — used for the "Next in series" affordance. Returns undefined for
+ * the last book in the series or an order with no successor.
+ */
+export async function getNextInSeries(
+  seriesGroupingId: string,
+  currentOrder: number,
+): Promise<StoredBook | undefined> {
+  const members = await getMembersForGrouping(seriesGroupingId);
+  const next = members
+    .filter(
+      (member): member is GroupingMember & { order: number } =>
+        member.order !== null && member.order > currentOrder,
+    )
+    .sort((a, b) => a.order - b.order)[0];
+
+  return next ? getBook(next.bookId) : undefined;
 }
 
 /**
