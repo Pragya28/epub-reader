@@ -69,11 +69,11 @@ Two platform changes came with it, not scoped by the sprint spec but needed once
 12. ✅ **Browse by series** — `library-series-screen.tsx` (`ROUTES.LIBRARY_SERIES`), folded into Day 2's delivery (see above) rather than built here — scoping "a series screen" surfaced the Shelves tab as its natural entry point, so both landed together. _(done 2026-08-18)_
 13. ✅ **Browse by collection** — `library-collection-screen.tsx` (`ROUTES.LIBRARY_COLLECTION`), landed as part of Day 3's delivery (see above) — `GroupingCard`/`ShelvesGrid` needed zero changes as anticipated, the detail screen was the only missing piece. _(done 2026-08-20)_
 14. ✅ **Grouped library views** — the Shelves tab's merged grid (`ShelvesGrid`) is exactly this: one grouped view spanning both series and collections, with a `merged`/`grouped` (split-by-type) toggle. Folded into Day 2's delivery. _(done 2026-08-18)_
-15. ❌ **"Next in series" affordance** — no series data to derive it from. Not addressed by the Shelves/series-screen work — out of scope there (the series screen shows the whole ordered list, not a "next book" prompt elsewhere in the UI).
+15. ✅ **"Next in series" affordance** — `getNextInSeries()` (`src/services/storage/groupings.ts`), the book with the next-higher `GroupingMember.order` in a series. Surfaced in two places: the reader shows a "Next book" banner (reusing `ContinueReadingBanner` with its new optional `label` prop) once the current book reaches its literal end this session (`use-reader-screen.ts`'s `isBookFinished`, mirroring `derive-book-status.ts`'s finished threshold); the library's continue-reading banner switches to the same "Next book" banner once its most-recently-read candidate is `isFinished`, instead of the banner disappearing (`pickCurrentlyReadingBook` broadened to include finished books, branch in `library-screen.tsx`). _(done 2026-08-23)_
 
 ### Done Criteria
 
-🟡 Partial — items 12, 13, and 14 are done (13 landed 2026-08-20 as part of Day 3's collection detail screen; 12 and 14 landed 2026-08-18 with the Shelves tab). Item 15 ("Next in series") remains unstarted — no sprint day has picked it up yet.
+✅ Done — all four items shipped. Items 12–14 landed 2026-08-18/20 as part of Days 2–3's delivery; item 15 landed 2026-08-23.
 
 ---
 

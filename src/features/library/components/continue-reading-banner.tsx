@@ -14,11 +14,20 @@ interface ContinueReadingBannerProps {
    * continue-reading case, which reads as it always has.
    */
   label?: string;
+  /**
+   * "floating" (default) is the library screen's fixed-position overlay.
+   * "inline" drops the fixed positioning/shadow/ring so the banner can be
+   * placed in-flow instead — used inside the reader's own footer, which
+   * already has fixed positioning of its own and would otherwise compete
+   * with a second fixed overlay for the same bottom-of-screen real estate.
+   */
+  variant?: "floating" | "inline";
 }
 
 export const ContinueReadingBanner: FC<ContinueReadingBannerProps> = ({
   book,
   label,
+  variant = "floating",
 }) => {
   const navigate = useNavigate();
 
@@ -31,7 +40,11 @@ export const ContinueReadingBanner: FC<ContinueReadingBannerProps> = ({
     <button
       onClick={() => navigate(ROUTES.READER.replace(":bookId", book.id))}
       aria-label={`${label ?? "Continue reading"} ${book.title}`}
-      className="fixed bottom-5 left-2 right-[60px] flex items-center gap-2 py-1.5 pl-1.5 pr-2 rounded-xl border-none cursor-pointer text-left opacity-90 transition-opacity hover:opacity-100 active:opacity-100 z-40 bg-popover text-popover-foreground ring-1 ring-foreground/10 shadow-(--shadow-floating)"
+      className={`flex items-center gap-2 py-1.5 pl-1.5 pr-2 rounded-xl border-none cursor-pointer text-left opacity-90 transition-opacity hover:opacity-100 active:opacity-100 bg-popover text-popover-foreground ${
+        variant === "floating"
+          ? "fixed bottom-5 left-2 right-[60px] z-40 ring-1 ring-foreground/10 shadow-(--shadow-floating)"
+          : "w-full"
+      }`}
     >
       {/* Book icon in a subtle tile atop the banner's own tone */}
       <div className="shrink-0 size-9 rounded-lg flex items-center justify-center bg-popover-foreground/10 text-popover-foreground">

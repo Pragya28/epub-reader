@@ -139,12 +139,17 @@
   --warm-accent-foreground: oklch(18.73% 0.0383 89.07);
 
   /* Theme-tuned amber — distinct from cover-gold (reserved for book
-     objects) — used only to mark selection/active state (switches,
-     radio rows, active-filter indicator) across the app chrome.
-     Darkened from an earlier #b8862e, which measured 2.65-2.77:1
-     against card/surface-high — below WCAG 1.4.11's 3:1 minimum for
-     non-text UI indicators. This value clears 3.5-3.7:1. */
-  --selected: oklch(58.07% 0.1046 78.37);
+     objects) — used both as a non-text state indicator (switches,
+     radio rows, active-filter indicator: WCAG 1.4.11, 3:1) and as
+     actual text color for the search-result match highlight
+     (`search-result-row.tsx`'s `<mark>`, on a `bg-cover-gold/35`
+     highlight — WCAG 1.4.3, 4.5:1, the stricter of the two). Darkened
+     2026-08-23 from 58.07% (itself a 2026-08-07 fix for a since-
+     replaced #b8862e value) after the mark-highlight case measured
+     only ~3.2:1 against its composited background — enough for 1.4.11
+     but not 1.4.3. This value clears 4.5:1 there and 5:1+ against
+     card/surface-high. */
+  --selected: oklch(50% 0.1046 78.37);
   --selected-foreground: oklch(98.38% 0.0159 82.79);
 
   --chart-1: oklch(48.45% 0.0329 79.18);
@@ -219,7 +224,10 @@
     --cover-dark: oklch(26.56% 0.0178 70.68);
     --cover-gold: oklch(74.32% 0.1171 89.51);
 
-    --selected: oklch(77.53% 0.123 78.89);
+    /* See the light-mode --selected comment: darkened 2026-08-23 to
+       clear WCAG 1.4.3 (4.5:1) for the search-match highlight text
+       case, not just 1.4.11 (3:1) for non-text indicators. */
+    --selected: oklch(78% 0.123 78.89);
     --selected-foreground: oklch(18.38% 0.0052 67.5);
 
     --chart-1: oklch(79.03% 0.0611 87.95);
@@ -281,7 +289,10 @@
   --cover-dark: oklch(26.56% 0.0178 70.68);
   --cover-gold: oklch(74.32% 0.1171 89.51);
 
-  --selected: oklch(77.53% 0.123 78.89);
+  /* See the light-mode --selected comment: darkened 2026-08-23 to
+     clear WCAG 1.4.3 (4.5:1) for the search-match highlight text
+     case, not just 1.4.11 (3:1) for non-text indicators. */
+  --selected: oklch(78% 0.123 78.89);
   --selected-foreground: oklch(18.38% 0.0052 67.5);
 
   --chart-1: oklch(79.03% 0.0611 87.95);

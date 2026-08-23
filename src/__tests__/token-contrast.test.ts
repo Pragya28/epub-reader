@@ -142,4 +142,35 @@ describe.each([
       expect(contrast(tokens[fg], tokens[bg])).toBeGreaterThanOrEqual(minimum);
     },
   );
+
+  // search-result-row.tsx's <mark> renders --selected as literal text on a
+  // bg-cover-gold/35 highlight — a composited (semi-transparent) background,
+  // not a plain token pair, and normal-weight body text (WCAG 1.4.3, 4.5:1)
+  // rather than the 3:1 non-text minimum the UI_PAIRS entries above check.
+  // Missing this case is exactly what let --selected clear 1.4.11 while
+  // still failing 1.4.3 here (fixed 2026-08-23).
+  it("--selected on cover-gold/35 highlight is at least 4.5:1 (search match highlight text)", () => {
+    const [gr, gg, gb] = channels(tokens["--cover-gold"]);
+    const [br, bg, bb] = channels(tokens["--background"]);
+    const alpha = 0.35;
+    const composited: [number, number, number] = [
+      gr * alpha + br * (1 - alpha),
+      gg * alpha + bg * (1 - alpha),
+      gb * alpha + bb * (1 - alpha),
+    ];
+    const luminance = (rgb: [number, number, number]) =>
+      rgb
+        .map((c) => {
+          const s = c / 255;
+          return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+        })
+        .reduce((sum, c, i) => sum + [0.2126, 0.7152, 0.0722][i] * c, 0);
+
+    const [selR, selG, selB] = channels(tokens["--selected"]);
+    const [hi, lo] = [
+      luminance([selR, selG, selB]),
+      luminance(composited),
+    ].sort((x, y) => y - x);
+    expect((hi + 0.05) / (lo + 0.05)).toBeGreaterThanOrEqual(4.5);
+  });
 });

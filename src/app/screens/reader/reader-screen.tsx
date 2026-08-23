@@ -211,9 +211,20 @@ export const ReaderScreen: FC = () => {
             </Button>
           </div>
         </div>
-      </footer>
 
-      {nextBook && <ContinueReadingBanner book={nextBook} label="Next book" />}
+        {/* "Next in series" — an in-flow row inside this same fixed footer,
+            not a second floating overlay, so it can never overlap the
+            chapter-nav row above it (Sprint 7 Day 4 audit finding). */}
+        {nextBook && (
+          <div className="px-2 pb-1">
+            <ContinueReadingBanner
+              book={nextBook}
+              label="Next book"
+              variant="inline"
+            />
+          </div>
+        )}
+      </footer>
 
       {/* External link confirmation */}
       <ExternalLinkDialog

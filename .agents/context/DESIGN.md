@@ -23,7 +23,7 @@ colors:
   cover-gold: "#c9a84c"
   warm-accent: "#a67c00"
   warm-accent-foreground: "#1a1200"
-  selected: "#9c7226"
+  selected: "#835a00"
   selected-foreground: "#fff9ee"
 typography:
   display:
@@ -112,7 +112,7 @@ A warm parchment-and-ink palette that inverts cleanly between a cream light mode
 ### Accent
 
 - **Warm Accent — Antique Gold** (`#a67c00` bg / `#1a1200` fg, fixed — does not change with theme): reserved for a fixed, theme-independent gold tile, distinct from the primary-onyx ink/paper inversion used everywhere else. Currently unapplied — no surface in the app uses it. The continue-reading banner and the library's speed-dial FAB, its two prior applications, now use the neutral Parchment Low surface (see below) instead, matching the floating chrome elsewhere (dropdown menus, the FAB's own action labels) rather than standing out as gold CTAs.
-- **Selected** (`#9c7226` bg light / `#e0ac52` bg dark, tuned per theme for contrast — light value darkened 2026-08-07 to clear WCAG 1.4.11's 3:1 non-text minimum, verified at 3.5–3.7:1 against `card`/`surface-high`): the one color used to mark "this option is active" — switch checked-track, radio-row selected ring + checkmark, active-filter status dot. Distinct from Cover Gold so an amber accent never gets mistaken for "this is a book object."
+- **Selected** (`#835a00` bg light / `#e2ad54` bg dark, tuned per theme for contrast): the one color used both to mark "this option is active" — switch checked-track, radio-row selected ring + checkmark, active-filter status dot (WCAG 1.4.11, 3:1) — and as literal text color on the search-result match highlight (`search-result-row.tsx`'s `<mark>`, WCAG 1.4.3, 4.5:1, the stricter case). Darkened 2026-08-23 (light) / lightened slightly (dark) after the highlight case measured only ~3.2:1 against its `bg-cover-gold/35` background — enough for 1.4.11 but not 1.4.3; both themes now clear 4.5:1 there and 5:1+ against `card`/`surface-high`. Distinct from Cover Gold so an amber accent never gets mistaken for "this is a book object."
 
 ### Neutral
 

@@ -143,14 +143,15 @@ export const SearchScreen: FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="flex items-center gap-2.5 border-b border-divider px-4 py-3.5">
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="icon"
           aria-label="Back"
           onClick={() => navigate(ROUTES.LIBRARY)}
           className="shrink-0 text-foreground"
         >
           <ArrowLeft className="size-5" strokeWidth={1.5} />
-        </button>
+        </Button>
         <div className="flex flex-1 items-center gap-2 rounded-lg bg-card px-3 py-2.5">
           <SearchIcon
             className="size-4 shrink-0 text-muted-foreground"
@@ -166,13 +167,15 @@ export const SearchScreen: FC = () => {
             className="font-reading min-w-0 flex-1 bg-transparent text-title-sm text-foreground outline-none placeholder:text-muted-foreground"
           />
           {query && (
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="icon-sm"
               aria-label="Clear search"
               onClick={() => setQuery("")}
+              className="shrink-0"
             >
               <X className="size-3.5 text-muted-foreground" strokeWidth={1.5} />
-            </button>
+            </Button>
           )}
         </div>
       </div>
