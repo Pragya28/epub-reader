@@ -54,9 +54,14 @@ export class EpubParser {
 
     const opfDirectory = this.getOpfDirectory(extraction.opfPath);
 
-    const [toc, stylesheets] = await Promise.all([
+    const [toc, stylesheets, startChapterIndex] = await Promise.all([
       this.tocParser.parse(extraction.zip, parsedEpub, opfDirectory),
       this.chapterParser.loadBookStylesheets(
+        extraction.zip,
+        parsedEpub,
+        opfDirectory,
+      ),
+      this.tocParser.resolveStartOfContent(
         extraction.zip,
         parsedEpub,
         opfDirectory,
@@ -96,6 +101,7 @@ export class EpubParser {
       chapters,
       toc,
       stylesheets,
+      startChapterIndex,
       loadChapter,
     };
   }

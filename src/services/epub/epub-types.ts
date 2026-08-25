@@ -41,6 +41,13 @@ export interface ParsedEpub {
   manifest: Record<string, ManifestItem>;
   spine: string[];
   coverItem?: ManifestItem;
+  /**
+   * href of the EPUB2 `<guide>` reference marking where real content begins
+   * (type="text", falling back to "bodymatter"/"start") — used to skip
+   * cover/title-page front matter on first open. Relative to the OPF
+   * directory, resolved to a spine index by TocParser.resolveStartOfContent.
+   */
+  guideStartHref?: string;
 }
 
 export interface ParsedChapter {
@@ -80,6 +87,13 @@ export interface ParsedBook {
   toc: TocItem[];
   /** Book-level CSS (see ChapterParser.loadBookStylesheets) — not per-chapter. */
   stylesheets: string[];
+  /**
+   * Spine index of the EPUB's declared start of content (EPUB3 landmarks
+   * "bodymatter", or EPUB2 `<guide type="text">`), skipping cover/title-page
+   * front matter. Undefined if the book declares no such landmark or it
+   * couldn't be resolved to a spine item.
+   */
+  startChapterIndex?: number;
   /**
    * Parses (and sanitizes, and blob-mints assets for) a single chapter on
    * demand, memoized — concurrent/repeated calls for the same index share

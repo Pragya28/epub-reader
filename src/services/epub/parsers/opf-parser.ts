@@ -12,12 +12,14 @@ export class OpfParser {
 
     this.validateSpine(spine, manifest);
     const coverItem = this.findCover(opfXml, manifest);
+    const guideStartHref = this.findGuideStart(opfXml);
 
     return {
       metadata,
       manifest,
       spine,
       coverItem,
+      guideStartHref,
     };
   }
 
@@ -156,6 +158,10 @@ export class OpfParser {
   }
 
   // ---- Spine ----
+  /**
+   * `linear="no"` itemrefs are supplementary (footnote/popup pages) and
+   * excluded from the main reading flow — same convention ebooklib follows.
+   */
   private parseSpine(opfXml: Document): string[] {
     const spine = this.getDocumentElement(opfXml, ["spine", "opf:spine"]);
     if (!spine) throw new Error("spine not found");
@@ -163,6 +169,7 @@ export class OpfParser {
     if (items.length === 0) throw new Error("spine is empty");
     const spineItems: string[] = [];
     items.forEach((item) => {
+      if (this.getElementAttribute(item, "linear") === "no") return;
       const idref = this.getElementAttribute(item, "idref");
       if (idref) spineItems.push(idref);
     });
@@ -209,6 +216,20 @@ export class OpfParser {
 
     // fallback
     return Object.values(manifest).find((item) => /cover/i.test(item.href));
+  }
+
+  // ---- Guide (EPUB2 start-of-content) ----
+  private findGuideStart(opfXml: Document): string | undefined {
+    const guide = this.getDocumentElement(opfXml, ["guide", "opf:guide"]);
+    if (!guide) return undefined;
+
+    const references = Array.from(guide.querySelectorAll("reference"));
+    const byType = (type: string) =>
+      references.find((ref) => ref.getAttribute("type") === type);
+
+    const reference = byType("text") ?? byType("bodymatter") ?? byType("start");
+
+    return reference?.getAttribute("href") ?? undefined;
   }
 
   // ---- Utilities ----

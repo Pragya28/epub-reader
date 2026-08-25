@@ -525,6 +525,46 @@ describe("OpfParser", () => {
     expect(result.spine).toEqual(["intro", "chapter-1", "chapter-2"]);
   });
 
+  it("excludes non-linear itemrefs from the spine", () => {
+    const xml = `
+      <package>
+        <metadata />
+
+        <manifest>
+          <item
+            id="chapter-1"
+            href="chapter-1.xhtml"
+            media-type="application/xhtml+xml"
+          />
+
+          <item
+            id="footnotes"
+            href="footnotes.xhtml"
+            media-type="application/xhtml+xml"
+          />
+
+          <item
+            id="chapter-2"
+            href="chapter-2.xhtml"
+            media-type="application/xhtml+xml"
+          />
+        </manifest>
+
+        <spine>
+          <itemref idref="chapter-1" />
+          <itemref idref="footnotes" linear="no" />
+          <itemref idref="chapter-2" />
+        </spine>
+      </package>
+    `;
+
+    const doc = parseXml(xml);
+
+    const result = parser.parse(doc);
+
+    expect(result.spine).toEqual(["chapter-1", "chapter-2"]);
+  });
+
   it("handles missing metadata safely", () => {
     const xml = `
       <package>

@@ -66,6 +66,66 @@ export class TocParser {
     return [];
   }
 
+  /**
+   * Resolves the book's declared start of content to a spine index, trying
+   * the EPUB3 landmarks nav ("bodymatter"/"start") before falling back to
+   * the EPUB2 `<guide>` href already parsed onto parsedEpub. Undefined if
+   * neither exists or the href doesn't match any spine item.
+   */
+  async resolveStartOfContent(
+    zip: JSZip,
+    parsedEpub: ParsedEpub,
+    opfDirectory: string,
+  ): Promise<number | undefined> {
+    const pathToIndex = this.buildPathToIndexMap(parsedEpub, opfDirectory);
+
+    const landmarkHref = await this.findLandmarkStartHref(
+      zip,
+      parsedEpub,
+      opfDirectory,
+    );
+    const href = landmarkHref ?? parsedEpub.guideStartHref;
+    if (!href) return undefined;
+
+    const [pathPart] = href.split("#") as [string, string | undefined];
+    const index = pathToIndex.get(this.normalizePath(opfDirectory, pathPart));
+    return index === undefined ? undefined : index;
+  }
+
+  private async findLandmarkStartHref(
+    zip: JSZip,
+    parsedEpub: ParsedEpub,
+    opfDirectory: string,
+  ): Promise<string | undefined> {
+    const navItem = Object.values(parsedEpub.manifest).find((item) =>
+      item.properties.includes("nav"),
+    );
+    if (!navItem) return undefined;
+
+    const navPath = this.resolvePath(opfDirectory, navItem.href);
+    const navFile = zip.file(navPath);
+    if (!navFile) return undefined;
+
+    const xml = await navFile.async("text");
+    const doc = new DOMParser().parseFromString(xml, "application/xhtml+xml");
+
+    const landmarksNav =
+      doc.querySelector('nav[epub\\:type="landmarks"]') ??
+      doc.querySelector('nav[*|type="landmarks"]');
+    if (!landmarksNav) return undefined;
+
+    const anchors = Array.from(landmarksNav.querySelectorAll("a"));
+    const byType = (type: string) =>
+      anchors.find(
+        (a) =>
+          a.getAttribute("epub:type") === type ||
+          (a.getAttributeNS("*", "type") ?? "").split(/\s+/).includes(type),
+      );
+
+    const anchor = byType("bodymatter") ?? byType("start");
+    return anchor?.getAttribute("href") ?? undefined;
+  }
+
   // ---- EPUB3 Nav ----
 
   private parseNav(doc: Document): RawTocItem[] {
@@ -158,7 +218,14 @@ export class TocParser {
     parsedEpub: ParsedEpub,
     opfDirectory: string,
   ): TocItem[] {
-    // Build path → spine index map
+    const pathToIndex = this.buildPathToIndexMap(parsedEpub, opfDirectory);
+    return this.resolveItems(items, pathToIndex, opfDirectory);
+  }
+
+  private buildPathToIndexMap(
+    parsedEpub: ParsedEpub,
+    opfDirectory: string,
+  ): Map<string, number> {
     const pathToIndex = new Map<string, number>();
     for (let i = 0; i < parsedEpub.spine.length; i++) {
       const manifestId = parsedEpub.spine[i];
@@ -169,8 +236,7 @@ export class TocParser {
         pathToIndex.set(normalized, i);
       }
     }
-
-    return this.resolveItems(items, pathToIndex, opfDirectory);
+    return pathToIndex;
   }
 
   private resolveItems(

@@ -16,6 +16,7 @@ function makeZip(files: Record<string, string>) {
 function makeEpub(
   spineIds: string[],
   manifest: Record<string, { href: string; properties: string }>,
+  guideStartHref?: string,
 ): ParsedEpub {
   return {
     metadata: {
@@ -26,6 +27,7 @@ function makeEpub(
     },
     manifest,
     spine: spineIds,
+    guideStartHref,
   };
 }
 
@@ -151,6 +153,55 @@ describe("TocParser", () => {
       const toc = await parser.parse(zip, epubNoNav, opfDirectory);
       expect(toc[1]?.children).toHaveLength(1);
       expect(toc[1]?.children[0]?.fragmentId).toBe("section-1");
+    });
+  });
+
+  describe("resolveStartOfContent", () => {
+    const EPUB3_NAV_WITH_LANDMARKS = `
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+  <body>
+    <nav epub:type="toc"><ol><li><a href="text/chapter-1.xhtml">Chapter One</a></li></ol></nav>
+    <nav epub:type="landmarks">
+      <ol>
+        <li><a epub:type="cover" href="text/cover.xhtml">Cover</a></li>
+        <li><a epub:type="bodymatter" href="text/chapter-2.xhtml">Start Reading</a></li>
+      </ol>
+    </nav>
+  </body>
+</html>
+`;
+
+    it("resolves the EPUB3 landmarks bodymatter entry to a spine index", async () => {
+      const epub = makeEpub(["ch1", "ch2", "ch3"], MANIFEST);
+      const zip = makeZip({ "epub/toc.xhtml": EPUB3_NAV_WITH_LANDMARKS });
+
+      const index = await parser.resolveStartOfContent(zip, epub, opfDirectory);
+      expect(index).toBe(1);
+    });
+
+    it("falls back to the OPF guide href when no landmarks nav exists", async () => {
+      const epub = makeEpub(
+        ["ch1", "ch2"],
+        {
+          ch1: { href: "text/chapter-1.xhtml", properties: "" },
+          ch2: { href: "text/chapter-2.xhtml", properties: "" },
+        },
+        "text/chapter-2.xhtml",
+      );
+      const zip = makeZip({});
+
+      const index = await parser.resolveStartOfContent(zip, epub, opfDirectory);
+      expect(index).toBe(1);
+    });
+
+    it("returns undefined when neither landmarks nor guide are present", async () => {
+      const epub = makeEpub(["ch1"], {
+        ch1: { href: "text/chapter-1.xhtml", properties: "" },
+      });
+      const zip = makeZip({});
+
+      const index = await parser.resolveStartOfContent(zip, epub, opfDirectory);
+      expect(index).toBeUndefined();
     });
   });
 

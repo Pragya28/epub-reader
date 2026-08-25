@@ -53,6 +53,14 @@ export async function loadReaderBook(
       // Seed the progress bar with the persisted percent so it shows the
       // correct value immediately on open, before the first scroll event.
       store.setProgressPercent(savedProgress.percent);
+    } else if (
+      parsedBook.startChapterIndex !== undefined &&
+      parsedBook.startChapterIndex >= 0 &&
+      parsedBook.startChapterIndex < totalChapters
+    ) {
+      // First-ever open with no saved progress: skip cover/title-page front
+      // matter and open at the book's declared start of content.
+      store.setCurrentChapterIndex(parsedBook.startChapterIndex);
     }
   } catch (error) {
     store.setError(
