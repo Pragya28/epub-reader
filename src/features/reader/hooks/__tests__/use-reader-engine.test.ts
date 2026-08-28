@@ -1442,13 +1442,14 @@ describe("useReaderEngine", () => {
 
       for (const key of ["PageDown", "ArrowDown", " "]) {
         mockWin.scrollBy.mockClear();
-        mockIframeDoc.dispatchEvent(
-          new KeyboardEvent("keydown", { key, cancelable: true }),
-        );
+        const event = new KeyboardEvent("keydown", { key, cancelable: true });
+        mockIframeDoc.dispatchEvent(event);
         expect(mockWin.scrollBy).toHaveBeenCalledWith(
           expect.objectContaining({ top: expect.any(Number) }),
         );
         expect(mockWin.scrollBy.mock.calls[0][0].top).toBeGreaterThan(0);
+        // preventDefault so the key doesn't also scroll the host page.
+        expect(event.defaultPrevented).toBe(true);
       }
     });
 
@@ -1465,10 +1466,10 @@ describe("useReaderEngine", () => {
 
       for (const key of ["PageUp", "ArrowUp"]) {
         mockWin.scrollBy.mockClear();
-        mockIframeDoc.dispatchEvent(
-          new KeyboardEvent("keydown", { key, cancelable: true }),
-        );
+        const event = new KeyboardEvent("keydown", { key, cancelable: true });
+        mockIframeDoc.dispatchEvent(event);
         expect(mockWin.scrollBy.mock.calls[0][0].top).toBeLessThan(0);
+        expect(event.defaultPrevented).toBe(true);
       }
     });
 

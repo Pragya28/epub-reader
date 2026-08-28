@@ -149,6 +149,73 @@ describe("ReaderScreen", () => {
     });
   });
 
+  describe("accessibility", () => {
+    function setLoaded(parsedBook: ParsedBook, chapterIndex = 0) {
+      readerStore.setState({
+        isLoading: false,
+        error: null,
+        readerDocument: {
+          book: {
+            id: "book-1",
+            title: "Test Book",
+            author: "Test Author",
+          } as never,
+          file: new Blob(),
+        },
+        parsedBook,
+        currentChapterIndex: chapterIndex,
+      });
+    }
+
+    it("exposes a polite live region announcing the current chapter", () => {
+      setLoaded(mockThreeChapterBook, 0);
+      renderReaderScreen();
+
+      const region = screen.getByRole("status");
+      expect(region).toHaveAttribute("aria-live", "polite");
+      // No TOC → position fallback.
+      expect(region).toHaveTextContent("Chapter 1 of 3");
+    });
+
+    it("updates the live region text when the chapter changes", async () => {
+      setLoaded(mockThreeChapterBook, 0);
+      renderReaderScreen();
+
+      readerStore.setState({ currentChapterIndex: 2 });
+
+      expect(await screen.findByText("Chapter 3 of 3")).toBeInTheDocument();
+    });
+
+    it("prefers the TOC label over the position fallback", () => {
+      const bookWithToc: ParsedBook = {
+        ...mockThreeChapterBook,
+        toc: [
+          { label: "Prologue", href: "", chapterIndex: 0, children: [] },
+          { label: "The Journey", href: "", chapterIndex: 1, children: [] },
+        ],
+      };
+      setLoaded(bookWithToc, 1);
+      renderReaderScreen();
+
+      expect(screen.getByRole("status")).toHaveTextContent("The Journey");
+    });
+
+    it("keeps chrome controls reachable by keyboard while the chrome is hidden", () => {
+      // chromeVisible starts false — the header/footer are translated
+      // off-screen but must stay in the tab order (WCAG 2.4.11, see
+      // ACCESSIBILITY.md; reveal-on-focus depends on this).
+      setLoaded(mockThreeChapterBook, 0);
+      renderReaderScreen();
+
+      for (const name of ["Go back", "Previous chapter", "Next chapter"]) {
+        expect(screen.getByRole("button", { name })).not.toHaveAttribute(
+          "tabindex",
+          "-1",
+        );
+      }
+    });
+  });
+
   describe("prev/next chapter controls", () => {
     function setLoadedAt(chapterIndex: number) {
       readerStore.setState({

@@ -24,6 +24,7 @@ export const ReaderScreen: FC = () => {
     isJumping,
     totalChapters,
     toc,
+    currentChapterLabel,
     nextBook,
     coverUrl,
     coverChecked,
@@ -113,6 +114,13 @@ export const ReaderScreen: FC = () => {
 
   return (
     <div className="relative h-dvh overflow-hidden bg-background">
+      {/* Chapters mount/unmount silently inside the virtualized iframe — this
+          polite live region is the only chapter-transition signal assistive
+          tech gets (see ACCESSIBILITY.md). */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {currentChapterLabel}
+      </p>
+
       {/* Header */}
       <header
         onFocusCapture={revealChrome}
