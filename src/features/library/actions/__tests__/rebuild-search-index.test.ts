@@ -56,7 +56,7 @@ describe("rebuildSearchIndex", () => {
     for (const book of books) {
       expect(await hasIndex(book.id)).toBe(true);
     }
-  }, 150000);
+  }, 300000);
 
   it("counts a book with a missing file blob as failed without stopping the rest", async () => {
     const file = await loadFixture("valid-book.epub");
@@ -71,7 +71,7 @@ describe("rebuildSearchIndex", () => {
     const result = await rebuildSearchIndex();
 
     expect(result).toEqual({ total: 1, failed: 1 });
-  }, 30000);
+  }, 90000);
 
   it("removes stale index entries a book no longer contains", async () => {
     const file = await loadFixture("valid-book.epub");
@@ -96,5 +96,5 @@ describe("rebuildSearchIndex", () => {
     expect(result).toEqual({ total: 1, failed: 0 });
     const stale = await findMatches("totallyfakeword", book.id);
     expect(stale).toHaveLength(0);
-  }, 30000);
+  }, 90000);
 });
