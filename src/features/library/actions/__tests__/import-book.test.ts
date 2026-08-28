@@ -106,7 +106,8 @@ describe("importBook", () => {
   it("builds a search index for the imported book", async () => {
     const file = await loadFixture("valid-book.epub");
 
-    await importBook(file);
+    const { indexed } = await importBook(file);
+    await indexed; // indexing runs in the background — wait for it here
 
     const [book] = await getAllBooks();
     expect(await hasIndex(book.id)).toBe(true);

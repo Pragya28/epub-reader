@@ -3,6 +3,7 @@ import { EpubParser } from "@/services/epub/epub-parser";
 import { hasIndex } from "@/services/search/search-index";
 import { getAllBooks } from "@/services/storage/book-repository";
 import { getMembersForBook, listGroupings } from "@/services/storage/groupings";
+import { createCollection, addBookToCollection } from "../collections";
 import { deleteBook } from "../delete-book";
 import { importBook } from "../import-book";
 import { loadFixture } from "@/tests/utils/load-fixtures";
@@ -17,7 +18,8 @@ describe("deleteBook", () => {
 
   it("removes the book's search index", async () => {
     const file = await loadFixture("valid-book.epub");
-    await importBook(file);
+    const { indexed } = await importBook(file);
+    await indexed; // indexing runs in the background — wait for it here
     const [book] = await getAllBooks();
 
     expect(await hasIndex(book.id)).toBe(true);
@@ -45,12 +47,29 @@ describe("deleteBook", () => {
     });
 
     const file = await loadFixture("valid-book.epub");
-    await importBook(file);
+    const { indexed } = await importBook(file);
+    await indexed; // indexing runs in the background — settle it before delete
     const [book] = await getAllBooks();
 
     await deleteBook(book.id);
 
     expect(await getMembersForBook(book.id)).toHaveLength(0);
     expect(await listGroupings("series")).toHaveLength(0);
+  });
+
+  it("removes collection membership but keeps the emptied collection", async () => {
+    const file = await loadFixture("valid-book.epub");
+    const { indexed } = await importBook(file);
+    await indexed; // indexing runs in the background — settle it before delete
+    const [book] = await getAllBooks();
+
+    const collectionId = await createCollection("Favorites");
+    await addBookToCollection(collectionId, book.id);
+    expect(await getMembersForBook(book.id)).toHaveLength(1);
+
+    await deleteBook(book.id);
+
+    expect(await getMembersForBook(book.id)).toHaveLength(0);
+    expect(await listGroupings("collection")).toHaveLength(1);
   });
 });

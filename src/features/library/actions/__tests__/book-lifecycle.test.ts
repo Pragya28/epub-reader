@@ -24,7 +24,8 @@ describe("book lifecycle: import -> read -> delete", () => {
   it("imports a book, records reading progress, then fully removes it", async () => {
     const file = await loadFixture("valid-book.epub");
 
-    const { id: bookId } = await importBook(file);
+    const { id: bookId, indexed } = await importBook(file);
+    await indexed; // indexing runs in the background — settle it before delete
 
     let books = await getAllBooks();
     expect(books).toHaveLength(1);

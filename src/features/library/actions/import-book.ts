@@ -106,20 +106,21 @@ export async function importBook(file: File) {
     // 7. Update store reactively
     store.addBook(book);
 
-    // The index is the largest write of the import and the likeliest to hit
-    // a storage quota, and it runs *after* the book itself is already
-    // persisted — so a failure here must not fail an otherwise-good import.
-    // ensureIndexesForBooks() rebuilds a missing index on the next search,
-    // so the book is searchable again once space frees up.
-    try {
-      await buildIndex(bookId, file);
-    } catch (error) {
+    // Indexing runs in the background, not awaited — it's the largest write
+    // of the import (a second full EPUB parse) and the user doesn't need it
+    // finished to start reading. Fire-and-forget rather than `void`, so a
+    // caller that does care (tests, a future "still indexing" indicator)
+    // can await `indexed`. A failure here must not fail an otherwise-good
+    // import; ensureIndexesForBooks() rebuilds a missing index on the next
+    // search, so the book is searchable again once space frees up.
+    const indexed = buildIndex(bookId, file).catch((error: unknown) => {
       logger.error("failed to build search index for imported book", error);
-    }
+    });
 
     return {
       id: bookId,
       metadata: metadata,
+      indexed,
     };
   } finally {
     store.setLoading(false);
