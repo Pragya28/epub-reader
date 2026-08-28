@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { ROUTES } from "@/utils/routes";
@@ -9,6 +9,7 @@ import type { BookWithProgress } from "@/features/library/types/library.types";
 import type { TocItem } from "@/services/epub/epub-types";
 import { loadReaderBook } from "../actions/load-reader-book";
 import { jumpToTocItem } from "../actions/jump-to-toc-item";
+import { flattenToc } from "../utils/flatten-toc";
 import { readerStore } from "../store/reader-store";
 import { useReaderEngine } from "./use-reader-engine";
 import { useChromeVisibility } from "@/shared/hooks/use-chrome-visibility";
@@ -52,6 +53,20 @@ export function useReaderScreen() {
 
   const totalChapters = parsedBook?.chapters.length ?? 0;
   const toc = parsedBook?.toc ?? [];
+
+  // Announced by ReaderScreen's polite live region on every chapter transition —
+  // the virtualized iframe mounts/unmounts chapters silently otherwise (see
+  // ACCESSIBILITY.md). Prefer the TOC label; fall back to a position string for
+  // books with a sparse or missing TOC (unmatched items carry chapterIndex -1).
+  const currentChapterLabel = useMemo(() => {
+    const tocLabel = flattenToc(toc, 0).find(
+      ({ item }) => item.chapterIndex === currentChapterIndex,
+    )?.item.label;
+    if (tocLabel) return tocLabel;
+    return totalChapters > 0
+      ? `Chapter ${currentChapterIndex + 1} of ${totalChapters}`
+      : "";
+  }, [toc, currentChapterIndex, totalChapters]);
 
   // "Next in series" banner: fires once the reader reaches the book's
   // literal end this session, same threshold the library uses to mark a
@@ -225,6 +240,7 @@ export function useReaderScreen() {
     isJumping,
     totalChapters,
     toc,
+    currentChapterLabel,
 
     nextBook,
 

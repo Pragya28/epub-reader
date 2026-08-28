@@ -1,91 +1,68 @@
-# Impeccable Audit Report — Librune
+# Impeccable Audit Report
 
-Generated 2026-08-23 (re-run after Sprint 7 Day 4 — Library Navigation, "Next in series" affordance). Codebase-wide technical audit (`/impeccable audit`), not a design critique. Scope: `src/` (all `.tsx`/`.ts` app/feature/UI/service files). Detector run: `detect.mjs --json src` → 13 findings, all verified false positives (see Implementation Integrity Verdict).
-
-**Status: all findings from this run resolved same-day** (P1 via `/impeccable layout`, both P2s via `/impeccable colorize` and `/impeccable harden`, P3 corrected via `/impeccable optimize` — see below). Scores reflect the fixed state. Re-verified via a second `/impeccable audit` pass after a `/impeccable polish` sweep found no additional defects: detector output unchanged (same 13 false positives), `tsc -b`/`eslint`/`detect.mjs --scope layout` all clean.
-
----
+Generated 2026-08-28, Sprint 8 Day 1 (Accessibility) validation pass.
 
 ## Audit Health Score
 
-| #         | Dimension                | Score     | Key Finding                                                                                                                                                |
-| --------- | ------------------------ | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1         | Accessibility            | 4         | `--selected` retuned to clear WCAG 1.4.3 (4.5:1) for the search-match highlight text case; search-screen icon buttons now meet the 24px minimum            |
-| 2         | Performance              | 4         | `use-library-screen.ts`'s derivation pipeline is memoized; the reader's scroll listener was already rAF-throttled (a prior audit's finding here was stale) |
-| 3         | Responsive Design        | 4         | The reader's "Next book" banner no longer overlaps the reader's own fixed footer — moved in-flow inside it instead of floating independently               |
-| 4         | Theming                  | 4         | Full token system maintained; `--selected`'s fix stayed within the existing token, no new colors introduced                                                |
-| 5         | Implementation Integrity | 4         | Detector's 13 findings are all false positives (test fixtures, or reader fonts already documented in DESIGN.md's prose)                                    |
-| **Total** |                          | **20/20** | **Excellent**                                                                                                                                              |
-
-**Previous score: 17/20 (this session, pre-fix) / 18/20 (2026-08-13).** All four findings from the pre-fix pass are resolved: the new P1 (footer/banner overlap), both carried-over P2s (contrast, touch targets), and the P3 was corrected rather than fixed — it turned out to already be resolved on the reader side, and not worth fixing on the cheap library-side handler (see below).
-
----
+| #         | Dimension                | Score     | Key Finding                                                                                                                                                                     |
+| --------- | ------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1         | Accessibility            | 3         | Reader iframe virtualization keeps the full book out of the a11y tree — now an accepted, documented limitation with a shipped chapter-transition live region (ACCESSIBILITY.md) |
+| 2         | Performance              | 3         | Main JS chunk is 945.95 kB (295.92 kB gzip) — over Vite's 500 kB warning threshold, no code-splitting yet                                                                       |
+| 3         | Responsive Design        | 4         | Fluid auto-fill grids, capped reading column, no fixed-width breakage; smallest icon control is now `icon-sm` (28px), clears WCAG 2.5.8                                         |
+| 4         | Theming                  | 4         | Full token system, dark mode verified via `token-contrast.test.ts` (46 pairs, both themes)                                                                                      |
+| 5         | Implementation Integrity | 4         | Detector scan of `src/` returned 13 findings, all verified false positives (see verdict)                                                                                        |
+| **Total** |                          | **18/20** | **Excellent — minor polish**                                                                                                                                                    |
 
 ## Implementation Integrity Verdict
 
-**Pass.** All 13 mechanical detector findings are false positives on inspection:
+**Pass.** `detect.mjs` over `src/` produced 13 hits, every one verified as a false positive:
 
-- 6× "font outside DESIGN.md" (`reader-iframe-styles.ts`: Lora, DM Sans, Atkinson Hyperlegible) — these are the app's documented reader-selectable fonts, listed by name in DESIGN.md's "Reader Fonts (user-selectable, book text only)" section. The detector only diffs against the `typography` frontmatter block, not that prose — a detector gap, not a code issue.
-- 4× "broken image" — all inside test fixtures (`epub-parser.test.ts`, `chapter-parser.test.ts`) exercising malformed-HTML parsing paths, not shipped UI.
-- 3× "font size outside ramp" — same test files, asserting against literal `18px` fixture markup, not real UI.
+- **6× `design-system-font` (`reader-iframe-styles.ts`)** — `Lora`, `DM Sans`, `Atkinson Hyperlegible`. All three are documented in DESIGN.md's "Reader Fonts (user-selectable, book text only)" prose; the detector only reads the `typography:` frontmatter block. Legitimate, intentional.
+- **1× `broken-image` (`sanitize-config.ts:121`)** — the string `"img src"` inside the HTML-sanitizer attribute allowlist, not a rendered `<img>`.
+- **6× in test files** (`iframe-renderer.test.ts`, `epub-parser.test.ts`, `chapter-parser.test.ts`) — `<img>` tags in EPUB fixture strings and `18px` in CSS-string assertions. Not shipped UI.
 
-Sprint 7 Day 4's new code (`getNextInSeries()` in `groupings.ts`, the `ContinueReadingBanner`'s `label`/`variant` props, `pickCurrentlyReadingBook`'s broadened filter) reuses existing primitives and tokens rather than inventing new ones — no drift from `.agents/context/DESIGN.md`.
-
----
+No design-system drift, no repeated shortcuts, no decorative-vs-real content confusion. Consistent with the project's clean baseline across prior audits.
 
 ## Executive Summary
 
-- Audit Health Score: **20/20** (Excellent), up from 17/20 pre-fix
-- All findings from this run resolved: 0 P0, 0 P1, 0 P2, 0 P3 remaining
-- What was fixed:
-  1. **[P1 → fixed] Reader "Next book" banner overlap** — `ContinueReadingBanner` gained a `variant="inline"` mode; the reader now renders it as a third row inside its own footer instead of a second competing `fixed` overlay.
-  2. **[P2 → fixed] `--selected` contrast** — retuned in both themes; also caught that the real gap was WCAG 1.4.3 (4.5:1, text) not 1.4.11 (3:1, non-text) — the mark highlight renders `--selected` as literal text, not a state indicator. Added a regression test (`token-contrast.test.ts`) covering the composited-background case that let this slip through before.
-  3. **[P2 → fixed] Search-screen icon buttons** — swapped for `Button variant="ghost" size="icon"`/`"icon-sm"`, matching the app's existing pattern.
-  4. **[P3 → corrected] "Unthrottled scroll listeners"** — the reader's listener was already rAF-throttled; this finding had gone stale across audits without re-verification. The library's listener remains untouched (deliberately) since its handler is trivially cheap — throttling it would be complexity with no measurable benefit.
-- Recommended next steps: none blocking. Re-run `/impeccable audit` periodically to catch drift; consider a `/impeccable polish` pass if further refinement is wanted.
+- Audit Health Score: **18/20** (Excellent)
+- Issues found: 0 P0, 0 P1, 1 P2, 0 P3
+- Day 1 changes since the 2026-08-28 pre-sprint audit: chapter-transition live region shipped (`reader-screen.tsx` + `use-reader-screen.ts`), dead `icon-xs` button variant removed, keyboard-nav and live-region regression tests added. The reader-a11y-tree item is now a resolved, accepted limitation rather than an open question.
+- The one remaining finding (bundle size) is squarely Sprint 8 Day 3 work and does not block anything.
 
----
+## Detailed Findings by Severity
 
-## Resolved Findings
+### [P2] Main JS bundle exceeds Vite's size warning threshold
 
-**[P1 → Fixed] Reader "Next book" banner overlap with the reader's fixed footer**
+- **Location**: `dist/assets/index-*.js` (build output)
+- **Category**: Performance
+- **Impact**: 945.95 kB uncompressed / 295.92 kB gzipped in one chunk — slower initial load, especially on the mobile/slower-network devices this PWA targets.
+- **WCAG/Standard**: N/A (performance)
+- **Recommendation**: No dynamic `import()`/code-splitting exists yet. The reader engine, EPUB parser (JSZip), and settings screen are natural split points — a user still browsing their library doesn't need the reader in the initial bundle.
+- **Suggested command**: `/impeccable optimize`
 
-- Was: `ContinueReadingBanner` rendered as a `fixed bottom-5 z-40` overlay in `reader-screen.tsx`, competing with the reader's own `fixed`/`absolute bottom-0 z-20` footer for the same screen real estate.
-- Fix: added `variant?: "floating" | "inline"` to `ContinueReadingBanner` (`continue-reading-banner.tsx`). The reader now renders it `variant="inline"` as a third row inside the footer's own flex column (`reader-screen.tsx:178-190`) — in-flow, never overlapping, and it now shows/hides together with the rest of the reader chrome instead of floating independently of it. The library screen's usage is untouched (still defaults to `"floating"`).
-- Verified: `tsc -b`, `eslint`, and `detect.mjs --scope layout` all clean; dev server loads with no new console errors.
+## Resolved Since Last Audit
 
-**[P2 → Fixed] `--selected` contrast**
-
-- Was: `--selected: oklch(58.07% 0.1046 78.37)` (light) — a 2026-08-07 fix that cleared WCAG 1.4.11 (3:1, non-text) against `card`/`surface-high`, but the search-result `<mark>` highlight (`search-result-row.tsx:30`) renders `--selected` as literal _text_ on a semi-transparent `bg-cover-gold/35` background — the stricter WCAG 1.4.3 (4.5:1) applies there, and it only measured ~3.2:1.
-- Fix: darkened light-mode `--selected` to `oklch(50% 0.1046 78.37)` (`#835a00`, 4.51:1 against the mark's composited background, 5.2:1+ against card/surface-high) and lightened dark-mode to `oklch(78% 0.123 78.89)` (`#e2ad54`, 4.53:1 against its equivalent). `.agents/context/DESIGN.md` updated with the corrected hex and rationale.
-- Added `src/__tests__/token-contrast.test.ts` case computing the actual composited (semi-transparent) background rather than a plain token pair — the gap in the existing harness that let a 1.4.11-only check hide a 1.4.3 failure.
-- Verified: full `token-contrast.test.ts` suite passes (46 assertions across both themes); full `src/features`/`src/services`/`src/__tests__` suite (571 tests) passes with no regressions from the token change.
-
-**[P2 → Fixed] Undersized icon-only buttons on search screen**
-
-- Was: bare `<button>` elements for back (`ArrowLeft`) and clear (`X`) in `search-screen.tsx`, hit area equal to the icon glyph (~14-20px), below WCAG 2.2 AA's 24×24px minimum.
-- Fix: swapped both for the existing `Button` component — `variant="ghost" size="icon"` (32px) for back, `size="icon-sm"` (28px) for the inline clear button — matching the pattern already used in `GroupingDetailScreen` and elsewhere. Icon glyphs and `aria-label`s unchanged.
-- Verified: `tsc -b`, `eslint`, `detect.mjs` all clean; visually confirmed in the browser preview — both buttons render with a larger tap area and no layout shift in the search pill; no new console errors.
-
-**[P3 → Corrected, not a real finding] "Two unthrottled scroll listeners"**
-
-- `use-reader-engine.ts`'s scroll listener (`:456-466`) was already rAF-throttled (a `ticking` flag coalesces native scroll events into one `handleScroll()` per animation frame) — this finding was stale, carried forward across multiple audits without re-checking the code, the same class of error as the `--selected` finding above (verify-before-reporting gap, not a code gap).
-- `use-library-screen.ts`'s listener genuinely has no throttle, but its handler (`handleChromeScroll` → `use-chrome-visibility.ts`) does only a couple of number comparisons with an early-return guard — no DOM reads, no layout queries, no measurable per-tick cost. Left as-is per "don't optimize what isn't slow"; the original recommendation was itself conditional ("rAF-batch if a third listener of this shape is added"), and no third listener exists.
-
----
+- **Reader iframe not fully in the accessibility tree** (was P2) — decision made: accepted, documented limitation (not a parallel linear-reading view). Mitigation shipped: a polite `role="status"` live region in the host document announcing every chapter transition (TOC label, or `Chapter N of M` fallback). ACCESSIBILITY.md's "The reader is the hard part" section rewritten to match. Covered by `reader-screen.test.tsx`.
+- **`icon-xs` button variant at the WCAG 2.5.8 floor** (was P3) — variant had zero call sites and sat exactly at 24px; deleted from `button.tsx`. Smallest icon button in use is `icon-sm` (28px).
+- **Keyboard navigation unverified** (Day 1 item 1) — added `defaultPrevented` assertions to the reader engine's PageUp/PageDown/arrow/space handling and new tests asserting header/footer chrome controls stay in the tab order while the chrome is hidden (WCAG 2.4.11 reveal-on-focus).
 
 ## Patterns & Systemic Issues
 
-- Two of this run's findings (`--selected` contrast, scroll-listener throttling) were **stale carried-over claims** rather than current code state — both prior audits reported a historical measurement or an already-fixed detail without re-verifying against the code at hand. Worth treating each future audit's carried-over findings as claims to re-check, not facts to restate.
-- The new P1 was isolated to the reader screen's brand-new banner placement; it never affected the library screen's identical-looking banner, which has no competing fixed footer to collide with.
+None. Same disciplined token system noted in every prior audit; no recurring anti-pattern surfaced across the five dimensions.
 
 ## Positive Findings
 
-- `use-library-screen.ts`'s enrich→sort→filter→search pipeline is properly `useMemo`'d.
-- Sprint 7 Day 4's new banner variants (`label`, `variant` props on `ContinueReadingBanner`) are minimal, backward-compatible extensions — the default (no props) rendering is unchanged, and no new component was built where extending the existing one sufficed.
-- `getNextInSeries()`, the broadened `pickCurrentlyReadingBook()` filter, and the `--selected` contrast fix are all covered by new/updated tests rather than shipped untested.
-- No hardcoded colors found anywhere in this sprint's new files — full token reuse throughout.
+- **Contrast is continuously guarded**: `src/__tests__/token-contrast.test.ts` computes every token pair's ratio in both themes on every run — the regression class a manual audit would otherwise catch by hand.
+- **Theming is exemplary**: full CSS-custom-property token system, verified dark-mode ink/paper inversion, zero hard-coded colors.
+- **Focus discipline**: `focus-visible:ring` on the shared primitives; hidden reader/library chrome stays tabbable and reveals on focus (`use-chrome-visibility.ts`).
+- **Perf regression-guard pattern is established**: four `*.perf.test.ts` files follow one "generous budget, not a tight gate" shape — Day 3 has a template to extend.
 
----
+## Recommended Actions
 
-Re-run `/impeccable audit` after further changes to keep this current.
+1. **[P2] `/impeccable optimize`**: Code-split the main bundle (reader engine, JSZip/EPUB parsing, settings screen are the natural boundaries) — Sprint 8 Day 3.
+2. **`/impeccable polish`**: Final pass before Sprint 8 Day 7 release prep.
+
+You can ask me to run these one at a time, all at once, or in any order you prefer.
+
+Re-run `/impeccable audit` after fixes to see your score improve.
