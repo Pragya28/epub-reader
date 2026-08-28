@@ -25,6 +25,7 @@ dev-dist
 *.sw?
 
 src/tests/dev/*
+coverage
 
 # Symlink to the external notes vault (renamed from `docs` — that name now
 # belongs to the real, tracked docs/ folder holding superpowers/ and tasks/)

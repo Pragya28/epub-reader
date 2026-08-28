@@ -12,7 +12,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "coverage": "vitest run --coverage",
+    "coverage": "vitest run --coverage --no-file-parallelism",
     "prepare": "husky",
     "lint-staged": "lint-staged"
   },
