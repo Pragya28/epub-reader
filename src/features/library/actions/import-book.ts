@@ -1,5 +1,3 @@
-import { EpubParser } from "@/services/epub/epub-parser";
-import { buildIndex } from "@/services/search/search-service";
 import { saveImportedBook } from "@/services/storage/book-repository";
 import { upsertSeriesMembership } from "@/services/storage/groupings";
 import { createId } from "@/utils/create-id";
@@ -12,6 +10,11 @@ const logger = rootLogger.child("import-book");
 
 export async function importBook(file: File) {
   const store = libraryStore.getState();
+
+  // JSZip + the EPUB parser are the bulk of what used to sit in the initial
+  // bundle. They're only needed once a user actually imports a book, so pull
+  // them in on demand here (and buildIndex below, which shares the parser).
+  const { EpubParser } = await import("@/services/epub/epub-parser");
   const parser = new EpubParser();
 
   // Import failures surface via the caller's toast (use-import-book-fab.ts),
@@ -113,9 +116,11 @@ export async function importBook(file: File) {
     // can await `indexed`. A failure here must not fail an otherwise-good
     // import; ensureIndexesForBooks() rebuilds a missing index on the next
     // search, so the book is searchable again once space frees up.
-    const indexed = buildIndex(bookId, file).catch((error: unknown) => {
-      logger.error("failed to build search index for imported book", error);
-    });
+    const indexed = import("@/services/search/search-service")
+      .then(({ buildIndex }) => buildIndex(bookId, file))
+      .catch((error: unknown) => {
+        logger.error("failed to build search index for imported book", error);
+      });
 
     return {
       id: bookId,
