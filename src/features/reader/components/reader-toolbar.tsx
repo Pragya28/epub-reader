@@ -1,5 +1,5 @@
 import { useState, type FC } from "react";
-import { CaseSensitive } from "lucide-react";
+import { TextAaIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { StepperRow } from "@/components/ui/stepper-row";
 import {
@@ -60,7 +60,7 @@ export const ReaderToolbar: FC<ReaderToolbarProps> = ({ onOpenChange }) => {
       <SheetTrigger
         render={
           <Button variant="ghost" size="icon" aria-label="Reading preferences">
-            <CaseSensitive className="size-5" strokeWidth={1.5} />
+            <TextAaIcon className="size-5" weight="light" />
           </Button>
         }
       />

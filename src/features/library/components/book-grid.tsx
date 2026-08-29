@@ -3,7 +3,7 @@ import { BookCard } from "./book-card/book-card";
 import { CardGrid } from "@/components/card-grid/card-grid";
 import { Button } from "@/components/ui/button";
 import type { BookWithProgress } from "../types/library.types";
-import { DatabaseBackup, LibraryBig, TriangleAlert } from "lucide-react";
+import { DatabaseIcon, BooksIcon, WarningIcon } from "@phosphor-icons/react";
 
 interface BookGridProps {
   isLoading: boolean;
@@ -41,11 +41,7 @@ export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
         role="alert"
         className="flex flex-col items-center justify-center py-24 gap-3 text-center"
       >
-        <TriangleAlert
-          size={48}
-          strokeWidth={1.5}
-          className="text-destructive/60"
-        />
+        <WarningIcon size={48} weight="light" className="text-destructive/60" />
         <p className="text-ui uppercase tracking-[0.15em] text-destructive font-heading">
           Couldn't load your library
         </p>
@@ -72,9 +68,9 @@ export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
         role="alert"
         className="flex flex-col items-center justify-center py-24 gap-3 text-center"
       >
-        <DatabaseBackup
+        <DatabaseIcon
           size={48}
-          strokeWidth={1.5}
+          weight="light"
           className="text-destructive/60"
         />
         <p className="text-ui uppercase tracking-[0.15em] text-destructive font-heading">
@@ -101,9 +97,9 @@ export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
         aria-live="polite"
         className="flex flex-col items-center justify-center py-24 gap-3 text-center"
       >
-        <LibraryBig
+        <BooksIcon
           size={48}
-          strokeWidth={1.5}
+          weight="light"
           className="text-muted-foreground/30"
         />
         <p className="text-ui uppercase tracking-[0.15em] text-muted-foreground font-heading">

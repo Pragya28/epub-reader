@@ -1,6 +1,6 @@
 import type { FC } from "react";
 import { Link } from "react-router-dom";
-import { Bookmark, Layers } from "lucide-react";
+import { BookmarkIcon, StackIcon } from "@phosphor-icons/react";
 
 import { ROUTES } from "@/utils/routes";
 import { getBookCoverVisual } from "@/shared/ornaments";
@@ -43,7 +43,7 @@ function CoverSlot({ slot }: { slot?: GroupingCoverSlot }) {
 
 export const GroupingCard: FC<GroupingCardProps> = ({ item }) => {
   const { grouping, memberBookIds, coverSlots } = item;
-  const Icon = grouping.type === "series" ? Layers : Bookmark;
+  const Icon = grouping.type === "series" ? StackIcon : BookmarkIcon;
   const href =
     grouping.type === "series"
       ? ROUTES.LIBRARY_SERIES.replace(":groupingId", grouping.id)
@@ -66,7 +66,7 @@ export const GroupingCard: FC<GroupingCardProps> = ({ item }) => {
 
       <div className="flex items-start gap-1.5">
         <Icon
-          strokeWidth={1.5}
+          weight="light"
           className="size-4 shrink-0 text-muted-foreground"
         />
         <div className="flex flex-col gap-0.5">

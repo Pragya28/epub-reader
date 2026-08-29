@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontalIcon } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 
@@ -21,7 +21,7 @@ export const SortFilterButton: FC<SortFilterButtonProps> = ({
     onClick={onClick}
     className={`relative ${className ?? ""}`}
   >
-    <SlidersHorizontal strokeWidth={1.5} className="size-5" />
+    <SlidersHorizontalIcon weight="light" className="size-5" />
     {isFiltering && (
       <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-selected" />
     )}

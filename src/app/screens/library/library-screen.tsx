@@ -22,7 +22,7 @@ import type {
   ShelvesSortOption,
   ShelvesViewMode,
 } from "@/features/library/utils/sort-groupings";
-import { Search, Settings } from "lucide-react";
+import { MagnifyingGlassIcon, GearIcon } from "@phosphor-icons/react";
 import { WordMark } from "@/assets/word-mark";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -129,7 +129,7 @@ export const LibraryScreen: FC = () => {
             aria-label="Search"
             render={<Link to={ROUTES.SEARCH} />}
           >
-            <Search strokeWidth={1.5} className="size-5" />
+            <MagnifyingGlassIcon weight="light" className="size-5" />
           </Button>
           <SortFilterButton
             isFiltering={
@@ -146,7 +146,7 @@ export const LibraryScreen: FC = () => {
             aria-label="Settings"
             render={<Link to={ROUTES.SETTINGS} />}
           >
-            <Settings strokeWidth={1.5} className="size-5" />
+            <GearIcon weight="light" className="size-5" />
           </Button>
         </nav>
       </header>

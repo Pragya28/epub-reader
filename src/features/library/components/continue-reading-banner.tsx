@@ -3,7 +3,7 @@ import type { BookWithProgress } from "../types/library.types";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/utils/routes";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, ChevronRight } from "lucide-react";
+import { BookOpenIcon, CaretRightIcon } from "@phosphor-icons/react";
 
 interface ContinueReadingBannerProps {
   book: BookWithProgress;
@@ -48,7 +48,7 @@ export const ContinueReadingBanner: FC<ContinueReadingBannerProps> = ({
     >
       {/* Book icon in a subtle tile atop the banner's own tone */}
       <div className="shrink-0 size-9 rounded-lg flex items-center justify-center bg-popover-foreground/10 text-popover-foreground">
-        <BookOpen size={18} />
+        <BookOpenIcon size={18} />
       </div>
 
       {/* Text block: optional caption + title + inline progress. The
@@ -79,7 +79,7 @@ export const ContinueReadingBanner: FC<ContinueReadingBannerProps> = ({
 
       {/* Chevron */}
       <div className="shrink-0 text-popover-foreground/70">
-        <ChevronRight size={20} strokeWidth={1.5} />
+        <CaretRightIcon size={20} weight="light" />
       </div>
     </button>
   );
