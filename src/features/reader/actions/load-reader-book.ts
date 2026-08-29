@@ -16,7 +16,11 @@ export async function loadReaderBook(
     const readerDocument = await getBookWithFile(bookId);
 
     if (!readerDocument) {
-      throw new Error("Book not found");
+      // Covers both "never existed" and the partial-eviction case where the
+      // metadata row survives but the browser reclaimed the file blob.
+      throw new Error(
+        "This book's file is missing — it may have been cleared by the browser. Try re-importing it.",
+      );
     }
 
     // Set immediately (before the slow parse) so the loading screen can show

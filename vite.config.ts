@@ -55,6 +55,10 @@ export default defineConfig({
         // they must NOT be precached or duplicated into the SW cache.
         globPatterns: ["**/*.{js,css,html,svg,png,ico,woff,woff2}"],
         navigateFallback: "/index.html",
+        // ponytail: Workbox owns cache versioning/cleanup — autoUpdate
+        // regenerates the precache manifest per build and this drops the
+        // previous build's caches. No hand-rolled cache logic needed.
+        cleanupOutdatedCaches: true,
         // Fonts are fetched cross-origin from Google Fonts at runtime —
         // cache them so the reader still renders offline after first load.
         runtimeCaching: [

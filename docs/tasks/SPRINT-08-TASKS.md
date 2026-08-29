@@ -41,18 +41,23 @@ Unlike Sprint 7 (zero prior art for series/collections), Sprint 8 is a hardening
 
 ---
 
-## Day 2 — Offline & PWA
+## Day 2 — Offline & PWA ✅
 
-5. 🟡 **Service worker polish** — `autoUpdate` + Workbox precaching is real, but untested (no test exercises SW registration/update behavior).
-6. ❌ **Offline reading validation** — no test confirms reading/browsing/search actually work with the network down. The architecture supports it (IndexedDB-first, EPUB/covers never fetched remotely after import) but this is unverified, not unbuilt.
-7. 🟡 **Cache management (versioning, stale cache cleanup)** — Workbox's `autoUpdate` handles this by default; no custom logic to add unless a specific failure mode surfaces. Quota/eviction (see Related Gap) is the actual gap here, not cache versioning.
-8. ❌ **Install experience (prompts, onboarding)** — nothing exists. No `beforeinstallprompt` handling, no first-run flow. Fully greenfield.
+5. ✅ **Service worker polish** — `autoUpdate` + Workbox precaching confirmed; `cleanupOutdatedCaches: true` made explicit in `vite.config.ts` (verified present in generated `dist/sw.js`). `// ponytail:` note that Workbox owns cache versioning — no hand-rolled logic.
+6. ✅ **Offline reading validation** — `src/features/pwa/__tests__/offline-reading.test.ts`: import a book, stub `fetch` to reject, then `loadLibrary` + EPUB parse + `searchLibrary` all succeed and `fetch` is never called.
+7. ✅ **Cache management + quota/eviction** — the real gap (per the spec's own annotation) was quota/eviction, now built:
+   - `src/services/storage/storage-quota.ts` — `estimateStorage` / `requestPersistentStorage` / `isStoragePersisted` / `hasRoomFor`, all feature-detected and fail-soft.
+   - **Persist request**: fired once after the first successful import (`use-import-book-fab.ts`).
+   - **Pre-flight check**: `hasRoomFor(file.size * 3)` before every import; rejects with a storage-full toast (Day 4 refines the copy/retry).
+   - **Usage display**: Settings → Storage section — used/quota + progress bar + persistent-storage status with a "Protect" button (`use-storage-settings.ts`).
+   - **Eviction detection**: `load-library.ts` — persisted `hadBooks` flag; library loads empty + `hadBooks` → distinct "Your books were cleared" state in `book-grid.tsx` (not the first-run empty state). Reader's missing-file error copy broadened for the partial-eviction case.
+8. ✅ **Install experience** — `src/features/pwa/`: `use-install-prompt.ts` captures + defers `beforeinstallprompt`, detects iOS Safari; `install-banner.tsx` — dismissible banner shown only after first import, Android install button / iOS Add-to-Home-Screen hint, dismissal persisted; Settings also carries an "Install app" action. Empty state kept as a single well-designed state (Onboarding-01), reviewed against DESIGN.md — no tour.
 
 ### Done Criteria
 
-❌ Not started as a validated/tested surface, though the underlying PWA mechanism is real and shipped.
+✅ Complete. App installs as a PWA (deferred prompt + Settings button); reading / browsing / search verified to work with the network down; storage quota is requested, surfaced, pre-checked, and eviction is detected rather than silent.
 
-**Related Gaps:** [[Onboarding-01 First-Run Experience]] — item 8 is where this resolves entirely. [[Storage-01 Quota and Eviction]] — item 7's "cache management" per the sprint spec's own annotation should account for quota/eviction, currently 100% unbuilt (see Baseline).
+**Related Gaps resolved:** [[Onboarding-01 First-Run Experience]] (install timing + empty state), [[Storage-01 Quota and Eviction]] (all four recommendations: persist, estimate display, pre-flight check, eviction detection). Day 4 still owns the refined quota-exceeded UX + multi-tab concurrency.
 
 ---
 

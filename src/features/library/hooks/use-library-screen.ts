@@ -4,6 +4,7 @@ import { useChromeVisibility } from "@/shared/hooks/use-chrome-visibility";
 import { getNextInSeries } from "@/services/storage/groupings";
 import type { BookWithProgress } from "../types/library.types";
 import { libraryStore } from "../store/library-store";
+import { pwaStore } from "@/features/pwa/store/pwa-store";
 import { libraryFilterStore } from "../store/filter-store";
 import { loadLibrary } from "../actions/load-library";
 import {
@@ -22,7 +23,7 @@ import { useLibraryFilters } from "./use-library-filters";
  * Kept separate from LibraryScreen so that component stays presentational.
  */
 export function useLibraryScreen() {
-  const { books, isLoading, error } = libraryStore();
+  const { books, isLoading, error, evicted, setEvicted } = libraryStore();
 
   const {
     visible: headerVisible,
@@ -125,6 +126,11 @@ export function useLibraryScreen() {
   return {
     isLoading,
     error,
+    evicted,
+    dismissEvicted: () => {
+      setEvicted(false);
+      pwaStore.getState().setHadBooks(false);
+    },
     currentBook,
     nextBook,
     visibleBooks,
