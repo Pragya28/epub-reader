@@ -4,6 +4,7 @@ import {
   WINDOW_RADIUS,
   MAX_WINDOW_SIZE,
 } from "../chapter-window";
+import { invalidateChapterSections } from "../../scroll/get-chapter-sections";
 
 describe("maintainChapterWindow", () => {
   let doc: Document;
@@ -343,6 +344,63 @@ describe("maintainChapterWindow", () => {
       expect(onUnload).toHaveBeenCalledWith(0);
       expect(onUnload).toHaveBeenCalledWith(1);
       expect(revokeUrlSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  // Sprint 8 Day 3 (items 12/15): the windowing engine's unmount discipline
+  // IS the answer to "does a long reading session leak memory". jsdom has no
+  // GC and no performance.memory, so instead of a fake memory number this
+  // drives a whole-book scroll and asserts the mounted-section count and the
+  // loaded-index set never grow past MAX_WINDOW_SIZE. Breaks if the radius
+  // check regresses or the section-cache invalidation is dropped.
+  describe("long reading session — bounded DOM and loaded set", () => {
+    const CHAPTER_COUNT = 60;
+
+    /** Mimics chapter-loader: mount the radius window around `active`. */
+    function mountWindow(loaded: Set<number>, active: number): void {
+      for (
+        let i = Math.max(0, active - WINDOW_RADIUS);
+        i <= Math.min(CHAPTER_COUNT - 1, active + WINDOW_RADIUS);
+        i++
+      ) {
+        if (loaded.has(i)) continue;
+        const section = doc.createElement("section");
+        section.setAttribute("data-chapter", String(i));
+        // Keep sections in index order so the anchor lookup behaves.
+        const next = Array.from(
+          doc.querySelectorAll<HTMLElement>("section[data-chapter]"),
+        ).find((s) => Number(s.getAttribute("data-chapter")) > i);
+        doc.body.insertBefore(section, next ?? null);
+        loaded.add(i);
+      }
+      invalidateChapterSections(doc);
+    }
+
+    it("stays bounded across a full forward-then-backward scroll", () => {
+      const loaded = new Set<number>();
+      const visit = (active: number) => {
+        mountWindow(loaded, active);
+        maintainChapterWindow({
+          iframeDoc: doc,
+          win,
+          activeIndex: active,
+          loadedIndices: loaded,
+          onUnload: (index) => {
+            loaded.delete(index);
+            invalidateChapterSections(doc);
+          },
+        });
+
+        const mounted = doc.querySelectorAll("section[data-chapter]").length;
+        expect(mounted).toBeLessThanOrEqual(MAX_WINDOW_SIZE);
+        expect(loaded.size).toBeLessThanOrEqual(MAX_WINDOW_SIZE);
+      };
+
+      for (let i = 0; i < CHAPTER_COUNT; i++) visit(i);
+      for (let i = CHAPTER_COUNT - 1; i >= 0; i--) visit(i);
+
+      // Every loaded chapter is within the window radius of the start.
+      expect(Math.max(...loaded)).toBeLessThanOrEqual(WINDOW_RADIUS * 2);
     });
   });
 

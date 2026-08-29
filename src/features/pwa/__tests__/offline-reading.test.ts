@@ -70,4 +70,22 @@ describe("offline: import once, then browse / parse / search with no network", (
 
     expect(fetchSpy).not.toHaveBeenCalled();
   });
+
+  it("imports a book with fetch disabled (dynamic parser/index chunks)", async () => {
+    // importBook now pulls the EPUB parser and search-service via dynamic
+    // import(). vite-plugin-pwa precaches those chunks, so import must still
+    // work offline and touch no network.
+    const fetchSpy = vi.fn(() =>
+      Promise.reject(new Error("network unavailable")),
+    );
+    vi.stubGlobal("fetch", fetchSpy);
+
+    const file = await loadFixture("valid-book.epub");
+    const { id, indexed } = await importBook(file);
+    await indexed;
+
+    expect(id).toBeTruthy();
+    expect(libraryStore.getState().books).toHaveLength(1);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
 });

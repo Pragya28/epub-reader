@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/check-bundle-size.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
@@ -29,7 +29,6 @@
     "dexie": "^4.4.2",
     "dompurify": "^3.4.12",
     "jszip": "^3.10.1",
-    "lucide-react": "^1.26.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.14.1",

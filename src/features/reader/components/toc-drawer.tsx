@@ -9,7 +9,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { TocItem } from "@/services/epub/epub-types";
 import { flattenToc } from "../utils/flatten-toc";
-import { TableOfContents } from "lucide-react";
+import { ListBulletsIcon } from "@phosphor-icons/react";
 import { memo, useMemo, useState } from "react";
 
 interface TocDrawerProps {
@@ -43,7 +43,7 @@ export const TocDrawer = memo(function TocDrawer({
             aria-label="Table of contents"
             disabled={toc.length === 0}
           >
-            <TableOfContents className="size-5" strokeWidth={1.5} />
+            <ListBulletsIcon className="size-5" weight="light" />
           </Button>
         }
       />

@@ -1,6 +1,6 @@
 import type { FC, ReactNode } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { CaretLeftIcon } from "@phosphor-icons/react";
 
 import { ROUTES } from "@/utils/routes";
 import { Button } from "@/components/ui/button";
@@ -68,7 +68,7 @@ export const GroupingDetailScreen: FC<GroupingDetailScreenProps> = ({
           aria-label="Back to library"
           render={<Link to={ROUTES.LIBRARY_SHELVES} />}
         >
-          <ChevronLeft strokeWidth={1.5} className="size-6" />
+          <CaretLeftIcon weight="light" className="size-6" />
         </Button>
         <span className="section-title font-semibold text-foreground mr-auto truncate">
           {groupingName}

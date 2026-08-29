@@ -4,7 +4,11 @@ import { ReaderFrame } from "@/features/reader/components/reader-frame";
 import { TocDrawer } from "@/features/reader/components/toc-drawer";
 import { ReaderToolbar } from "@/features/reader/components/reader-toolbar";
 import { ExternalLinkDialog } from "@/features/reader/components/external-link-dialog";
-import { ChevronLeft, ChevronRight, Undo2 } from "lucide-react";
+import {
+  CaretLeftIcon,
+  CaretRightIcon,
+  ArrowUUpLeftIcon,
+} from "@phosphor-icons/react";
 import { Progress, ProgressValue } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { getBookCoverVisual } from "@/shared/ornaments";
@@ -136,7 +140,7 @@ export const ReaderScreen: FC = () => {
           aria-label="Go back"
           onClick={goBack}
         >
-          <ChevronLeft className="size-8" strokeWidth={1} />
+          <CaretLeftIcon className="size-8" weight="light" />
         </Button>
 
         <div className="flex flex-col items-center gap-1">
@@ -163,7 +167,7 @@ export const ReaderScreen: FC = () => {
             className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 shadow-floating"
             onClick={jumpBack}
           >
-            <Undo2 className="size-4" strokeWidth={1.5} />
+            <ArrowUUpLeftIcon className="size-4" weight="light" />
             Back
           </Button>
         )}
@@ -200,7 +204,7 @@ export const ReaderScreen: FC = () => {
               disabled={currentChapterIndex <= 0 || isJumping}
               onClick={() => handleChapterNav(-1)}
             >
-              <ChevronLeft className="size-4" strokeWidth={1.5} />
+              <CaretLeftIcon className="size-4" weight="light" />
             </Button>
 
             <p className="metadata normal-case">
@@ -215,7 +219,7 @@ export const ReaderScreen: FC = () => {
               disabled={currentChapterIndex >= totalChapters - 1 || isJumping}
               onClick={() => handleChapterNav(1)}
             >
-              <ChevronRight className="size-4" strokeWidth={1.5} />
+              <CaretRightIcon className="size-4" weight="light" />
             </Button>
           </div>
         </div>

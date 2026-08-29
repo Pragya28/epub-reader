@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { EllipsisVertical } from "lucide-react";
+import { DotsThreeVerticalIcon } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -68,7 +68,7 @@ export const LibraryCollectionScreen: FC = () => {
                 />
               }
             >
-              <EllipsisVertical strokeWidth={1.5} className="size-5" />
+              <DotsThreeVerticalIcon weight="light" className="size-5" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setRenameOpen(true)}>

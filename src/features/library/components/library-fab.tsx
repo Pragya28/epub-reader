@@ -1,8 +1,14 @@
 import type { FC } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Files, Loader2, Plus, X } from "lucide-react";
-import { Bookmark, UploadSimple } from "@phosphor-icons/react";
+import {
+  Bookmark,
+  FilesIcon,
+  PlusIcon,
+  SpinnerIcon,
+  UploadSimple,
+  XIcon,
+} from "@phosphor-icons/react";
 
 import {
   ArcFabGroup,
@@ -38,7 +44,7 @@ export const LibraryFab: FC = () => {
     {
       id: "import-multiple",
       label: "Import Multiple",
-      icon: <Files className="size-5" />,
+      icon: <FilesIcon className="size-5" />,
       onClick: () => void handleImportMany(),
     },
     {
@@ -58,12 +64,12 @@ export const LibraryFab: FC = () => {
         actions={actions}
         icon={
           isLoading ? (
-            <Loader2 className="animate-spin size-6" />
+            <SpinnerIcon className="animate-spin size-6" />
           ) : (
-            <Plus className="size-6" />
+            <PlusIcon className="size-6" />
           )
         }
-        activeIcon={<X className="size-6" />}
+        activeIcon={<XIcon className="size-6" />}
         ariaLabel="Add to library"
         disabled={isLoading}
         mainButtonClassName="bg-popover hover:bg-popover text-popover-foreground ring-1 ring-foreground/10"

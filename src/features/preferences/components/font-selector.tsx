@@ -1,5 +1,5 @@
 import { useState, type FC, type CSSProperties } from "react";
-import { Check, ChevronDown } from "lucide-react";
+import { CheckIcon, CaretDownIcon } from "@phosphor-icons/react";
 import {
   RadioGroup,
   RadioGroupRow,
@@ -74,9 +74,9 @@ export const FontSelector: FC<FontSelectorProps> = ({
           >
             {selected.label}
           </span>
-          <ChevronDown
+          <CaretDownIcon
             className="size-4 text-muted-foreground"
-            strokeWidth={1.5}
+            weight="light"
           />
         </button>
       ) : (
@@ -103,7 +103,7 @@ export const FontSelector: FC<FontSelectorProps> = ({
                 {font.label}
               </span>
               <RadioGroupRowIndicator>
-                <Check className="size-4 text-selected" strokeWidth={2} />
+                <CheckIcon className="size-4 text-selected" weight="bold" />
               </RadioGroupRowIndicator>
             </RadioGroupRow>
           ))}

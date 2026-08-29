@@ -25,6 +25,18 @@ export default defineConfig([
         { allowConstantExport: true },
       ],
       "@typescript-eslint/no-explicit-any": "off",
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "lucide-react",
+              message:
+                "Use @phosphor-icons/react — the project's icon library (components.json).",
+            },
+          ],
+        },
+      ],
       "@typescript-eslint/no-unused-vars": [
         "warn",
         {

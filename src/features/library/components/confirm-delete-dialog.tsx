@@ -1,5 +1,5 @@
 import { useState, type FC } from "react";
-import { Loader2 } from "lucide-react";
+import { SpinnerIcon } from "@phosphor-icons/react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -60,7 +60,7 @@ export const ConfirmDeleteDialog: FC<ConfirmDeleteDialogProps> = ({
             disabled={isDeleting}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {isDeleting && <Loader2 className="size-4 animate-spin" />}
+            {isDeleting && <SpinnerIcon className="size-4 animate-spin" />}
             {isDeleting ? "Deleting…" : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>

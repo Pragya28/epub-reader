@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type FC } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Search as SearchIcon, SearchX, X } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  MagnifyingGlassIcon as SearchIcon,
+  MagnifyingGlassMinusIcon,
+  XIcon,
+} from "@phosphor-icons/react";
 import { ROUTES } from "@/utils/routes";
 import { useSearchScreen } from "@/features/library/hooks/use-search-screen";
 import {
@@ -150,12 +155,12 @@ export const SearchScreen: FC = () => {
           onClick={() => navigate(ROUTES.LIBRARY)}
           className="shrink-0 text-foreground"
         >
-          <ArrowLeft className="size-5" strokeWidth={1.5} />
+          <ArrowLeftIcon className="size-5" weight="light" />
         </Button>
         <div className="flex flex-1 items-center gap-2 rounded-lg bg-card px-3 py-2.5">
           <SearchIcon
             className="size-4 shrink-0 text-muted-foreground"
-            strokeWidth={1.5}
+            weight="light"
           />
           <input
             autoFocus
@@ -174,7 +179,10 @@ export const SearchScreen: FC = () => {
               onClick={() => setQuery("")}
               className="shrink-0"
             >
-              <X className="size-3.5 text-muted-foreground" strokeWidth={1.5} />
+              <XIcon
+                className="size-3.5 text-muted-foreground"
+                weight="light"
+              />
             </Button>
           )}
         </div>
@@ -218,7 +226,7 @@ export const SearchScreen: FC = () => {
               <EmptyMedia>
                 <SearchIcon
                   size={48}
-                  strokeWidth={1.5}
+                  weight="light"
                   className="text-muted-foreground/30"
                 />
               </EmptyMedia>
@@ -247,9 +255,9 @@ export const SearchScreen: FC = () => {
           <Empty role="status" aria-live="polite" className="py-24">
             <EmptyHeader>
               <EmptyMedia>
-                <SearchX
+                <MagnifyingGlassMinusIcon
                   size={48}
-                  strokeWidth={1.5}
+                  weight="light"
                   className="text-muted-foreground/30"
                 />
               </EmptyMedia>

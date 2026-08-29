@@ -1,6 +1,6 @@
 import type { FC } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { CaretLeftIcon } from "@phosphor-icons/react";
 
 import { ROUTES } from "@/utils/routes";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ export const LibraryAuthorScreen: FC = () => {
           aria-label="Back to library"
           render={<Link to={ROUTES.LIBRARY} />}
         >
-          <ChevronLeft strokeWidth={1.5} className="size-6" />
+          <CaretLeftIcon weight="light" className="size-6" />
         </Button>
         <span className="section-title font-semibold text-foreground mr-auto truncate">
           {author}

@@ -1,5 +1,5 @@
 import { NumberField } from "@base-ui/react/number-field";
-import { Minus, Plus } from "lucide-react";
+import { MinusIcon, PlusIcon } from "@phosphor-icons/react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
@@ -48,7 +48,7 @@ function StepperRow({
             aria-label={`Decrease ${label.toLowerCase()}`}
             className={buttonVariants({ variant: "outline", size: "icon-sm" })}
           >
-            <Minus className="size-3.5" strokeWidth={1.5} />
+            <MinusIcon className="size-3.5" weight="light" />
           </NumberField.Decrement>
 
           <span className="flex w-10 items-center justify-center gap-0.5">
@@ -72,7 +72,7 @@ function StepperRow({
             aria-label={`Increase ${label.toLowerCase()}`}
             className={buttonVariants({ variant: "outline", size: "icon-sm" })}
           >
-            <Plus className="size-3.5" strokeWidth={1.5} />
+            <PlusIcon className="size-3.5" weight="light" />
           </NumberField.Increment>
         </NumberField.Group>
       </NumberField.Root>

@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { Bookmark, Layers, LibraryBig } from "lucide-react";
+import { BookmarkIcon, StackIcon, BooksIcon } from "@phosphor-icons/react";
 
 import {
   Empty,
@@ -45,7 +45,7 @@ export const ShelvesGrid: FC = () => {
       <Empty>
         <EmptyHeader>
           <EmptyMedia variant="icon">
-            <LibraryBig />
+            <BooksIcon />
           </EmptyMedia>
           <EmptyTitle>No shelves yet</EmptyTitle>
           <EmptyDescription>
@@ -62,10 +62,10 @@ export const ShelvesGrid: FC = () => {
     <div className="flex flex-col gap-5">
       <p className="flex items-center gap-4 text-ui-sm text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <Layers strokeWidth={1.5} className="size-4" /> Series
+          <StackIcon weight="light" className="size-4" /> Series
         </span>
         <span className="flex items-center gap-1.5">
-          <Bookmark strokeWidth={1.5} className="size-4" /> Collections
+          <BookmarkIcon weight="light" className="size-4" /> Collections
         </span>
       </p>
 

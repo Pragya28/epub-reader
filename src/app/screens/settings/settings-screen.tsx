@@ -1,15 +1,15 @@
 import type { FC } from "react";
 import { Link } from "react-router-dom";
 import {
-  ChevronLeft,
-  Sun,
-  CaseSensitive,
-  DatabaseZap,
-  RefreshCw,
-  HardDrive,
-  ShieldCheck,
-  Download,
-} from "lucide-react";
+  CaretLeftIcon,
+  SunIcon,
+  TextAaIcon,
+  DatabaseIcon,
+  ArrowsClockwiseIcon,
+  HardDriveIcon,
+  ShieldCheckIcon,
+  DownloadSimpleIcon,
+} from "@phosphor-icons/react";
 
 import { cn } from "@/utils/cn";
 import { ROUTES } from "@/utils/routes";
@@ -84,7 +84,7 @@ export const SettingsScreen: FC = () => {
           aria-label="Back to library"
           render={<Link to={ROUTES.LIBRARY} />}
         >
-          <ChevronLeft strokeWidth={1.5} className="size-6" />
+          <CaretLeftIcon weight="light" className="size-6" />
         </Button>
       </header>
 
@@ -99,7 +99,10 @@ export const SettingsScreen: FC = () => {
         <div className="flex flex-col gap-6">
           <section className="flex flex-col gap-6 rounded-sm border border-border bg-card p-6">
             <div className="flex items-center gap-2">
-              <Sun className="size-4 text-muted-foreground" strokeWidth={1.5} />
+              <SunIcon
+                className="size-4 text-muted-foreground"
+                weight="light"
+              />
               <h2 className="metadata">Appearance</h2>
             </div>
 
@@ -129,9 +132,9 @@ export const SettingsScreen: FC = () => {
 
           <section className="flex flex-col gap-6 rounded-sm border border-border bg-card p-6">
             <div className="flex items-center gap-2">
-              <CaseSensitive
+              <TextAaIcon
                 className="size-4 text-muted-foreground"
-                strokeWidth={1.5}
+                weight="light"
               />
               <h2 className="metadata">Reading</h2>
             </div>
@@ -198,9 +201,9 @@ export const SettingsScreen: FC = () => {
 
           <section className="flex flex-col gap-6 rounded-sm border border-border bg-card p-6">
             <div className="flex items-center gap-2">
-              <DatabaseZap
+              <DatabaseIcon
                 className="size-4 text-muted-foreground"
-                strokeWidth={1.5}
+                weight="light"
               />
               <h2 className="metadata">Search Index</h2>
             </div>
@@ -228,8 +231,8 @@ export const SettingsScreen: FC = () => {
                       : "Rebuild search index"
                   }
                 >
-                  <RefreshCw
-                    strokeWidth={1.5}
+                  <ArrowsClockwiseIcon
+                    weight="light"
                     className={cn(
                       "size-4",
                       status === "running" && "motion-safe:animate-spin",
@@ -244,9 +247,9 @@ export const SettingsScreen: FC = () => {
 
           <section className="flex flex-col gap-6 rounded-sm border border-border bg-card p-6">
             <div className="flex items-center gap-2">
-              <HardDrive
+              <HardDriveIcon
                 className="size-4 text-muted-foreground"
-                strokeWidth={1.5}
+                weight="light"
               />
               <h2 className="metadata">Storage</h2>
             </div>
@@ -278,9 +281,9 @@ export const SettingsScreen: FC = () => {
                 </span>
               </div>
               {persisted ? (
-                <ShieldCheck
+                <ShieldCheckIcon
                   className="size-5 shrink-0 text-muted-foreground"
-                  strokeWidth={1.5}
+                  weight="light"
                   aria-label="Protected"
                 />
               ) : (
@@ -314,7 +317,7 @@ export const SettingsScreen: FC = () => {
                     className="shrink-0"
                     onClick={() => void promptInstall()}
                   >
-                    <Download strokeWidth={1.5} className="size-4" />
+                    <DownloadSimpleIcon weight="light" className="size-4" />
                     Install
                   </Button>
                 )}

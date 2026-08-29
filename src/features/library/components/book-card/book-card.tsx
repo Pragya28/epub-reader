@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EllipsisVertical } from "lucide-react";
+import { DotsThreeVerticalIcon } from "@phosphor-icons/react";
 import { AboutBookSheet } from "../about-book-sheet";
 import { useBookCard } from "../../hooks/use-book-card";
 import { useAddToCollection } from "../../hooks/use-add-to-collection";
@@ -116,7 +116,7 @@ export const BookCard: FC<BookCardProps> = memo(function BookCard({
             aria-label="More options"
             className="relative z-20 inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring outline-none"
           >
-            <EllipsisVertical size={24} strokeWidth={1.5} />
+            <DotsThreeVerticalIcon size={24} weight="light" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
             {menuItems.map((entry) =>
