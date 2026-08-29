@@ -71,7 +71,7 @@ Unlike Sprint 7 (zero prior art for series/collections), Sprint 8 is a hardening
 
 ### Test
 
-13. ✅ **Bundle size regression test** — `scripts/check-bundle-size.mjs` gzips every `dist/assets/*.js` and fails the build if the largest chunk exceeds 310 kB gzip (vs the ~230 kB entry). Wired into the `build` script, so the pre-push hook enforces it. Vite's fixed 500 kB chunk warning is raised to 750 kB (`vite.config.ts`) so the two guards don't disagree.
+13. ✅ **Bundle size regression test** — `scripts/check-bundle-size.mjs` gzips every `dist/assets/*.js` and fails the build if the largest chunk exceeds 310 kB gzip (vs the ~230 kB entry). Wired into the `build` script, so the pre-push hook enforces it. Vite's fixed 500 kB chunk warning is raised clear of it (`vite.config.ts`) so the two guards don't disagree.
 14. ✅ **Startup time benchmarks** — folded into item 13 (see item 11).
 15. ✅ **Memory leak/profiling tests** — `chapter-window.test.ts` gains a long-session block: a 60-chapter book scrolled forward then backward through `maintainChapterWindow`, asserting the mounted-section count and the loaded-index set never exceed `MAX_WINDOW_SIZE` at any step. Fails if the radius check or the section-cache invalidation regresses.
 
