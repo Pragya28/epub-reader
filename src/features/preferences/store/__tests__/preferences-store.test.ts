@@ -2,6 +2,8 @@ import { describe, expect, it, beforeEach } from "vitest";
 import {
   FONT_SCALE_MAX,
   FONT_SCALE_MIN,
+  KEEP_AWAKE_MINUTES_MAX,
+  KEEP_AWAKE_MINUTES_MIN,
   LINE_HEIGHT_MAX,
   LINE_HEIGHT_MIN,
   MARGIN_MAX,
@@ -24,6 +26,8 @@ describe("preferencesStore", () => {
       lineHeight: 1.6,
       margins: 16,
       paragraphSpacing: 8,
+      keepScreenAwake: true,
+      keepScreenAwakeMinutes: 20,
     });
   });
 
@@ -36,6 +40,22 @@ describe("preferencesStore", () => {
     expect(state.lineHeight).toBe(1.6);
     expect(state.margins).toBe(16);
     expect(state.paragraphSpacing).toBe(8);
+    expect(state.keepScreenAwake).toBe(true);
+    expect(state.keepScreenAwakeMinutes).toBe(20);
+  });
+
+  it("toggles keepScreenAwake and clamps the minutes limit", () => {
+    preferencesStore.getState().setKeepScreenAwake(false);
+    expect(preferencesStore.getState().keepScreenAwake).toBe(false);
+
+    preferencesStore.getState().setKeepScreenAwakeMinutes(999);
+    expect(preferencesStore.getState().keepScreenAwakeMinutes).toBe(
+      KEEP_AWAKE_MINUTES_MAX,
+    );
+    preferencesStore.getState().setKeepScreenAwakeMinutes(1);
+    expect(preferencesStore.getState().keepScreenAwakeMinutes).toBe(
+      KEEP_AWAKE_MINUTES_MIN,
+    );
   });
 
   it("updates fontScale within range", () => {

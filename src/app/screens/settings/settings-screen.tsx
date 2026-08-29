@@ -22,6 +22,9 @@ import {
   FONT_SCALE_MAX,
   FONT_SCALE_MIN,
   FONT_SCALE_STEP,
+  KEEP_AWAKE_MINUTES_MAX,
+  KEEP_AWAKE_MINUTES_MIN,
+  KEEP_AWAKE_MINUTES_STEP,
   LINE_HEIGHT_MAX,
   LINE_HEIGHT_MIN,
   LINE_HEIGHT_STEP,
@@ -44,11 +47,15 @@ export const SettingsScreen: FC = () => {
     fontScale,
     lineHeight,
     paragraphSpacing,
+    keepScreenAwake,
+    keepScreenAwakeMinutes,
     setTheme,
     setApplyThemeToReader,
     setReaderFont,
     setFontScale,
     setLineHeight,
+    setKeepScreenAwake,
+    setKeepScreenAwakeMinutes,
   } = preferencesStore();
 
   const { status, progress, lastRebuiltAt, startRebuild } =
@@ -157,6 +164,36 @@ export const SettingsScreen: FC = () => {
               paragraphSpacing={paragraphSpacing}
               collapsible
             />
+
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col">
+                  <span className="text-ui font-semibold text-foreground">
+                    Keep screen awake
+                  </span>
+                  <span className="text-ui-sm text-muted-foreground">
+                    Stop the screen dimming while you read
+                  </span>
+                </div>
+                <Switch
+                  checked={keepScreenAwake}
+                  onCheckedChange={setKeepScreenAwake}
+                  aria-label="Keep screen awake"
+                />
+              </div>
+
+              {keepScreenAwake && (
+                <StepperRow
+                  label="Screen-on limit"
+                  value={keepScreenAwakeMinutes}
+                  suffix="min"
+                  min={KEEP_AWAKE_MINUTES_MIN}
+                  max={KEEP_AWAKE_MINUTES_MAX}
+                  step={KEEP_AWAKE_MINUTES_STEP}
+                  onChange={setKeepScreenAwakeMinutes}
+                />
+              )}
+            </div>
           </section>
 
           <section className="flex flex-col gap-6 rounded-sm border border-border bg-card p-6">

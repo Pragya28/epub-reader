@@ -22,6 +22,8 @@ describe("SettingsScreen", () => {
       readerFont: "literata",
       fontScale: 1,
       lineHeight: 1.6,
+      keepScreenAwake: true,
+      keepScreenAwakeMinutes: 20,
     });
     searchMaintenanceStore.setState({
       status: "idle",
@@ -157,5 +159,32 @@ describe("SettingsScreen", () => {
     await waitFor(() => {
       expect(screen.getByText(/last rebuilt:/i)).toBeInTheDocument();
     });
+  });
+
+  it("shows the screen-on limit stepper only when keep-screen-awake is on", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    expect(screen.getByTestId("stepper-input-Screen-on limit")).toHaveValue(
+      "20",
+    );
+
+    await user.click(screen.getByRole("switch", { name: "Keep screen awake" }));
+
+    expect(preferencesStore.getState().keepScreenAwake).toBe(false);
+    expect(
+      screen.queryByTestId("stepper-input-Screen-on limit"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("steps the screen-on limit by 5 minutes", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(
+      screen.getByRole("button", { name: "Increase screen-on limit" }),
+    );
+
+    expect(preferencesStore.getState().keepScreenAwakeMinutes).toBe(25);
   });
 });

@@ -12,6 +12,7 @@ import { jumpToTocItem } from "../actions/jump-to-toc-item";
 import { flattenToc } from "../utils/flatten-toc";
 import { readerStore } from "../store/reader-store";
 import { useReaderEngine } from "./use-reader-engine";
+import { useWakeLock } from "./use-wake-lock";
 import { useChromeVisibility } from "@/shared/hooks/use-chrome-visibility";
 
 /** Mirrors derive-book-status.ts's FINISHED_SCROLL_FRACTION_THRESHOLD (0.98),
@@ -207,6 +208,25 @@ export function useReaderScreen() {
     [setChromeOverlay],
   );
 
+  // Keep the screen on while reading. notifyActivity is identity-stable, and
+  // handleChromeScroll/toggleChrome are too (see the comment above), so these
+  // combined callbacks stay stable — passing a fresh function into
+  // useReaderEngine would rewrite the iframe srcdoc on every render.
+  const { notifyActivity } = useWakeLock();
+
+  const handleReaderScroll = useCallback(
+    (scrollY: number) => {
+      handleChromeScroll(scrollY);
+      notifyActivity();
+    },
+    [handleChromeScroll, notifyActivity],
+  );
+
+  const handleReaderTap = useCallback(() => {
+    toggleChrome();
+    notifyActivity();
+  }, [toggleChrome, notifyActivity]);
+
   const { jumpBack } = useReaderEngine({
     iframeRef,
     parsedBook,
@@ -215,8 +235,8 @@ export function useReaderScreen() {
     initialProgress: readerDocument?.book.progress ?? null,
     searchJump,
     onExternalLink: handleExternalLink,
-    onScrollPosition: handleChromeScroll,
-    onContentTap: toggleChrome,
+    onScrollPosition: handleReaderScroll,
+    onContentTap: handleReaderTap,
   });
 
   const confirmExternalLink = () => {
