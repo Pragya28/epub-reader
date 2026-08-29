@@ -100,12 +100,12 @@ describe("loadReaderBook", () => {
     expect(readerStore.getState().isLoading).toBe(false);
   });
 
-  it("throws when book is not found", async () => {
+  it("throws when the book's file is missing", async () => {
     vi.mocked(getBookWithFile).mockResolvedValue(null);
 
-    await expect(loadReaderBook("book-1")).rejects.toThrow("Book not found");
+    await expect(loadReaderBook("book-1")).rejects.toThrow(/file is missing/);
 
-    expect(readerStore.getState().error).toBe("Book not found");
+    expect(readerStore.getState().error).toMatch(/file is missing/);
     expect(parseBook).not.toHaveBeenCalled();
   });
 

@@ -11,6 +11,7 @@ import {
 import { SortFilterButton } from "@/features/library/components/sort-filter-button";
 import { ContinueReadingBanner } from "@/features/library/components/continue-reading-banner";
 import { LibraryFab } from "@/features/library/components/library-fab";
+import { InstallBanner } from "@/features/pwa/components/install-banner";
 import { shelvesStore } from "@/features/library/store/shelves-store";
 import { ShelvesGrid } from "@/features/library/components/shelves/shelves-grid";
 import {
@@ -41,6 +42,8 @@ export const LibraryScreen: FC = () => {
   const {
     isLoading,
     error,
+    evicted,
+    dismissEvicted,
     currentBook,
     nextBook,
     visibleBooks,
@@ -178,20 +181,27 @@ export const LibraryScreen: FC = () => {
               isSearch={isFiltering}
               error={error}
               books={visibleBooks}
+              evicted={evicted}
+              onDismissEvicted={dismissEvicted}
             />
           )}
         </div>
       </main>
 
       {/* ── Continue Reading — fixed, fills width minus FAB ─────────────── */}
-      {currentBook &&
-        (currentBook.isFinished ? (
+      {currentBook ? (
+        currentBook.isFinished ? (
           nextBook && (
             <ContinueReadingBanner book={nextBook} label="Next book" />
           )
         ) : (
           <ContinueReadingBanner book={currentBook} />
-        ))}
+        )
+      ) : (
+        // Only when there's no continue-reading banner to compete with for
+        // the same bottom-of-screen slot.
+        <InstallBanner />
+      )}
 
       {/* ── FAB — fixed bottom-right ─────────────────────────────────────── */}
       <LibraryFab />

@@ -1,8 +1,9 @@
 import { memo, type FC } from "react";
 import { BookCard } from "./book-card/book-card";
 import { CardGrid } from "@/components/card-grid/card-grid";
+import { Button } from "@/components/ui/button";
 import type { BookWithProgress } from "../types/library.types";
-import { LibraryBig, TriangleAlert } from "lucide-react";
+import { DatabaseBackup, LibraryBig, TriangleAlert } from "lucide-react";
 
 interface BookGridProps {
   isLoading: boolean;
@@ -16,6 +17,10 @@ interface BookGridProps {
    * there's no search/filter active, same as the default copy. */
   emptyTitle?: string;
   emptyDescription?: string;
+  /** Library was non-empty before and is now empty — browser storage
+   * eviction. Replaces the first-run empty state with a distinct warning. */
+  evicted?: boolean;
+  onDismissEvicted?: () => void;
 }
 
 export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
@@ -27,6 +32,8 @@ export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
   onRemoveFromCollection,
   emptyTitle = "Your library is empty",
   emptyDescription = "Tap + to import your first book.",
+  evicted = false,
+  onDismissEvicted,
 }) {
   if (error) {
     return (
@@ -55,6 +62,34 @@ export const BookGrid: FC<BookGridProps> = memo(function BookGrid({
         className="flex items-center justify-center py-24 text-ui text-muted-foreground"
       >
         Loading your library…
+      </div>
+    );
+  }
+
+  if (books.length === 0 && evicted && !isSearch) {
+    return (
+      <div
+        role="alert"
+        className="flex flex-col items-center justify-center py-24 gap-3 text-center"
+      >
+        <DatabaseBackup
+          size={48}
+          strokeWidth={1.5}
+          className="text-destructive/60"
+        />
+        <p className="text-ui uppercase tracking-[0.15em] text-destructive font-heading">
+          Your books were cleared
+        </p>
+        <p className="max-w-xs text-ui-sm text-muted-foreground opacity-80">
+          The browser reclaimed this app's storage to free up space. Re-import
+          your books, and install Librune to your home screen so it can't happen
+          again.
+        </p>
+        {onDismissEvicted && (
+          <Button variant="outline" size="sm" onClick={onDismissEvicted}>
+            Dismiss
+          </Button>
+        )}
       </div>
     );
   }

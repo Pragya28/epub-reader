@@ -6,6 +6,9 @@ import {
   CaseSensitive,
   DatabaseZap,
   RefreshCw,
+  HardDrive,
+  ShieldCheck,
+  Download,
 } from "lucide-react";
 
 import { cn } from "@/utils/cn";
@@ -27,6 +30,11 @@ import {
 import { searchMaintenanceStore } from "@/features/library/store/search-maintenance-store";
 import { ThemeSelector } from "@/features/preferences/components/theme-selector";
 import { FontSelector } from "@/features/preferences/components/font-selector";
+import {
+  formatBytes,
+  useStorageSettings,
+} from "@/features/pwa/hooks/use-storage-settings";
+import { useInstallPrompt } from "@/features/pwa/hooks/use-install-prompt";
 
 export const SettingsScreen: FC = () => {
   const {
@@ -45,6 +53,10 @@ export const SettingsScreen: FC = () => {
 
   const { status, progress, lastRebuiltAt, startRebuild } =
     searchMaintenanceStore();
+
+  const { estimate, persisted, requestPersist } = useStorageSettings();
+  const { canInstall, isInstalled, showIosHint, promptInstall } =
+    useInstallPrompt();
 
   const handleRebuild = async () => {
     await startRebuild();
@@ -191,6 +203,86 @@ export const SettingsScreen: FC = () => {
 
               {status === "running" && <Progress value={progress} />}
             </div>
+          </section>
+
+          <section className="flex flex-col gap-6 rounded-sm border border-border bg-card p-6">
+            <div className="flex items-center gap-2">
+              <HardDrive
+                className="size-4 text-muted-foreground"
+                strokeWidth={1.5}
+              />
+              <h2 className="metadata">Storage</h2>
+            </div>
+
+            {estimate && (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-ui font-semibold text-foreground">
+                    Space used
+                  </span>
+                  <span className="text-ui-sm text-muted-foreground">
+                    {formatBytes(estimate.usageBytes)} of{" "}
+                    {formatBytes(estimate.quotaBytes)}
+                  </span>
+                </div>
+                <Progress value={estimate.percentUsed} />
+              </div>
+            )}
+
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col">
+                <span className="text-ui font-semibold text-foreground">
+                  Protected storage
+                </span>
+                <span className="text-ui-sm text-muted-foreground">
+                  {persisted
+                    ? "The browser won't clear your library to free up space."
+                    : "The browser may clear your library under storage pressure."}
+                </span>
+              </div>
+              {persisted ? (
+                <ShieldCheck
+                  className="size-5 shrink-0 text-muted-foreground"
+                  strokeWidth={1.5}
+                  aria-label="Protected"
+                />
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={requestPersist}
+                >
+                  Protect
+                </Button>
+              )}
+            </div>
+
+            {!isInstalled && (canInstall || showIosHint) && (
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col">
+                  <span className="text-ui font-semibold text-foreground">
+                    Install app
+                  </span>
+                  <span className="text-ui-sm text-muted-foreground">
+                    {showIosHint
+                      ? "Use Share → Add to Home Screen."
+                      : "Add Librune to your home screen for offline use."}
+                  </span>
+                </div>
+                {canInstall && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={() => void promptInstall()}
+                  >
+                    <Download strokeWidth={1.5} className="size-4" />
+                    Install
+                  </Button>
+                )}
+              </div>
+            )}
           </section>
         </div>
       </main>

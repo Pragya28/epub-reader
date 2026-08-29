@@ -8,8 +8,12 @@ export const libraryStore = create<LibraryStore>()(
       books: [],
       isLoading: false,
       error: null,
+      evicted: false,
 
       setBooks: (books) => set({ books }, false, "library/setBooks"),
+
+      setEvicted: (value) =>
+        set({ evicted: value }, false, "library/setEvicted"),
 
       addBook: (book) =>
         set(
