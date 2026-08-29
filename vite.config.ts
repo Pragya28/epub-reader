@@ -88,6 +88,11 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    // scripts/check-bundle-size.mjs is the real budget guard now — silence
+    // Vite's fixed 500 kB nag so the two don't disagree on every build.
+    chunkSizeWarningLimit: 750,
+  },
   test: {
     globals: true,
     environment: "jsdom",
