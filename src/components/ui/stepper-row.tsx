@@ -55,7 +55,11 @@ function StepperRow({
             {/* Base UI also renders a visually-hidden native <input type="number">
                 for form/validation purposes — this data-testid disambiguates
                 the visible formatted field from that shadow input in tests. */}
+            {/* readOnly + tabIndex -1: the value changes only via the
+                +/- buttons — no keyboard entry, no pointer scrub-drag. */}
             <NumberField.Input
+              readOnly
+              tabIndex={-1}
               data-testid={`stepper-input-${label}`}
               className="w-full bg-transparent text-center text-ui tabular-nums outline-none"
             />

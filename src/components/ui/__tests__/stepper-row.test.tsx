@@ -59,6 +59,30 @@ describe("StepperRow", () => {
     expect(onChange).toHaveBeenCalledWith(8);
   });
 
+  it("is read-only and out of the tab order — value changes only via the buttons", async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <StepperRow
+        label="Margins"
+        value={16}
+        min={8}
+        max={48}
+        step={8}
+        onChange={onChange}
+      />,
+    );
+
+    const input = screen.getByTestId("stepper-input-Margins");
+    expect(input).toHaveAttribute("readonly");
+    expect(input).toHaveAttribute("tabindex", "-1");
+
+    await user.click(input);
+    await user.keyboard("42");
+    expect(onChange).not.toHaveBeenCalled();
+    expect(input).toHaveValue("16");
+  });
+
   it("formats the value using the provided Intl.NumberFormat options", () => {
     render(
       <StepperRow
