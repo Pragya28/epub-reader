@@ -18,6 +18,13 @@ export const PARAGRAPH_SPACING_MIN = 0;
 export const PARAGRAPH_SPACING_MAX = 24;
 export const PARAGRAPH_SPACING_STEP = 4;
 
+/** Minutes the screen wake lock is held before auto-releasing when there's
+ * been no reading activity (scroll/tap). A safety cap so the screen doesn't
+ * stay lit indefinitely if the reader falls asleep or walks away. */
+export const KEEP_AWAKE_MINUTES_MIN = 5;
+export const KEEP_AWAKE_MINUTES_MAX = 60;
+export const KEEP_AWAKE_MINUTES_STEP = 5;
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
@@ -38,6 +45,10 @@ interface PreferencesStore {
   margins: number;
   /** Space below each paragraph, in px. */
   paragraphSpacing: number;
+  /** Hold the screen on while reading (Screen Wake Lock API). */
+  keepScreenAwake: boolean;
+  /** Minutes to hold the wake lock without reading activity before releasing. */
+  keepScreenAwakeMinutes: number;
 
   setTheme: (value: AppTheme) => void;
   setApplyThemeToReader: (value: boolean) => void;
@@ -47,6 +58,8 @@ interface PreferencesStore {
   setLineHeight: (value: number) => void;
   setMargins: (value: number) => void;
   setParagraphSpacing: (value: number) => void;
+  setKeepScreenAwake: (value: boolean) => void;
+  setKeepScreenAwakeMinutes: (value: number) => void;
 }
 
 export const preferencesStore = create<PreferencesStore>()(
@@ -61,6 +74,8 @@ export const preferencesStore = create<PreferencesStore>()(
       lineHeight: 1.6,
       margins: 16,
       paragraphSpacing: 8,
+      keepScreenAwake: true,
+      keepScreenAwakeMinutes: 20,
 
       setTheme: (value) => set({ theme: value }),
       setApplyThemeToReader: (value) => set({ applyThemeToReader: value }),
@@ -82,6 +97,17 @@ export const preferencesStore = create<PreferencesStore>()(
             value,
             PARAGRAPH_SPACING_MIN,
             PARAGRAPH_SPACING_MAX,
+          ),
+        }),
+
+      setKeepScreenAwake: (value) => set({ keepScreenAwake: value }),
+
+      setKeepScreenAwakeMinutes: (value) =>
+        set({
+          keepScreenAwakeMinutes: clamp(
+            value,
+            KEEP_AWAKE_MINUTES_MIN,
+            KEEP_AWAKE_MINUTES_MAX,
           ),
         }),
     }),

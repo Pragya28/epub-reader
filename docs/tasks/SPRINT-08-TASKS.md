@@ -41,7 +41,7 @@ Unlike Sprint 7 (zero prior art for series/collections), Sprint 8 is a hardening
 
 ---
 
-## Day 2 — Offline & PWA 🟡 (one follow-on open)
+## Day 2 — Offline & PWA ✅
 
 5. ✅ **Service worker polish** — `autoUpdate` + Workbox precaching confirmed; `cleanupOutdatedCaches: true` made explicit in `vite.config.ts` (verified present in generated `dist/sw.js`). `// ponytail:` note that Workbox owns cache versioning — no hand-rolled logic.
 6. ✅ **Offline reading validation** — `src/features/pwa/__tests__/offline-reading.test.ts`: import a book, stub `fetch` to reject, then `loadLibrary` + EPUB parse + `searchLibrary` all succeed and `fetch` is never called.
@@ -52,11 +52,11 @@ Unlike Sprint 7 (zero prior art for series/collections), Sprint 8 is a hardening
    - **Usage display**: Settings → Storage section — used/quota + progress bar + persistent-storage status with a "Protect" button (`use-storage-settings.ts`).
    - **Eviction detection**: `load-library.ts` — persisted `hadBooks` flag; library loads empty + `hadBooks` → distinct "Your books were cleared" state in `book-grid.tsx` (not the first-run empty state). Reader's missing-file error copy broadened for the partial-eviction case.
 8. ✅ **Install experience** — `src/features/pwa/`: `use-install-prompt.ts` captures + defers `beforeinstallprompt`, detects iOS Safari; `install-banner.tsx` — dismissible banner shown only after first import, Android install button / iOS Add-to-Home-Screen hint, dismissal persisted; Settings also carries an "Install app" action. Empty state kept as a single well-designed state (Onboarding-01), reviewed against DESIGN.md — no tour.
-9. ❌ **Keep screen awake while reading** — [[Reader-02 Keep Screen Awake]]. Screen Wake Lock API (`navigator.wakeLock.request("screen")`) is universal for Librune's target now (Android/desktop Chrome/Edge/Firefox/Safari, iOS Safari 16.4+). Folded into this day because it's a PWA platform capability and shares the exact feature-detect / fail-soft pattern as the storage work above. Scope: `use-wake-lock.ts` consumed by the reader screen only — `request` on mount/enable wrapped in try/catch (rejection is a silent no-op), re-acquire on `visibilitychange` → `"visible"` (the one commonly-missed part), `release` + listener cleanup on unmount/disable; plus a default-on `keepScreenAwake` reader preference (same store pattern as the others), row optionally hidden when `!("wakeLock" in navigator)`.
+9. ✅ **Keep screen awake while reading** — [[Reader-02 Keep Screen Awake]]. `src/features/reader/hooks/use-wake-lock.ts` (consumed by the reader screen via `use-reader-screen.ts`): feature-detected, fail-soft `navigator.wakeLock.request("screen")` on mount/enable; re-acquire on `visibilitychange` → `"visible"`; auto-release after a configurable idle window, with `notifyActivity()` (wired to the reader's scroll/tap) resetting the timer. Settings → Reading: a "Keep screen awake" `Switch` (default **on**) and, when on, a "Screen-on limit" `StepperRow` (5–60 min, step 5, default 20) — the `KEEP_AWAKE_MINUTES_*` constants live in `preferences-store.ts` alongside the other reader-pref ranges.
 
 ### Done Criteria
 
-🟡 Items 5–8 complete and merged (PR #8). App installs as a PWA (deferred prompt + Settings button); reading / browsing / search verified to work with the network down; storage quota is requested, surfaced, pre-checked, and eviction is detected rather than silent. Item 9 (screen wake lock) is the remaining follow-on.
+✅ Complete. App installs as a PWA (deferred prompt + Settings button); reading / browsing / search verified to work with the network down; storage quota is requested, surfaced, pre-checked, and eviction is detected rather than silent; the screen stays on while reading with a user-configurable idle cap.
 
 **Related Gaps resolved:** [[Onboarding-01 First-Run Experience]] (install timing + empty state), [[Storage-01 Quota and Eviction]] (all four recommendations: persist, estimate display, pre-flight check, eviction detection). Day 4 still owns the refined quota-exceeded UX + multi-tab concurrency.
 
