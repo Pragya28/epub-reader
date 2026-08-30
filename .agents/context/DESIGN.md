@@ -38,6 +38,18 @@ typography:
     fontFamily: "Literata, serif"
     fontSize: "17px"
     lineHeight: 1.6
+  reading-lora:
+    fontFamily: "Lora, serif"
+    fontSize: "17px"
+    lineHeight: 1.6
+  reading-dm-sans:
+    fontFamily: "DM Sans, sans-serif"
+    fontSize: "17px"
+    lineHeight: 1.6
+  reading-atkinson:
+    fontFamily: "Atkinson Hyperlegible, sans-serif"
+    fontSize: "17px"
+    lineHeight: 1.6
   title-sm:
     fontFamily: "Cinzel, serif"
     fontSize: "15px"
@@ -55,7 +67,7 @@ rounded:
   sm: "0.225rem"
   md: "0.3rem"
   xl: "0.525rem"
-  3xl: "1.05rem"
+  3xl: "0.825rem"
 spacing:
   sm: "8px"
   md: "16px"
@@ -180,7 +192,7 @@ Librune leans on soft ambient shadow as a constant resting-state signature rathe
 
 ## Shapes
 
-One corner language, graduated by role. **Controls take the small end of the scale**: buttons, dropdown/context menus, and dialogs use `rounded-sm` (0.225rem) — a disciplined, tool-like rounding, never sharp but never as generous as a content object. **Content objects take the large end**: book covers use `rounded-xl` (0.525rem), bottom sheets use `rounded-t-3xl` (1.05rem) on their top edge only. Borders are hairline (`border`, `0.5px` on the sticky header) in `border-mist`/`divider-parchment`, never heavy.
+One corner language, graduated by role. **Controls take the small end of the scale**: buttons, dropdown/context menus, and dialogs use `rounded-sm` (0.225rem) — a disciplined, tool-like rounding, never sharp but never as generous as a content object. **Content objects take the large end**: book covers use `rounded-xl` (0.525rem), bottom sheets use `rounded-t-3xl` (0.825rem) on their top edge only. Borders are hairline (`border`, `0.5px` on the sticky header) in `border-mist`/`divider-parchment`, never heavy.
 
 ### Named Rules
 
