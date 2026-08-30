@@ -1,5 +1,5 @@
 import { EpubParser } from "@/services/epub/epub-parser";
-import { getBookFile } from "@/services/storage/book-repository";
+import { getBookFile } from "@/services/storage/book-files";
 import type {
   StoredChapterText,
   StoredSearchIndexEntry,
@@ -37,6 +37,13 @@ export async function buildIndex(bookId: string, file: Blob): Promise<void> {
     const parsedChapter = await parsedBook.loadChapter(chapter);
     const plainText = toPlainText(parsedChapter.content);
     const words = tokenizeChapterHtml(plainText);
+
+    // loadChapter is the reader's render path, so it mints a blob URL for
+    // every embedded picture. Indexing only reads the stripped text (blob
+    // URLs are gone after toPlainText), so revoke them now rather than
+    // leaking one per picture for the whole book — an illustrated title
+    // would otherwise hold hundreds of live object URLs until the tab closes.
+    parsedChapter.assetMap.forEach((url) => URL.revokeObjectURL(url));
 
     for (const word of new Set(words)) {
       entries.push({ word, bookId, chapter });
@@ -82,16 +89,18 @@ export async function ensureIndex(bookId: string, file: Blob): Promise<void> {
 export async function ensureIndexesForBooks(bookIds: string[]): Promise<void> {
   await Promise.all(
     bookIds.map(async (bookId) => {
-      if (await hasIndex(bookId)) return;
-
-      const stored = await getBookFile(bookId);
-      if (!stored) return;
-
       // One book that can't be indexed (corrupt file, exhausted storage
-      // quota) must not take down the search that triggered the backfill —
-      // the remaining books still return results, and this one is retried
-      // on the next search.
+      // quota, a Dexie read error) must not take down the search that
+      // triggered the backfill — the whole callback is guarded, not just
+      // buildIndex, so a throw here can't reject the Promise.all. The
+      // remaining books still return results, and this one is retried on
+      // the next search.
       try {
+        if (await hasIndex(bookId)) return;
+
+        const stored = await getBookFile(bookId);
+        if (!stored) return;
+
         await buildIndex(bookId, stored.file);
       } catch (error) {
         logger.error("failed to backfill search index", { bookId, error });

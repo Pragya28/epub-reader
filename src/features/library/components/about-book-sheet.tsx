@@ -39,7 +39,7 @@ export const AboutBookSheet: FC<AboutBookSheetProps> = ({
         <SheetTitle className="sr-only">About {book.title}</SheetTitle>
 
         <div className="flex gap-4">
-          <div className="w-24 shrink-0 aspect-2/3 overflow-hidden rounded-lg border border-border/40 elevated-soft">
+          <div className="w-24 shrink-0 aspect-2/3 overflow-hidden rounded-xl border border-border/40 elevated-soft">
             <BookCover
               id={book.id}
               title={book.title}

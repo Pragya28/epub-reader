@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-02T00:00:00Z",
+  "generatedAt": "2026-08-30T00:00:00Z",
   "title": "Design System: Librune",
   "extensions": {
     "colorMeta": {
       "paper-cream": {
         "role": "neutral",
         "displayName": "Paper Cream",
-        "canonical": "#fff9ee",
+        "canonical": "oklch(98.38% 0.0159 82.79)",
         "tonalRamp": [
           "#141210",
           "#211d16",
@@ -22,7 +22,7 @@
       "ink-black": {
         "role": "neutral",
         "displayName": "Ink Black",
-        "canonical": "#1f1c0f",
+        "canonical": "oklch(22.57% 0.0237 96.74)",
         "tonalRamp": [
           "#1f1c0f",
           "#3d3a34",
@@ -34,10 +34,70 @@
           "#f2ead8"
         ]
       },
+      "muted-taupe-foreground": {
+        "role": "neutral",
+        "displayName": "Muted Taupe",
+        "canonical": "oklch(39.55% 0.0043 219.59)",
+        "tonalRamp": [
+          "#26292a",
+          "#333637",
+          "#444748",
+          "#6b6560",
+          "#93887b",
+          "#b3ada0",
+          "#d0cbc0",
+          "#e8e4dc"
+        ]
+      },
+      "surface-parchment": {
+        "role": "neutral",
+        "displayName": "Parchment Ramp (Low / Mid / High / Highest)",
+        "canonical": "oklch(94.7% 0.0278 88.75)",
+        "tonalRamp": [
+          "#1a1713",
+          "#211d16",
+          "#292319",
+          "#322b1e",
+          "#eae2ce",
+          "#f0e8d4",
+          "#f5edd9",
+          "#fbf3df"
+        ]
+      },
+      "border-mist": {
+        "role": "neutral",
+        "displayName": "Border Mist (decorative hairline)",
+        "canonical": "oklch(82.73% 0.0033 197.09)",
+        "tonalRamp": [
+          "#2b2926",
+          "#3d3a34",
+          "#57544e",
+          "#757068",
+          "#9a958c",
+          "#c4c7c7",
+          "#dcdad4",
+          "#efedea"
+        ]
+      },
+      "control-edge": {
+        "role": "neutral",
+        "displayName": "Control Edge (--input, every interactive boundary, ≥3:1)",
+        "canonical": "oklch(59.14% 0.0024 197.09)",
+        "tonalRamp": [
+          "#26292a",
+          "#3a3d3e",
+          "#525453",
+          "#7c7e7e",
+          "#9a9b98",
+          "#b8b8b4",
+          "#d4d3ce",
+          "#eeece8"
+        ]
+      },
       "primary-onyx": {
         "role": "primary",
-        "displayName": "Primary Onyx",
-        "canonical": "#040505",
+        "displayName": "Primary Onyx (ink/paper inversion — never a fixed hex)",
+        "canonical": "oklch(11.29% 0.0029 196.76)",
         "tonalRamp": [
           "#040505",
           "#1e1e1e",
@@ -45,14 +105,14 @@
           "#444748",
           "#695d4a",
           "#a08a5e",
-          "#c9a84c",
+          "#c4c7c7",
           "#f5f2ea"
         ]
       },
       "secondary-sand": {
         "role": "secondary",
         "displayName": "Secondary Sand",
-        "canonical": "#f2e0c8",
+        "canonical": "oklch(91.49% 0.0375 75.14)",
         "tonalRamp": [
           "#3a3220",
           "#4a4028",
@@ -64,10 +124,40 @@
           "#f8ecd8"
         ]
       },
+      "warm-accent": {
+        "role": "tertiary",
+        "displayName": "Warm Accent — Antique Gold (fixed, theme-independent)",
+        "canonical": "oklch(61.1% 0.1253 84.69)",
+        "tonalRamp": [
+          "#3a2a00",
+          "#5a4200",
+          "#7a5b00",
+          "#a67c00",
+          "#c49a2e",
+          "#dab868",
+          "#ecd7a4",
+          "#f7eeda"
+        ]
+      },
+      "selected": {
+        "role": "tertiary",
+        "displayName": "Selected — the only 'this is the active choice' color",
+        "canonical": "oklch(50% 0.1046 78.37)",
+        "tonalRamp": [
+          "#2a1d00",
+          "#3f2c00",
+          "#573d00",
+          "#835a00",
+          "#a67f2e",
+          "#c8a866",
+          "#e2ce9c",
+          "#f4ecd8"
+        ]
+      },
       "cover-gold": {
-        "role": "accent",
-        "displayName": "Cover Gold",
-        "canonical": "#c9a84c",
+        "role": "tertiary",
+        "displayName": "Cover Gold (book-object only — never UI chrome)",
+        "canonical": "oklch(74.32% 0.1171 89.51)",
         "tonalRamp": [
           "#5a4a1e",
           "#7a622a",
@@ -79,10 +169,25 @@
           "#f7eeda"
         ]
       },
+      "cover-dark": {
+        "role": "tertiary",
+        "displayName": "Cover Dark (book-object gradient only)",
+        "canonical": "oklch(26.56% 0.0178 70.68)",
+        "tonalRamp": [
+          "#1a140d",
+          "#241d14",
+          "#33291d",
+          "#2b241c",
+          "#4a3f30",
+          "#6b5d47",
+          "#9a8a6e",
+          "#c8bca4"
+        ]
+      },
       "destructive-clay": {
         "role": "error",
         "displayName": "Destructive Clay",
-        "canonical": "#b3261e",
+        "canonical": "oklch(50.13% 0.1783 28.7)",
         "tonalRamp": [
           "#3d0d0a",
           "#5e1512",
@@ -98,47 +203,72 @@
     "typographyMeta": {
       "display": {
         "displayName": "Display (Cinzel)",
-        "purpose": "Screen-level titles; bookplate/spine-lettering feel."
+        "purpose": "Screen-level titles; engraved, wide-tracked bookplate/spine-lettering feel. 48px / 32px mobile, 0.08em tracking."
       },
       "headline": {
         "displayName": "Headline (Cinzel)",
-        "purpose": "Section headers."
+        "purpose": "Section headers within a screen (.section-title). 24px, 0.05em tracking."
+      },
+      "title-sm": {
+        "displayName": "Title Small (Cinzel)",
+        "purpose": "Compact display titles on small surfaces — book-cover placeholder titles, drawer/sheet titles. 15px, 0.06em tracking."
       },
       "reading": {
-        "displayName": "Reading (Literata)",
-        "purpose": "Chapter body text inside the reader iframe."
+        "displayName": "Reading (Literata, default)",
+        "purpose": "Chapter body text inside the reader iframe. 20px / 17px, 1.6 line-height, max 68ch."
+      },
+      "reading-lora": {
+        "displayName": "Reading — Lora (user-selectable serif alternative)",
+        "purpose": "Book text only, chosen in Settings / reader toolbar. Applied via --reading-font-family inside the iframe. Not a UI font."
+      },
+      "reading-dm-sans": {
+        "displayName": "Reading — DM Sans (user-selectable reading sans)",
+        "purpose": "Book text only. Same application path as Lora; never used for app chrome."
+      },
+      "reading-atkinson": {
+        "displayName": "Reading — Atkinson Hyperlegible (accessibility-oriented sans)",
+        "purpose": "Book text only. Disambiguates similar characters for low-vision readers."
       },
       "ui": {
         "displayName": "UI (Plus Jakarta Sans)",
-        "purpose": "Buttons, nav, controls, labels."
+        "purpose": "Buttons, nav, controls, labels. Deliberately neutral so it never competes with either serif. 14px / 12px small."
       },
       "meta": {
         "displayName": "Meta (Plus Jakarta Sans, uppercase)",
-        "purpose": "Timestamps, byline-style metadata, badges."
+        "purpose": "Timestamps, byline-style metadata, badges, cover-placeholder author labels. 11px, 0.05em tracking."
+      },
+      "mono": {
+        "displayName": "Mono (JetBrains Mono)",
+        "purpose": "Code, data, measurement — never as a 'technical' costume."
       }
     },
     "shadows": [
       {
         "name": "soft",
         "value": "0 2px 8px rgba(31, 28, 15, 0.04)",
-        "purpose": "Resting elevation for book covers and card-like content surfaces (.elevated-soft)."
+        "purpose": "Resting elevation for book covers and card-like content surfaces (.elevated-soft) — a constant signature, not hover-only. Heavier alpha in dark mode."
       },
       {
         "name": "floating",
         "value": "0 8px 40px rgba(0, 0, 0, 0.5)",
-        "purpose": "Heavier lift for elements overlaying other content directly."
+        "purpose": "Heavier lift reserved for elements that overlay other content directly (.shadow-floating)."
       }
     ],
     "motion": [
       {
         "name": "press-nudge",
         "value": "translateY(1px) on :active",
-        "purpose": "Tactile 'pressed into the page' cue on buttons."
+        "purpose": "Tactile 'pressed into the page' cue on buttons (active:translate-y-px)."
       },
       {
         "name": "sheet-slide",
-        "value": "slide up from bottom edge",
-        "purpose": "Bottom sheets (TOC drawer, reader toolbar) enter from the viewport edge instead of fading in."
+        "value": "slide up from the bottom viewport edge",
+        "purpose": "Bottom sheets (TOC drawer, reader toolbar) enter from the edge rather than fading in — the elevation cue is border + rounded top + slide, not shadow."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "@media (prefers-reduced-motion: reduce) { animation-duration: 1ms; transition-duration: 1ms; animation-iteration-count: 1; scroll-behavior: auto }",
+        "purpose": "Collapses motion to ~instant while keeping every final state and color-feedback change intact — the OS setting is the single source, there is no in-app motion toggle."
       }
     ],
     "breakpoints": []
@@ -148,91 +278,132 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Default call-to-action button; square corners, solid ink fill.",
+      "description": "Default call-to-action; modest tool-like rounding, solid ink fill that inverts with the theme.",
       "html": "<button class=\"ds-btn-primary\">Add Book</button>",
-      "css": ".ds-btn-primary { background: #040505; color: #fff9ee; padding: 0 10px; height: 32px; border: none; border-radius: 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 500; transition: background 0.15s, transform 0.1s; } .ds-btn-primary:hover { background: rgba(4,5,5,0.8); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 1px #695d4a; } .ds-btn-primary:active { transform: translateY(1px); }"
+      "css": ".ds-btn-primary { background: var(--color-primary, #040505); color: var(--color-primary-foreground, #fff9ee); padding: 0 10px; height: 32px; border: 1px solid transparent; border-radius: 0.225rem; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 12px; font-weight: 500; transition: background 0.15s, transform 0.1s, box-shadow 0.15s; } .ds-btn-primary:hover { background: color-mix(in oklch, var(--color-primary, #040505) 80%, transparent); } .ds-btn-primary:focus-visible { outline: none; border-color: var(--color-ring, #695d4a); box-shadow: 0 0 0 1px color-mix(in oklch, var(--color-ring, #695d4a) 50%, transparent); } .ds-btn-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Secondary action — transparent fill, control-edge border (--input, not the decorative --border).",
+      "html": "<button class=\"ds-btn-outline\">Protect</button>",
+      "css": ".ds-btn-outline { background: transparent; color: var(--color-foreground, #1f1c0f); padding: 0 10px; height: 28px; border: 1px solid var(--color-input, #7c7e7e); border-radius: 0.225rem; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 12px; font-weight: 500; transition: background 0.15s; } .ds-btn-outline:hover { background: var(--color-accent, #f2e0c8); } .ds-btn-outline:focus-visible { outline: none; border-color: var(--color-ring, #695d4a); box-shadow: 0 0 0 1px color-mix(in oklch, var(--color-ring, #695d4a) 50%, transparent); }"
     },
     {
       "name": "Ghost Icon Button",
       "kind": "button",
       "refersTo": "button-ghost",
-      "description": "Icon-only nav control used in the sticky header (search, menu, overflow).",
-      "html": "<button class=\"ds-btn-ghost\" aria-label=\"Search\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 256 256\"><path fill=\"currentColor\" d=\"M229.66 218.34l-50.07-50.06a88.11 88.11 0 1 0-11.31 11.31l50.06 50.07a8 8 0 0 0 11.32-11.32ZM40 112a72 72 0 1 1 72 72a72.08 72.08 0 0 1-72-72Z\"/></svg></button>",
-      "css": ".ds-btn-ghost { background: transparent; color: #1f1c0f; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border: none; border-radius: 0; transition: background 0.15s; } .ds-btn-ghost:hover { background: #f0e8d4; } .ds-btn-ghost:focus-visible { outline: none; box-shadow: 0 0 0 1px #695d4a; }"
+      "description": "Icon-only nav control in the sticky header (search, menu, overflow). Hit area ≥ 24px per WCAG 2.5.8.",
+      "html": "<button class=\"ds-btn-ghost\" aria-label=\"Search\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 256 256\"><path fill=\"currentColor\" d=\"M229.66 218.34l-50.07-50.06a88.11 88.11 0 1 0-11.31 11.31l50.06 50.07a8 8 0 0 0 11.32-11.32ZM40 112a72 72 0 1 1 72 72a72.08 72.08 0 0 1-72-72Z\"/></svg></button>",
+      "css": ".ds-btn-ghost { background: transparent; color: var(--color-foreground, #1f1c0f); width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; border-radius: 0.225rem; transition: background 0.15s; } .ds-btn-ghost:hover { background: var(--color-surface-high, #f0e8d4); } .ds-btn-ghost:focus-visible { outline: none; border-color: var(--color-ring, #695d4a); box-shadow: 0 0 0 1px color-mix(in oklch, var(--color-ring, #695d4a) 50%, transparent); }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "book-card",
+      "description": "The library search input — a filled parchment pill; focus lands on the container as a ring, not the bare input.",
+      "html": "<div class=\"ds-search\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 256 256\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M229.66 218.34l-50.07-50.06a88.11 88.11 0 1 0-11.31 11.31l50.06 50.07a8 8 0 0 0 11.32-11.32ZM40 112a72 72 0 1 1 72 72a72.08 72.08 0 0 1-72-72Z\"/></svg><input type=\"text\" placeholder=\"Search your library\" aria-label=\"Search your library\" /></div>",
+      "css": ".ds-search { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--color-card, #f5edd9); border-radius: 0.3rem; color: var(--color-muted-foreground, #444748); box-shadow: 0 0 0 1px transparent; transition: box-shadow 0.15s; } .ds-search:focus-within { box-shadow: 0 0 0 1px color-mix(in oklch, var(--color-ring, #695d4a) 50%, transparent); } .ds-search input { flex: 1; min-width: 0; border: none; background: transparent; outline: none; font-family: 'Literata', serif; font-size: 15px; color: var(--color-foreground, #1f1c0f); } .ds-search input::placeholder { color: var(--color-muted-foreground, #444748); }"
+    },
+    {
+      "name": "Radio Row (selectable list row)",
+      "kind": "custom",
+      "refersTo": "book-card",
+      "description": "Full-row radio for named-option lists (theme selector, font selector) — the whole row is the target, with an inset ring when checked and a distinct focus ring.",
+      "html": "<div class=\"ds-radio-row ds-radio-row-checked\"><span>Literata</span><svg width=\"16\" height=\"16\" viewBox=\"0 0 256 256\"><path fill=\"currentColor\" d=\"M232.49 80.49l-128 128a12 12 0 0 1-17 0l-56-56a12 12 0 1 1 17-17L96 183 215.51 63.51a12 12 0 0 1 17 17Z\"/></svg></div>",
+      "css": ".ds-radio-row { display: flex; align-items: center; justify-content: space-between; padding: 16px; text-align: left; cursor: pointer; outline: none; color: var(--color-foreground, #1f1c0f); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 14px; } .ds-radio-row:focus-visible { box-shadow: inset 0 0 0 1.5px var(--color-ring, #695d4a); } .ds-radio-row-checked { background: var(--color-surface-high, #f0e8d4); box-shadow: inset 0 0 0 1.5px var(--color-selected, #835a00); color: var(--color-selected, #835a00); }"
     },
     {
       "name": "Book Card",
       "kind": "card",
       "refersTo": "book-card",
-      "description": "Library grid item: rounded cover with resting soft shadow and hover deepen.",
+      "description": "Library grid item: rounded cover with a resting soft shadow that deepens on hover; NEW badge is a filled corner tab, not a floating chip.",
       "html": "<div class=\"ds-book-card\"><div class=\"ds-book-card-cover\"><span class=\"ds-book-card-badge\">NEW</span></div></div>",
-      "css": ".ds-book-card { display: flex; flex-direction: column; gap: 8px; } .ds-book-card-cover { position: relative; aspect-ratio: 2 / 3; overflow: hidden; border-radius: 0.525rem; border: 1px solid rgba(196,199,199,0.4); box-shadow: 0 2px 8px rgba(31,28,15,0.04); background: linear-gradient(135deg, #2b241c, #c9a84c); transition: box-shadow 0.2s; } .ds-book-card-cover:hover { box-shadow: 0 8px 24px rgba(31,28,15,0.12); } .ds-book-card-badge { position: absolute; top: 0; right: 0; background: rgba(255,249,238,0.95); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: #444748; padding: 4px 10px; border-bottom-left-radius: 0.525rem; }"
+      "css": ".ds-book-card { display: flex; flex-direction: column; gap: 8px; } .ds-book-card-cover { position: relative; aspect-ratio: 2 / 3; overflow: hidden; border-radius: 0.525rem; border: 1px solid color-mix(in oklch, var(--color-border, #c4c7c7) 40%, transparent); box-shadow: 0 2px 8px rgba(31,28,15,0.04); background: linear-gradient(135deg, var(--color-cover-dark, #2b241c), var(--color-cover-gold, #c9a84c)); transition: box-shadow 0.2s; } .ds-book-card-cover:hover { box-shadow: 0 8px 24px rgba(31,28,15,0.12); } .ds-book-card-badge { position: absolute; top: 0; right: 0; background: rgba(255,249,238,0.95); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-muted-foreground, #444748); padding: 4px 10px; border-bottom-left-radius: 0.525rem; }"
     },
     {
       "name": "Bottom Sheet",
       "kind": "custom",
       "refersTo": "sheet-panel",
-      "description": "TOC drawer / reader toolbar: slides up from viewport edge, rounded top corners only, border instead of shadow.",
+      "description": "TOC drawer / reader toolbar: slides up from the viewport edge, rounded top corners only, a hard top border instead of a shadow. List items are Button variants — they keep the modest control radius even inside the generously rounded sheet.",
       "html": "<div class=\"ds-sheet\"><div class=\"ds-sheet-handle\"></div><div class=\"ds-sheet-header\">Contents</div><button class=\"ds-sheet-item ds-sheet-item-active\">Chapter 1</button><button class=\"ds-sheet-item\">Chapter 2</button></div>",
-      "css": ".ds-sheet { display: flex; flex-direction: column; max-height: 85dvh; background: #f5edd9; border-radius: 1.05rem 1.05rem 0 0; border-top: 1px solid #eae2ce; } .ds-sheet-handle { width: 64px; height: 4px; border-radius: 9999px; background: #c4c7c7; margin: 12px auto 16px; } .ds-sheet-header { font-family: 'Cinzel', serif; font-size: 24px; letter-spacing: 0.05em; padding: 0 24px 20px; border-bottom: 1px solid #eae2ce; } .ds-sheet-item { text-align: left; padding: 8px 24px; border: none; border-radius: 0; background: transparent; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; color: #1f1c0f; } .ds-sheet-item:hover { background: #f0e8d4; } .ds-sheet-item-active { background: #f2e0c8; color: #695d4a; }"
+      "css": ".ds-sheet { display: flex; flex-direction: column; max-height: 85dvh; background: var(--color-card, #f5edd9); border-radius: 0.825rem 0.825rem 0 0; border-top: 1px solid var(--color-divider, #eae2ce); } .ds-sheet-handle { width: 64px; height: 4px; border-radius: 9999px; background: var(--color-border, #c4c7c7); margin: 12px auto 16px; } .ds-sheet-header { font-family: 'Cinzel', serif; font-size: 15px; letter-spacing: 0.18em; text-transform: uppercase; padding: 0 24px 20px; border-bottom: 1px solid var(--color-divider, #eae2ce); } .ds-sheet-item { text-align: left; padding: 8px 24px; border: none; border-radius: 0.225rem; background: transparent; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 12px; color: var(--color-foreground, #1f1c0f); } .ds-sheet-item:hover { background: var(--color-surface-high, #f0e8d4); } .ds-sheet-item-active { background: var(--color-secondary, #f2e0c8); color: var(--color-secondary-foreground, #695d4a); }"
     },
     {
       "name": "Sticky Header",
       "kind": "nav",
       "refersTo": "sheet-panel",
-      "description": "Translucent blurred header with hairline top/bottom dividers.",
-      "html": "<header class=\"ds-header\"><span class=\"ds-header-title\">Librune</span><button class=\"ds-btn-ghost\" aria-label=\"Menu\">•••</button></header>",
-      "css": ".ds-header { position: sticky; top: 0; height: 80px; display: flex; align-items: center; justify-content: space-between; padding: 8px 20px; background: rgba(255,249,238,0.85); backdrop-filter: blur(12px); border-top: 0.5px solid #eae2ce; border-bottom: 0.5px solid #eae2ce; } .ds-header-title { font-family: 'Cinzel', serif; letter-spacing: 0.08em; font-size: 20px; color: #1f1c0f; }"
+      "description": "Translucent blurred header with hairline top/bottom dividers; content scrolls beneath it without a hard seam. Icon-only ghost controls, no text labels.",
+      "html": "<header class=\"ds-header\"><span class=\"ds-header-title\">Librune</span><button class=\"ds-btn-ghost\" aria-label=\"Menu\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 256 256\"><path fill=\"currentColor\" d=\"M108 60a20 20 0 1 1 20 20a20 20 0 0 1-20-20Zm20 48a20 20 0 1 0 20 20a20 20 0 0 0-20-20Zm0 68a20 20 0 1 0 20 20a20 20 0 0 0-20-20Z\"/></svg></button></header>",
+      "css": ".ds-header { position: sticky; top: 0; height: 80px; display: flex; align-items: center; justify-content: space-between; padding: 8px 20px; background: var(--color-header-bg, rgba(255,249,238,0.85)); backdrop-filter: blur(12px); border-top: 0.5px solid var(--color-divider, #eae2ce); border-bottom: 0.5px solid var(--color-divider, #eae2ce); } .ds-header-title { font-family: 'Cinzel', serif; letter-spacing: 0.08em; font-size: 20px; text-transform: uppercase; color: var(--color-foreground, #1f1c0f); }"
     }
   ],
   "narrative": {
     "northStar": "The Bound Folio",
-    "overview": "Librune reads like a physical folio: warm cream paper, an ink-black spine of UI chrome, and a gold-on-dark cover accent that echoes traditional bookbinding. The reading surface is set in serif type on soft parchment tones, while the architectural chrome around it — buttons, toolbars, the sticky header — stays crisp, sharp-cornered, and quiet, so it never competes with the page. Book covers, bottom sheets, and panels are the \"paper objects\" of the system: they get soft rounded corners and a consistent gentle lift, as if resting slightly above the surface beneath them. Depth is soft and consistent rather than occasional — every card-like surface carries the same low ambient shadow at rest, not just on hover, reinforcing the sense of physical layered pages.\n\nThe system rejects flat, hard-edged material-design card language for controls (no rounded buttons) while embracing it for content objects (rounded covers and sheets) — the split is deliberate: controls are tools, content is the book.",
+    "overview": "Librune reads like a physical folio: warm cream paper, an ink-black spine of UI chrome, and a gold-on-dark cover accent that echoes traditional bookbinding. The reading surface is set in serif type on soft parchment tones, while the architectural chrome around it — buttons, toolbars, the sticky header — stays quiet and disciplined, so it never competes with the page. Book covers, bottom sheets, and panels are the \"paper objects\" of the system: they get more generous rounded corners and a consistent gentle lift, as if resting slightly above the surface beneath them. Depth is soft and consistent rather than occasional — every card-like surface carries the same low ambient shadow at rest, not just on hover, reinforcing the sense of physical layered pages.\n\nCorners are soft everywhere, but graduated by role rather than uniform: controls (buttons, menus, dialogs) take a small, disciplined radius that keeps them feeling like precise tools; content objects (book covers, bottom sheets) take a larger radius that reads as a physically rounded paper object. The split is in degree, not in kind — nothing in the system is hard-edged.",
     "keyCharacteristics": [
       "Warm parchment palette in light mode, near-black ink in dark mode — never a cold neutral gray.",
       "Serif display (Cinzel, wide letter-spacing) for titles; serif body (Literata) for reading; sans (Plus Jakarta Sans) for UI chrome only.",
-      "Sharp rectangular controls (buttons: rounded-none) against soft rounded content objects (covers, sheets: rounded-xl/rounded-3xl).",
+      "Softly rounded throughout, graduated by role: controls (buttons, menus: rounded-sm) read as precise tools; content objects (covers, sheets: rounded-xl / rounded-3xl) read as rounded paper.",
       "Consistent soft ambient shadow as a resting-state signature, not just a hover effect."
     ],
     "rules": [
       {
+        "name": "The Boundary vs Decoration Rule",
+        "body": "--input is every control boundary (outline-button edges, switch off-track, radio outlines, the search underline) and is held at 3:1 against every surface it sits on. --border / --divider are decorative container edges and stay soft on purpose. Never use border-border on something the user clicks; never darken --border to fix a control's legibility.",
+        "section": "colors"
+      },
+      {
         "name": "The Cover Accent Rule",
-        "body": "cover-dark and cover-gold are reserved for book-cover placeholder gradients and never used as UI chrome colors.",
+        "body": "cover-dark and cover-gold are reserved for book-cover placeholder gradients and never used as UI chrome colors — they signal 'this is a book object', not 'this is a control'.",
         "section": "colors"
       },
       {
         "name": "The Ink Inversion Rule",
-        "body": "Primary is never a fixed hex — always the current theme's ink-on-paper extreme. Use the --primary token so dark mode inverts correctly.",
+        "body": "Primary is never a fixed hex — always the current theme's ink-on-paper extreme (near-black on cream, near-white on near-black). Use the --primary token so dark mode inverts correctly.",
         "section": "colors"
       },
       {
+        "name": "The Selection Accent Rule",
+        "body": "selected is the only color that means 'this is the active choice' — it must not be reused for hover states, emphasis, or decoration, or the signal dilutes. It is a deliberately different hue relationship from cover-gold so the two never get confused.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ramp-Only Rule",
+        "body": "Every font size comes from the --text-* scale (text-display-lg through text-meta) — never Tailwind's built-in text-sm / text-base / text-xs, even in shadcn-generated primitives, and never a literal px value.",
+        "section": "typography"
+      },
+      {
         "name": "The Serif-For-Content Rule",
-        "body": "Any text meant to be read (titles, chapter text) uses a serif; any text that helps the user operate the app uses the sans.",
+        "body": "Any text the reader is meant to actually read (titles, chapter text) uses a serif; any text that helps them operate the app (buttons, nav, meta labels) uses the sans. Don't cross the two.",
         "section": "typography"
       },
       {
         "name": "The Resting Lift Rule",
-        "body": "Content objects (book covers) carry .elevated-soft at rest, not only on hover — depth communicates 'this is a physical object'.",
+        "body": "Content objects (book covers) carry .elevated-soft at rest, not only on hover — depth communicates 'this is a physical object', not 'this is interactive'.",
         "section": "elevation"
       },
       {
         "name": "The Object/Control Split",
-        "body": "Round it if it's read or held (covers, sheets, popovers). Keep it square if it's pressed (buttons, controls). Never round a button to match a card's radius.",
+        "body": "If it's something the user reads or holds (a book cover, a sheet, a popover), round it generously (rounded-xl / rounded-3xl). If it's something the user presses (a button, a menu, a dialog), round it modestly (rounded-sm). Both are always softly rounded — the split is in degree, not sharp-vs-round.",
         "section": "shapes"
       }
     ],
     "dos": [
-      "Do keep all button/control corners square (rounded-none) — never introduce a rounded button variant.",
-      "Do give content objects (covers, sheets, popovers) a rounded, soft-lifted treatment (.elevated-soft + rounded-xl/rounded-3xl).",
-      "Do pair serif type (Cinzel/Literata) with anything the user reads, and sans (Plus Jakarta Sans) with anything the user operates.",
+      "Do keep controls at the modest end of the radius scale (rounded-sm) — never sharp, never as generous as a content object's radius.",
+      "Do give content objects (covers, sheets) a rounded, soft-lifted treatment (.elevated-soft + rounded-xl / rounded-3xl).",
+      "Do pair serif type (Cinzel / Literata) with anything the user reads, and sans (Plus Jakarta Sans) with anything the user operates.",
       "Do use the --primary token (never a hardcoded hex) for anything meant to invert correctly between light and dark mode.",
-      "Do reserve cover-dark/cover-gold strictly for book-cover-related surfaces."
+      "Do reserve cover-dark / cover-gold strictly for book-cover-related surfaces.",
+      "Do use selected only to mark active/checked state (switches, radio rows, active-filter indicator) — never as a hover tint or decoration."
     ],
     "donts": [
-      "Don't round a button or chip to match card radius — it breaks the control/content split.",
+      "Don't round a button or chip to match a content object's larger radius — it breaks the control/content split.",
       "Don't add a drop shadow to bottom sheets; their elevation cue is the top border + rounded-top-corners + slide animation, not shadow.",
       "Don't introduce a cold neutral gray; all neutrals in this system are warm parchment/ink tones.",
-      "Don't use the sans UI font for reading-surface body text, or the serif reading font for buttons/nav labels."
+      "Don't use the sans UI font for reading-surface body text, or the serif reading font for buttons/nav labels.",
+      "Don't use warm-accent or selected interchangeably with cover-gold — they're deliberately distinct hues so 'book object', 'CTA tile', and 'active selection' stay three separate signals."
     ]
   }
 }

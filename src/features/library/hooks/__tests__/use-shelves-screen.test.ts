@@ -21,6 +21,7 @@ const book2: StoredBook = {
 } as StoredBook;
 
 vi.mock("@/services/storage/groupings", () => ({
+  ensureSeriesGroupings: vi.fn(async () => {}),
   listGroupings: vi.fn(async () => [
     {
       id: "g1",

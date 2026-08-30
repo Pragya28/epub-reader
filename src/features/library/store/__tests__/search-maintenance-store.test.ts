@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as bookRepository from "@/services/storage/book-repository";
+import * as bookFiles from "@/services/storage/book-files";
 import * as rebuildSearchIndexModule from "../../actions/rebuild-search-index";
 import { resetTestDb } from "@/tests/utils/reset-test-db";
 import { resetLibraryStore } from "@/tests/utils/reset-store";
@@ -35,7 +36,7 @@ describe("searchMaintenanceStore", () => {
     // getBookFile to hand back the original in-memory file so the rebuild
     // this store triggers actually succeeds (failedCount: 0), matching
     // real-browser behavior.
-    vi.spyOn(bookRepository, "getBookFile").mockImplementation(
+    vi.spyOn(bookFiles, "getBookFile").mockImplementation(
       async (bookId: string) => (bookId === id ? { bookId, file } : undefined),
     );
 
@@ -90,4 +91,14 @@ describe("searchMaintenanceStore", () => {
 
     expect(searchMaintenanceStore.getState().progress).toBe(100);
   }, 30000);
+
+  it("returns to idle when the rebuild throws, so a retry isn't blocked", async () => {
+    vi.spyOn(bookRepository, "getAllBooks").mockRejectedValue(
+      new Error("db unavailable"),
+    );
+
+    await searchMaintenanceStore.getState().startRebuild();
+
+    expect(searchMaintenanceStore.getState().status).toBe("idle");
+  });
 });

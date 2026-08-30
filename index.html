@@ -23,6 +23,17 @@
       rel="stylesheet"
     />
     <title>Librune</title>
+    <script>
+      // Apply the saved explicit theme before first paint so a user whose
+      // choice differs from their OS prefers-color-scheme doesn't see a flash.
+      // Mirrors useApplyTheme; the persisted shape is zustand's { state: {...} }.
+      try {
+        var t = JSON.parse(localStorage.getItem("librune-preferences") || "{}");
+        t = t && t.state && t.state.theme;
+        if (t === "dark" || t === "light")
+          document.documentElement.classList.add(t);
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { hasIndex, findMatches } from "@/services/search/search-index";
-import * as bookRepository from "@/services/storage/book-repository";
+import * as bookFiles from "@/services/storage/book-files";
 import { getAllBooks } from "@/services/storage/book-repository";
 import { importBook } from "../import-book";
 import { rebuildSearchIndex } from "../rebuild-search-index";
@@ -38,7 +38,7 @@ describe("rebuildSearchIndex", () => {
       [firstId, first],
       [secondId, second],
     ]);
-    vi.spyOn(bookRepository, "getBookFile").mockImplementation(
+    vi.spyOn(bookFiles, "getBookFile").mockImplementation(
       async (bookId: string) => {
         const file = filesById.get(bookId);
         return file ? { bookId, file } : undefined;
@@ -78,7 +78,7 @@ describe("rebuildSearchIndex", () => {
     const { id } = await importBook(file);
 
     // Same fake-indexeddb Blob-corruption limitation as the first test.
-    vi.spyOn(bookRepository, "getBookFile").mockImplementation(
+    vi.spyOn(bookFiles, "getBookFile").mockImplementation(
       async (bookId: string) => (bookId === id ? { bookId, file } : undefined),
     );
 

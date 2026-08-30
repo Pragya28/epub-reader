@@ -14,7 +14,7 @@ import { importBook } from "@/features/library/actions/import-book";
 import { loadLibrary } from "@/features/library/actions/load-library";
 import { searchLibrary } from "@/features/library/actions/search-library";
 import { libraryStore } from "@/features/library/store/library-store";
-import { getBookFile } from "@/services/storage/book-repository";
+import { getBookFile } from "@/services/storage/book-files";
 import { EpubParser } from "@/services/epub/epub-parser";
 import { loadFixture } from "@/tests/utils/load-fixtures";
 import { resetTestDb } from "@/tests/utils/reset-test-db";

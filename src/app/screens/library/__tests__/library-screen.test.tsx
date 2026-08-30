@@ -10,6 +10,7 @@ vi.mock("@/features/library/actions/load-library", () => ({
   loadLibrary: vi.fn(async () => {}),
 }));
 vi.mock("@/services/storage/groupings", () => ({
+  ensureSeriesGroupings: vi.fn(async () => {}),
   listGroupings: vi.fn(async () => []),
   getMembersForGrouping: vi.fn(async () => []),
 }));

@@ -264,12 +264,16 @@ export class TocParser {
   // ---- Utilities ----
 
   private normalizePath(opfDirectory: string, relativePath: string): string {
-    return new URL(relativePath, `http://epub/${opfDirectory}`).pathname.slice(
-      1,
+    // Decode percent-encoding so TOC hrefs match manifest hrefs and zip entry
+    // names regardless of which side is encoded (see chapter-parser.resolvePath).
+    return decodeURIComponent(
+      new URL(relativePath, `http://epub/${opfDirectory}`).pathname.slice(1),
     );
   }
 
   private resolvePath(opfDirectory: string, href: string): string {
-    return new URL(href, `http://epub/${opfDirectory}`).pathname.slice(1);
+    return decodeURIComponent(
+      new URL(href, `http://epub/${opfDirectory}`).pathname.slice(1),
+    );
   }
 }

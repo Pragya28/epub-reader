@@ -1,5 +1,6 @@
 import { useState, type FC } from "react";
 import { SpinnerIcon } from "@phosphor-icons/react";
+import { notify } from "@/components/toast/toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +39,10 @@ export const ConfirmDeleteDialog: FC<ConfirmDeleteDialogProps> = ({
     setIsDeleting(true);
     try {
       await onConfirm();
+    } catch (error) {
+      notify.error(
+        error instanceof Error ? error.message : "Couldn't delete. Try again.",
+      );
     } finally {
       setIsDeleting(false);
     }

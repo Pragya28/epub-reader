@@ -47,7 +47,7 @@ export const ContinueReadingBanner: FC<ContinueReadingBannerProps> = ({
       }`}
     >
       {/* Book icon in a subtle tile atop the banner's own tone */}
-      <div className="shrink-0 size-9 rounded-lg flex items-center justify-center bg-popover-foreground/10 text-popover-foreground">
+      <div className="shrink-0 size-9 rounded-md flex items-center justify-center bg-popover-foreground/10 text-popover-foreground">
         <BookOpenIcon size={18} />
       </div>
 

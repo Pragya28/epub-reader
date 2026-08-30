@@ -120,11 +120,19 @@ export function useReaderEngine({
     let restoredInitialPosition = false;
     let saveTimeoutId: ReturnType<typeof setTimeout> | undefined;
     let lastComputedProgress: ReadingProgress | undefined;
+    // Recomputes a full progress snapshot (with the expensive anchorPath) from
+    // live DOM — set once the iframe is ready. The per-scroll-frame path skips
+    // the anchor; it's only resolved here, on an actual save.
+    let getAnchoredProgress: (() => ReadingProgress) | undefined;
 
     const flushPendingProgress = () => {
       if (saveTimeoutId) clearTimeout(saveTimeoutId);
-      if (bookId && lastComputedProgress) {
-        void saveReaderProgress(bookId, lastComputedProgress);
+      const progress =
+        !cancelled && getAnchoredProgress
+          ? getAnchoredProgress()
+          : lastComputedProgress;
+      if (bookId && progress) {
+        void saveReaderProgress(bookId, progress);
       }
     };
 
@@ -153,7 +161,11 @@ export function useReaderEngine({
       if (saveTimeoutId) clearTimeout(saveTimeoutId);
 
       saveTimeoutId = setTimeout(() => {
-        void saveReaderProgress(bookId, progress);
+        if (cancelled) return;
+        // Resolve the anchor once, now, rather than on every scroll frame.
+        const full = getAnchoredProgress?.() ?? progress;
+        lastComputedProgress = full;
+        void saveReaderProgress(bookId, full);
       }, PROGRESS_SAVE_DEBOUNCE_MS);
     };
 
@@ -174,6 +186,15 @@ export function useReaderEngine({
         ),
       );
       preferenceCleanup = unsubscribePreferences;
+
+      getAnchoredProgress = () =>
+        computeReaderProgress({
+          iframeDoc,
+          win,
+          activeIndex: readerStore.getState().currentChapterIndex,
+          totalChapters,
+          chapterWordOffsets,
+        });
 
       const handleScroll = () => {
         const store = readerStore.getState();
@@ -228,6 +249,7 @@ export function useReaderEngine({
           activeIndex,
           totalChapters,
           chapterWordOffsets,
+          includeAnchor: false,
         });
 
         store.setProgressPercent(progress.percent);

@@ -303,6 +303,17 @@ export class ChapterParser {
     return stylesheets;
   }
 
+  /**
+   * True for refs that resolve outside the EPUB package — scheme URLs other
+   * than data:, protocol-relative `//host`, root-relative `/path`. These must
+   * never reach the reader iframe, where the browser would fetch them from the
+   * network straight from markup, with no JS involved.
+   */
+  private isExternalAssetRef(url: string): boolean {
+    if (url.startsWith("data:")) return false;
+    return /^([a-z][a-z0-9+.-]*:)?\/\//i.test(url) || url.startsWith("/");
+  }
+
   private async resolveChapterAssets(
     chapterDoc: Document,
     chapterBasePath: string,
@@ -319,6 +330,11 @@ export class ChapterParser {
       const src = image.getAttribute("src");
 
       if (!src) continue;
+
+      if (this.isExternalAssetRef(src)) {
+        image.removeAttribute("src");
+        continue;
+      }
 
       const assetPath = this.resolvePath(chapterBasePath, src);
 
@@ -346,6 +362,12 @@ export class ChapterParser {
         svgImage.getAttribute("xlink:href") ?? svgImage.getAttribute("href");
 
       if (!href) continue;
+
+      if (this.isExternalAssetRef(href)) {
+        svgImage.removeAttribute("xlink:href");
+        svgImage.removeAttribute("href");
+        continue;
+      }
 
       const assetPath = this.resolvePath(chapterBasePath, href);
 
@@ -409,7 +431,14 @@ export class ChapterParser {
       if (!rawUrl) continue;
       if (rawUrl.startsWith("data:")) continue;
 
-      if (/^[a-z]+:\/\//i.test(rawUrl)) {
+      // Neutralize anything that isn't a same-package relative reference:
+      // scheme URLs (https:), protocol-relative (//host) and root-relative
+      // (/x) all resolve outside the zip and would make the iframe hit the
+      // network straight from CSS with no JS involved.
+      if (
+        /^([a-z][a-z0-9+.-]*:)?\/\//i.test(rawUrl) ||
+        rawUrl.startsWith("/")
+      ) {
         resolvedCss = resolvedCss.split(match[0]).join("url()");
         continue;
       }
@@ -443,6 +472,11 @@ export class ChapterParser {
   }
 
   private resolvePath(basePath: string, relativePath: string): string {
-    return new URL(relativePath, `http://epub/${basePath}`).pathname.slice(1);
+    // Decode percent-encoding: `new URL().pathname` is always percent-encoded
+    // ("Chapter 1.xhtml" -> "Chapter%201.xhtml") but JSZip stores entries under
+    // their literal decoded names, so an un-decoded path never matches.
+    return decodeURIComponent(
+      new URL(relativePath, `http://epub/${basePath}`).pathname.slice(1),
+    );
   }
 }

@@ -11,8 +11,6 @@ export async function saveBookMetadata(book: StoredBook) {
   await db.books.put(book);
 }
 
-export const saveBookFile = bookFiles.saveBookFile;
-
 export async function saveBookCover(bookId: string, cover: Blob) {
   await db.bookCovers.put({
     bookId,
@@ -33,7 +31,10 @@ export async function getBook(bookId: string) {
   return db.books.get(bookId);
 }
 
-export const getBookFile = bookFiles.getBookFile;
+/** Duplicate-import lookup by content hash (`&fileHash` is a unique index). */
+export async function getBookByFileHash(fileHash: string) {
+  return db.books.where("fileHash").equals(fileHash).first();
+}
 
 export async function getBookWithFile(bookId: string) {
   const [book, bookFile] = await Promise.all([
@@ -130,9 +131,15 @@ export async function resetBookProgress(bookId: string): Promise<void> {
 export async function deleteBook(bookId: string): Promise<void> {
   revokeCoverUrl(bookId);
 
-  await Promise.all([
-    bookFiles.deleteBookFile(bookId),
-    db.bookCovers.delete(bookId),
-    db.books.delete(bookId),
-  ]);
+  // File first and outside the transaction — it may live in OPFS, which a
+  // Dexie transaction can't span (mirrors saveImportedBook). Then the cover
+  // and the `books` row atomically, so a mid-delete failure can never leave
+  // the row without its cover or the reverse. If the file delete throws, the
+  // row survives untouched and the delete is safely retryable.
+  await bookFiles.deleteBookFile(bookId);
+
+  await db.transaction("rw", db.books, db.bookCovers, async () => {
+    await db.bookCovers.delete(bookId);
+    await db.books.delete(bookId);
+  });
 }

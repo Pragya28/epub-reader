@@ -77,7 +77,7 @@ export class OpfParser {
       const id = el.getAttribute("id");
       const typeMeta = id
         ? metadata.querySelector(
-            `meta[property="collection-type"][refines="#${id}"]`,
+            `meta[property="collection-type"][refines="#${CSS.escape(id)}"]`,
           )
         : null;
       return typeMeta?.textContent?.trim();
@@ -92,7 +92,7 @@ export class OpfParser {
     const collectionId = seriesCollection?.getAttribute("id");
     const positionMeta = collectionId
       ? metadata.querySelector(
-          `meta[property="group-position"][refines="#${collectionId}"]`,
+          `meta[property="group-position"][refines="#${CSS.escape(collectionId)}"]`,
         )
       : null;
     const positionRaw = positionMeta?.textContent?.trim();
@@ -214,8 +214,14 @@ export class OpfParser {
       return manifest[coverId];
     }
 
-    // fallback
-    return Object.values(manifest).find((item) => /cover/i.test(item.href));
+    // fallback: a manifest href containing "cover" — but only an image, so a
+    // cover *page* (cover.xhtml), stylesheet (cover.css), or an unrelated file
+    // like discovery.xhtml isn't mistaken for the cover image.
+    return Object.values(manifest).find(
+      (item) =>
+        /cover/i.test(item.href) &&
+        /\.(jpe?g|png|gif|webp|avif|svg)$/i.test(item.href),
+    );
   }
 
   // ---- Guide (EPUB2 start-of-content) ----

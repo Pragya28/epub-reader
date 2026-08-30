@@ -143,10 +143,11 @@ export class EpubParser {
   ): Promise<Blob | undefined> {
     if (!coverItem) return undefined;
 
-    const path = new URL(
-      coverItem.href,
-      `http://epub/${opfDirectory}`,
-    ).pathname.slice(1);
+    // Decode percent-encoding — JSZip keys entries by their literal names
+    // (see chapter-parser.resolvePath).
+    const path = decodeURIComponent(
+      new URL(coverItem.href, `http://epub/${opfDirectory}`).pathname.slice(1),
+    );
 
     const file = zip.file(path);
 

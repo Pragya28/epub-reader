@@ -16,7 +16,7 @@ import {
   upsertSeriesMembership,
 } from "../groupings";
 import { EpubParser } from "@/services/epub/epub-parser";
-import * as bookRepository from "@/services/storage/book-repository";
+import * as bookFiles from "@/services/storage/book-files";
 import {
   getAllBooks,
   getBook,
@@ -303,7 +303,7 @@ describe("groupings", () => {
       await removeMember(member.groupingId, book.id);
       expect(await getMembersForBook(book.id)).toHaveLength(0);
 
-      const getBookFileSpy = vi.spyOn(bookRepository, "getBookFile");
+      const getBookFileSpy = vi.spyOn(bookFiles, "getBookFile");
 
       await ensureSeriesGroupings([book.id]);
 

@@ -54,8 +54,17 @@ export async function addBookToCollection(
   bookId: string,
 ): Promise<void> {
   await requireCollection(groupingId);
-  const count = await db.groupingMembers.where({ groupingId }).count();
-  await addMember(groupingId, bookId, count);
+  // Next order = max existing order + 1, computed inside a transaction so it
+  // survives removals (count() would reuse a live order and collide) and
+  // serializes concurrent adds.
+  await db.transaction("rw", db.groupingMembers, async () => {
+    const members = await db.groupingMembers.where({ groupingId }).toArray();
+    const nextOrder = members.reduce(
+      (max, member) => Math.max(max, (member.order ?? -1) + 1),
+      0,
+    );
+    await addMember(groupingId, bookId, nextOrder);
+  });
 }
 
 export async function removeBookFromCollection(

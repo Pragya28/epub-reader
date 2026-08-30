@@ -5,12 +5,11 @@ import {
   getAllBooks,
   getBookCover,
   getBookCoverUrl,
-  getBookFile,
   saveBookCover,
-  saveBookFile,
   saveBookMetadata,
   saveImportedBook,
 } from "../book-repository";
+import { getBookFile, saveBookFile } from "../book-files";
 
 import { resetTestDb } from "@/tests/utils/reset-test-db";
 import { clearCoverCache } from "../cover-cache";

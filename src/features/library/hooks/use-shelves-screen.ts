@@ -4,6 +4,7 @@ import { useShallow } from "zustand/react/shallow";
 import {
   listGroupings,
   getMembersForGrouping,
+  ensureSeriesGroupings,
 } from "@/services/storage/groupings";
 import type {
   Grouping,
@@ -45,7 +46,15 @@ export function useShelvesScreen() {
   useEffect(() => {
     let cancelled = false;
 
-    void listGroupings().then(async (all) => {
+    async function load() {
+      // Backfill series groupings for books that predate the grouping schema
+      // (derived from the cached seriesName on each row, no re-parsing) so an
+      // older library's series appear here rather than never at all.
+      await ensureSeriesGroupings(
+        libraryStore.getState().books.map((book) => book.id),
+      );
+
+      const all = await listGroupings();
       const entries = await Promise.all(
         all.map(
           async (grouping) =>
@@ -56,7 +65,9 @@ export function useShelvesScreen() {
       setGroupings(all);
       setMembersByGrouping(new Map(entries));
       setIsLoading(false);
-    });
+    }
+
+    void load();
 
     return () => {
       cancelled = true;

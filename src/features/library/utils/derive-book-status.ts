@@ -56,6 +56,16 @@ export function pickCurrentlyReadingBook(
 export function enrichBookWithProgress(book: StoredBook): BookWithProgress {
   const status = deriveReadingStatus(book.progress, book.manualStatus);
 
+  // "Untouched" rather than status === "unread": import seeds a full progress
+  // object (chapterIndex 0, fraction 0), so a freshly imported book derives to
+  // "reading" and would never qualify for the NEW badge otherwise.
+  const untouched =
+    !book.manualStatus &&
+    (!book.progress ||
+      (book.progress.chapterIndex === 0 &&
+        book.progress.scrollFraction === 0 &&
+        book.progress.atDocumentEnd !== true));
+
   return {
     ...book,
     status,
@@ -65,7 +75,6 @@ export function enrichBookWithProgress(book: StoredBook): BookWithProgress {
     progressUpdatedAt: book.progress?.updatedAt,
     chapterIndex: book.progress?.chapterIndex,
     totalChapters: book.progress?.totalChapters,
-    isNew:
-      status === "unread" && Date.now() - book.createdAt < NEW_BOOK_WINDOW_MS,
+    isNew: untouched && Date.now() - book.createdAt < NEW_BOOK_WINDOW_MS,
   };
 }

@@ -157,7 +157,7 @@ export const SearchScreen: FC = () => {
         >
           <ArrowLeftIcon className="size-5" weight="light" />
         </Button>
-        <div className="flex flex-1 items-center gap-2 rounded-lg bg-card px-3 py-2.5">
+        <div className="flex flex-1 items-center gap-2 rounded-md bg-card px-3 py-2.5 ring-1 ring-transparent focus-within:ring-ring/50">
           <SearchIcon
             className="size-4 shrink-0 text-muted-foreground"
             weight="light"

@@ -5,9 +5,9 @@ import { deleteBook } from "../delete-book";
 import {
   getAllBooks,
   getBookCover,
-  getBookFile,
   updateBookProgress,
 } from "@/services/storage/book-repository";
+import { getBookFile } from "@/services/storage/book-files";
 import { libraryStore } from "../../store/library-store";
 import { loadFixture } from "@/tests/utils/load-fixtures";
 import { resetTestDb } from "@/tests/utils/reset-test-db";

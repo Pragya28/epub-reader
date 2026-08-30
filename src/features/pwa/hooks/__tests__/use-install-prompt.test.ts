@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useInstallPrompt } from "../use-install-prompt";
+import { __resetDeferredPrompt, useInstallPrompt } from "../use-install-prompt";
 import { resetPwaStore } from "@/tests/utils/reset-store";
 
 function fireBeforeInstallPrompt() {
@@ -17,6 +17,7 @@ function fireBeforeInstallPrompt() {
 
 beforeEach(() => {
   resetPwaStore();
+  __resetDeferredPrompt();
 });
 
 afterEach(() => {

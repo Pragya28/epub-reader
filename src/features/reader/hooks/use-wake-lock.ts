@@ -86,7 +86,13 @@ export function useWakeLock() {
     armTimer();
 
     const onVisibilityChange = () => {
-      if (document.visibilityState === "visible") void acquire();
+      if (document.visibilityState === "visible") {
+        // Re-arm the inactivity timer too: the browser released the sentinel
+        // on hide and the pending timeout may have already fired while hidden,
+        // so without this the safety cap is gone until the next scroll/tap.
+        void acquire();
+        armTimer();
+      }
     };
     document.addEventListener("visibilitychange", onVisibilityChange);
 

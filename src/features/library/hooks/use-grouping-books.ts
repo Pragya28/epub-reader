@@ -9,7 +9,16 @@ import type {
   GroupingMember,
 } from "@/services/storage/storage-types";
 import { libraryStore } from "../store/library-store";
+import { loadLibrary } from "../actions/load-library";
 import { enrichBookWithProgress } from "../utils/derive-book-status";
+
+const NO_MEMBERS: GroupingMember[] = [];
+
+interface LoadedGrouping {
+  id: string | undefined;
+  grouping: Grouping | null;
+  members: GroupingMember[];
+}
 
 /**
  * Shared fetch/order/enrich logic behind both the series and collection
@@ -24,10 +33,7 @@ import { enrichBookWithProgress } from "../utils/derive-book-status";
 export function useGroupingBooks(groupingId: string | undefined) {
   const { books } = libraryStore();
 
-  const [grouping, setGrouping] = useState<Grouping | null | undefined>(
-    undefined,
-  );
-  const [members, setMembers] = useState<GroupingMember[]>([]);
+  const [loaded, setLoaded] = useState<LoadedGrouping | null>(null);
 
   async function load(
     onResult: (g: Grouping | null, m: GroupingMember[]) => void,
@@ -42,18 +48,32 @@ export function useGroupingBooks(groupingId: string | undefined) {
 
   useEffect(() => {
     let cancelled = false;
+
+    // The detail screens filter libraryStore().books; on a deep-link or hard
+    // refresh that store is empty. Populate it (silent — this screen owns its
+    // own loading state) so a populated grouping doesn't render as empty.
+    if (libraryStore.getState().books.length === 0) {
+      void loadLibrary({ silent: true });
+    }
+
     void load((g, m) => {
       if (cancelled) return;
-      setGrouping(g);
-      setMembers(m);
+      setLoaded({ id: groupingId, grouping: g, members: m });
     });
     return () => {
       cancelled = true;
     };
-    // groupingId is the only dependency load() reads besides state setters,
-    // which are stable — re-declaring `load` every render isn't a real dep.
+    // groupingId is the only dependency load() reads besides the setter,
+    // which is stable — re-declaring `load` every render isn't a real dep.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupingId]);
+
+  // Ignore data loaded for a previous groupingId: a groupingId change on the
+  // same route element would otherwise keep showing the stale grouping (and
+  // its redirect verdict) with no spinner until the new load resolves.
+  const fresh = loaded && loaded.id === groupingId ? loaded : null;
+  const grouping = fresh ? fresh.grouping : undefined;
+  const members = fresh ? fresh.members : NO_MEMBERS;
 
   const orderById = useMemo(
     () => new Map(members.map((member) => [member.bookId, member.order])),
@@ -79,9 +99,8 @@ export function useGroupingBooks(groupingId: string | undefined) {
     orderedBooks,
     isLoading: grouping === undefined,
     reload: () =>
-      void load((g, m) => {
-        setGrouping(g);
-        setMembers(m);
-      }),
+      void load((g, m) =>
+        setLoaded({ id: groupingId, grouping: g, members: m }),
+      ),
   };
 }
