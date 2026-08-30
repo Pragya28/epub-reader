@@ -40,12 +40,14 @@ No design-system drift, no repeated shortcuts, no decorative-vs-real-content con
 
 None. All previously reported findings are resolved.
 
-## Out of Scope / Deferred
+## Out of Scope / Deferred — now resolved
 
-Two items sit outside the 5-dimension rubric and are tracked separately:
+Both items that were deferred out of the 5-dimension rubric have since been implemented:
 
-- **`book-repository.ts` re-exports `book-files` functions** (`saveBookFile`, `getBookFile`) — a CLAUDE.md convention violation. Deferred to its own change: ~7 test files mock `getBookFile` through `book-repository`, so the move needs a coordinated update rather than a drive-by.
-- **`book-repository.deleteBook` runs three deletes in a bare `Promise.all`** — a mid-sequence failure can orphan a cover or file blob. The user-visible symptom (a ghost library card) is already fixed at the action layer; the storage-primitive hardening is deferred.
+- **`book-repository.ts` re-exports `book-files` functions** (`saveBookFile`, `getBookFile`) — removed; `rebuild-search-index.ts` and `search-service.ts` import from `book-files` directly, and the ~7 test files that spied/mocked through `book-repository` were updated to target the defining module.
+- **`book-repository.deleteBook` ran three deletes in a bare `Promise.all`** — now file-delete-first (outside the transaction, it may be OPFS), then cover + `books` row atomically in a `db.transaction`.
+
+See `docs/code-review-2026-08-30.md` for the full session log.
 
 ## Patterns & Systemic Issues
 
@@ -63,8 +65,6 @@ Two items sit outside the 5-dimension rubric and are tracked separately:
 
 ## Recommended Actions
 
-None outstanding. `/impeccable document` ran in this session — `DESIGN.md`'s frontmatter now carries the reader fonts and the corrected `rounded.3xl`, and `.impeccable/design.json` was regenerated (its narrative had drifted to the retired "sharp rectangular controls" world).
-
-Optional, tracked separately: the two Out-of-Scope items above (`book-repository` re-exports; `deleteBook` storage-primitive atomicity).
+None outstanding. `/impeccable document` ran in this session — `DESIGN.md`'s frontmatter now carries the reader fonts and the corrected `rounded.3xl`, and `.impeccable/design.json` was regenerated (its narrative had drifted to the retired "sharp rectangular controls" world). The two previously-deferred code items are now implemented (see above).
 
 > Re-run `/impeccable audit` after any further UI work to see the score hold.

@@ -1,5 +1,5 @@
 import { EpubParser } from "@/services/epub/epub-parser";
-import { getBookFile } from "@/services/storage/book-repository";
+import { getBookFile } from "@/services/storage/book-files";
 import type {
   StoredChapterText,
   StoredSearchIndexEntry,

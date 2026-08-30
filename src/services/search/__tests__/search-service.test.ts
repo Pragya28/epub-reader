@@ -14,7 +14,7 @@ import * as chapterText from "../chapter-text";
 // the round trip intact in this jsdom test environment (loses its Blob
 // prototype/size), so ensureIndexesForBooks's file-fetch step is mocked
 // here rather than exercised through real Dexie storage.
-vi.mock("@/services/storage/book-repository", () => ({
+vi.mock("@/services/storage/book-files", () => ({
   getBookFile: vi.fn(),
 }));
 
@@ -50,7 +50,7 @@ describe("search-service", () => {
   });
 
   it("ensureIndexesForBooks backfills only books missing an index", async () => {
-    const { getBookFile } = await import("@/services/storage/book-repository");
+    const { getBookFile } = await import("@/services/storage/book-files");
     const file = await loadFixture("valid-book.epub");
     vi.mocked(getBookFile).mockResolvedValue({ bookId: "book-4", file });
 
@@ -70,7 +70,7 @@ describe("search-service", () => {
   });
 
   it("ensureIndexesForBooks skips a book with no stored file", async () => {
-    const { getBookFile } = await import("@/services/storage/book-repository");
+    const { getBookFile } = await import("@/services/storage/book-files");
     vi.mocked(getBookFile).mockResolvedValue(undefined);
 
     await expect(ensureIndexesForBooks(["book-5"])).resolves.not.toThrow();
@@ -78,7 +78,7 @@ describe("search-service", () => {
   });
 
   it("ensureIndexesForBooks still indexes other books when one fails", async () => {
-    const { getBookFile } = await import("@/services/storage/book-repository");
+    const { getBookFile } = await import("@/services/storage/book-files");
     const file = await loadFixture("valid-book.epub");
 
     // book-6's file is unparseable (stands in for a corrupt file or an

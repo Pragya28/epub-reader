@@ -9,7 +9,7 @@ description: Use when starting a new sprint in this repo, or when asked to write
 
 1. Read the sprint spec from `central-docs/06 - Implementation/Sprint - NN <name>.md`.
 2. Compare it against the current codebase and write `docs/tasks/SPRINT-NN-TASKS.md` — a gap list (✅ done / 🟡 partial / ❌ missing) of what the spec asks for vs. what already exists, following the format of prior `docs/tasks/SPRINT-*-TASKS.md` files.
-3. Run `/impeccable audit` to get a fresh `AUDIT_REPORT.md`.
+3. Run `/impeccable audit` to get a fresh `docs/AUDIT_REPORT.md`.
 4. Reconcile the audit findings into the sprint task list:
    - If a finding overlaps a task already in the list (e.g. a dead button that's really an unbuilt feature), cross-reference it there instead of duplicating.
    - If a finding is in-scope for this sprint's surfaces/days but not yet listed, add it as a new task under the relevant day.

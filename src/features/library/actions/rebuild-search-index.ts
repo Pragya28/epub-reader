@@ -1,7 +1,8 @@
 import { deleteIndex } from "@/services/search/search-index";
 import { deleteChapterText } from "@/services/search/chapter-text";
 import { buildIndex } from "@/services/search/search-service";
-import { getAllBooks, getBookFile } from "@/services/storage/book-repository";
+import { getAllBooks } from "@/services/storage/book-repository";
+import { getBookFile } from "@/services/storage/book-files";
 
 /**
  * Wipes and rebuilds the search index for every book, one at a time.
