@@ -161,20 +161,26 @@ describe("SettingsScreen", () => {
     });
   });
 
-  it("shows the screen-on limit stepper only when keep-screen-awake is on", async () => {
+  it("disables the screen-on limit stepper when keep-screen-awake is off", async () => {
     const user = userEvent.setup();
     renderScreen();
 
     expect(screen.getByTestId("stepper-input-Screen-on limit")).toHaveValue(
       "20",
     );
+    expect(
+      screen.getByRole("button", { name: "Increase screen-on limit" }),
+    ).toBeEnabled();
 
     await user.click(screen.getByRole("switch", { name: "Keep screen awake" }));
 
     expect(preferencesStore.getState().keepScreenAwake).toBe(false);
     expect(
-      screen.queryByTestId("stepper-input-Screen-on limit"),
-    ).not.toBeInTheDocument();
+      screen.getByTestId("stepper-input-Screen-on limit"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Increase screen-on limit" }),
+    ).toBeDisabled();
   });
 
   it("steps the screen-on limit by 5 minutes", async () => {
