@@ -62,6 +62,12 @@ interface ComputeProgressParams {
    * instead of chapter-granularity + in-chapter fraction.
    */
   chapterWordOffsets?: number[];
+  /**
+   * Compute `anchorPath` (a DOM walk + getBoundingClientRect loop over every
+   * block scrolled past). Skip it on the per-scroll-frame call that only needs
+   * `percent`; only the debounced save actually persists the anchor.
+   */
+  includeAnchor?: boolean;
 }
 
 /**
@@ -89,6 +95,7 @@ export function computeReaderProgress({
   activeIndex,
   totalChapters,
   chapterWordOffsets,
+  includeAnchor = true,
 }: ComputeProgressParams): ReadingProgress {
   const section = iframeDoc.querySelector(
     `section[data-chapter="${activeIndex}"]`,
@@ -104,7 +111,7 @@ export function computeReaderProgress({
       1,
       Math.max(0, offsetWithinSection / sectionHeight),
     );
-    anchorPath = computeScrollAnchor(section);
+    if (includeAnchor) anchorPath = computeScrollAnchor(section);
   }
 
   const documentHeight = iframeDoc.documentElement?.scrollHeight ?? 0;

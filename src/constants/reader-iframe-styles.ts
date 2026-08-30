@@ -130,7 +130,7 @@ export const READER_BASE_STYLE = `
     --reading-paragraph-spacing: 8px;
     /* Mirrors --cover-gold / --selected from src/index.css. */
     --search-highlight-bg: oklch(74.32% 0.1171 89.51 / 35%);
-    --search-highlight-text: oklch(58.07% 0.1046 78.37);
+    --search-highlight-text: oklch(50% 0.1046 78.37);
   }
 
   @media (prefers-color-scheme: dark) {
@@ -147,7 +147,7 @@ export const READER_BASE_STYLE = `
     --sep-ink:  ${SEPARATOR_COLOR_LIGHT};
     --sep-fade: oklch(98.38% 0.0159 82.79);
     --sep-text: oklch(22.57% 0.0237 96.74);
-    --search-highlight-text: oklch(58.07% 0.1046 78.37);
+    --search-highlight-text: oklch(50% 0.1046 78.37);
   }
 
   :root[data-theme="dark"] {

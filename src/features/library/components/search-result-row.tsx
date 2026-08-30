@@ -61,7 +61,7 @@ export const SearchResultRow: FC<SearchResultRowProps> = ({
         />
       </div>
       <div className="flex min-w-0 flex-col gap-0.5">
-        <div className="font-ui text-sm font-semibold text-foreground">
+        <div className="font-ui text-ui font-semibold text-foreground">
           {title}
         </div>
         <div className="font-ui text-meta tracking-wide text-muted-foreground uppercase">

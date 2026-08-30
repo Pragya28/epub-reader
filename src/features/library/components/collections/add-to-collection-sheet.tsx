@@ -50,9 +50,9 @@ export const AddToCollectionSheet: FC<AddToCollectionSheetProps> = ({
             <button
               type="button"
               onClick={() => setCreateOpen(true)}
-              className="flex w-full items-center gap-3 rounded-md p-3 text-left hover:bg-accent"
+              className="flex w-full items-center gap-3 rounded-sm p-3 text-left hover:bg-accent"
             >
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-input bg-muted">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-sm border border-input bg-muted">
                 <PlusIcon className="size-4" />
               </span>
               <span className="text-ui-sm font-medium text-foreground">
@@ -69,7 +69,7 @@ export const AddToCollectionSheet: FC<AddToCollectionSheetProps> = ({
                 <li key={collection.id}>
                   <label
                     htmlFor={`collection-${collection.id}`}
-                    className="flex w-full items-center justify-between gap-3 rounded-md p-3 hover:bg-accent"
+                    className="flex w-full items-center justify-between gap-3 rounded-sm p-3 hover:bg-accent"
                   >
                     <span className="flex flex-col">
                       <span className="text-ui-sm font-medium text-foreground">
@@ -84,7 +84,7 @@ export const AddToCollectionSheet: FC<AddToCollectionSheetProps> = ({
                       id={`collection-${collection.id}`}
                       checked={selectedIds.has(collection.id)}
                       onCheckedChange={() => onToggle(collection.id)}
-                      className="size-7 rounded-md data-checked:border-selected data-checked:bg-selected data-checked:text-selected-foreground"
+                      className="size-7 rounded-sm data-checked:border-selected data-checked:bg-selected data-checked:text-selected-foreground"
                     />
                   </label>
                 </li>

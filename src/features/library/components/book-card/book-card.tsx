@@ -114,7 +114,7 @@ export const BookCard: FC<BookCardProps> = memo(function BookCard({
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label="More options"
-            className="relative z-20 inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring outline-none"
+            className="relative z-20 inline-flex h-8 w-8 items-center justify-center rounded-sm hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring outline-none"
           >
             <DotsThreeVerticalIcon size={24} weight="light" />
           </DropdownMenuTrigger>
