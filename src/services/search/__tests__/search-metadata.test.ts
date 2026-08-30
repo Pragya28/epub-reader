@@ -55,4 +55,13 @@ describe("filterBooksByQuery", () => {
   it("returns nothing when no field matches", () => {
     expect(filterBooksByQuery(books, "nonexistent")).toHaveLength(0);
   });
+
+  it("matches when terms span multiple fields, in any order", () => {
+    expect(filterBooksByQuery(books, "crimson frail").map((b) => b.id)).toEqual(
+      ["1"],
+    );
+    expect(filterBooksByQuery(books, "frail crimson").map((b) => b.id)).toEqual(
+      ["1"],
+    );
+  });
 });

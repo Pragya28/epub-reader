@@ -48,7 +48,9 @@ export function useLibraryScreen() {
     // session that just ended.
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        void loadLibrary();
+        // silent: the grid is already populated — don't blank it behind the
+        // loading state on every return-to-foreground.
+        void loadLibrary({ silent: true });
       }
     };
 

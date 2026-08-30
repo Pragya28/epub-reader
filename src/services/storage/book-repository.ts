@@ -33,6 +33,11 @@ export async function getBook(bookId: string) {
   return db.books.get(bookId);
 }
 
+/** Duplicate-import lookup by content hash (`&fileHash` is a unique index). */
+export async function getBookByFileHash(fileHash: string) {
+  return db.books.where("fileHash").equals(fileHash).first();
+}
+
 export const getBookFile = bookFiles.getBookFile;
 
 export async function getBookWithFile(bookId: string) {

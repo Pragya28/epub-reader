@@ -1,4 +1,7 @@
-import { saveImportedBook } from "@/services/storage/book-repository";
+import {
+  getBookByFileHash,
+  saveImportedBook,
+} from "@/services/storage/book-repository";
 import { upsertSeriesMembership } from "@/services/storage/groupings";
 import { createId } from "@/utils/create-id";
 import { hashFile } from "@/utils/hash";
@@ -41,8 +44,10 @@ export async function importBook(file: File) {
     // 4. Hash file for duplicate detection
     const fileHash = await hashFile(file);
 
-    // 5. Check duplicates
-    const existingBook = store.books.find((book) => book.fileHash === fileHash);
+    // 5. Check duplicates — query storage, not the in-memory store, which can
+    // be empty (import fired before the first loadLibrary resolved) or stale
+    // (a second tab imported the same file).
+    const existingBook = await getBookByFileHash(fileHash);
 
     if (existingBook) {
       throw new Error("Book already imported");

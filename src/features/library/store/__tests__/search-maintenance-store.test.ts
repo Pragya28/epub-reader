@@ -90,4 +90,14 @@ describe("searchMaintenanceStore", () => {
 
     expect(searchMaintenanceStore.getState().progress).toBe(100);
   }, 30000);
+
+  it("returns to idle when the rebuild throws, so a retry isn't blocked", async () => {
+    vi.spyOn(bookRepository, "getAllBooks").mockRejectedValue(
+      new Error("db unavailable"),
+    );
+
+    await searchMaintenanceStore.getState().startRebuild();
+
+    expect(searchMaintenanceStore.getState().status).toBe("idle");
+  });
 });

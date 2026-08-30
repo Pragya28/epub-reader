@@ -91,27 +91,38 @@ export async function upsertSeriesMembership(
   seriesName: string,
   seriesIndex: number | null,
 ): Promise<string> {
-  const existing = await listGroupings("series");
-  const match = existing.find(
-    (grouping) => grouping.name.toLowerCase() === seriesName.toLowerCase(),
+  // One transaction over all three tables so concurrent callers serialize.
+  // Without it, two imports of the same not-yet-existing series both see
+  // "no match" and each create a duplicate grouping.
+  return db.transaction(
+    "rw",
+    db.groupings,
+    db.groupingMembers,
+    db.books,
+    async () => {
+      const existing = await listGroupings("series");
+      const match = existing.find(
+        (grouping) => grouping.name.toLowerCase() === seriesName.toLowerCase(),
+      );
+
+      const groupingId = match?.id ?? createId();
+
+      if (!match) {
+        await putGrouping({
+          id: groupingId,
+          type: "series",
+          name: seriesName,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+      }
+
+      await addMember(groupingId, bookId, seriesIndex);
+      await db.books.update(bookId, { seriesGroupingId: groupingId });
+
+      return groupingId;
+    },
   );
-
-  const groupingId = match?.id ?? createId();
-
-  if (!match) {
-    await putGrouping({
-      id: groupingId,
-      type: "series",
-      name: seriesName,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    });
-  }
-
-  await addMember(groupingId, bookId, seriesIndex);
-  await db.books.update(bookId, { seriesGroupingId: groupingId });
-
-  return groupingId;
 }
 
 /**
@@ -167,18 +178,24 @@ export async function deleteMembersForBook(bookId: string): Promise<void> {
  * EPUB file. Mirrors ensureIndexesForBooks's shape (Sprint 6).
  */
 export async function ensureSeriesGroupings(bookIds: string[]): Promise<void> {
-  await Promise.all(
-    bookIds.map(async (bookId) => {
-      if (await hasSeriesMembership(bookId)) return;
+  // Sequential, not Promise.all: fanning a DB round-trip per book through one
+  // unbounded batch is real contention on lower-end devices (same reason
+  // rebuildSearchIndex is sequential). One book that can't be backfilled must
+  // not abort the rest.
+  for (const bookId of bookIds) {
+    try {
+      if (await hasSeriesMembership(bookId)) continue;
 
       const book = await getBook(bookId);
-      if (!book?.seriesName) return;
+      if (!book?.seriesName) continue;
 
       await upsertSeriesMembership(
         bookId,
         book.seriesName,
         book.seriesIndex ?? null,
       );
-    }),
-  );
+    } catch {
+      // best-effort backfill — skip this book, keep going
+    }
+  }
 }

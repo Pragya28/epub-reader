@@ -6,11 +6,17 @@ import {
 import { libraryStore } from "../store/library-store";
 import { pwaStore } from "@/features/pwa/store/pwa-store";
 
-export async function loadLibrary() {
+/**
+ * @param silent skip the global loading flag — used by the visibility-change
+ * re-fetch so an already-populated grid isn't blanked by the loading state.
+ */
+export async function loadLibrary({
+  silent = false,
+}: { silent?: boolean } = {}) {
   const store = libraryStore.getState();
 
   try {
-    store.setLoading(true);
+    if (!silent) store.setLoading(true);
     store.setError(null);
 
     const books = await getAllBooks();
@@ -40,6 +46,6 @@ export async function loadLibrary() {
   } catch (error) {
     store.setError(`Failed to load library: ${error}`);
   } finally {
-    store.setLoading(false);
+    if (!silent) store.setLoading(false);
   }
 }
