@@ -1,6 +1,6 @@
 # Sprint 8 — Task List (Gap Analysis vs Codebase)
 
-Generated 2026-08-28 by comparing `central-docs/06 - Implementation/Sprint - 08 Production Polish.md` against the current codebase, following the format of `docs/tasks/SPRINT-07-TASKS.md`. Status refreshed 2026-08-31: Day 1-3 unchanged (still ✅); Day 4 (Error Handling) is now ✅ complete — quota-exceeded messaging, a persistent local error log, cross-tab reading-progress awareness, and a full error-messaging audit all landed and are tested. Days 5-7 are still not started — no mobile/browser QA, export/backup, or release-prep work has landed yet.
+Generated 2026-08-28 by comparing `central-docs/06 - Implementation/Sprint - 08 Production Polish.md` against the current codebase, following the format of `docs/tasks/SPRINT-07-TASKS.md`. Status refreshed 2026-08-31: Day 1-3 unchanged (still ✅); Day 4 (Error Handling) is now ✅ complete — quota-exceeded messaging, a persistent local error log, cross-tab reading-progress awareness, and a full error-messaging audit all landed and are tested. Day 5 (Cross-Device Validation) is now 🟡 — real device/browser-lab QA isn't possible in this environment, so it shipped as automated Playwright e2e coverage plus an OPFS-fallback unit-test gap closed; see Day 5 below for what that does and doesn't substitute for. Days 6-7 are still not started — no export/backup or release-prep work has landed yet.
 
 Legend: ✅ done · 🟡 partial · ❌ missing
 
@@ -105,14 +105,16 @@ Unlike Sprint 7 (zero prior art for series/collections), Sprint 8 is a hardening
 
 ## Day 5 — Cross-Device Validation
 
-23. ❌ **Mobile testing** — no device-matrix test suite exists. `resize_window` (mobile/tablet presets) is available as a manual verification tool but nothing automated.
-24. ❌ **Tablet testing** — same as above.
-25. 🟡 **Responsive validation** — Tailwind responsive classes are used throughout; WCAG target-size minimums are partially audited per ACCESSIBILITY.md ("Target size — Partially shipped, not audited"). No systematic pass across the full app.
-26. ❌ **Browser compatibility testing** — no cross-browser test matrix; unknown Safari/Firefox-specific gaps (e.g. OPFS support, which `services/storage/opfs-files.ts` already treats as optional/fallback-safe — worth confirming that fallback is actually exercised on a non-OPFS browser).
+No physical devices or non-Chromium browser engines are available in this environment, so this day shipped as automated coverage standing in for the manual QA pass, plus real fixes/tests for the gaps it actually found. What it is *not* is a substitute for a real device lab or Safari/Firefox testing before release — that limitation is inherent to the environment, not a scope cut, and is worth re-running for real before a public launch.
+
+23. 🟡 **Mobile testing** — `e2e/cross-device.spec.ts` (Playwright) runs the full import → read → search → organize flow against the `mobile` project (`devices["Pixel 7"]` — Android Chrome viewport + touch emulation, `playwright.config.ts`). Automated, but one engine (Chromium) on one emulated device, not a real-device matrix.
+24. 🟡 **Tablet testing** — same spec against the `tablet` project (`devices["Galaxy Tab S9"]` — an iPad preset was tried first but defaults to WebKit, unavailable in this sandbox; a Chromium-based tablet preset was substituted instead). Same caveat as item 23.
+25. 🟡 **Responsive validation** — the e2e spec asserts, on every screen in the flow and on all three projects (mobile/tablet/desktop): no horizontal overflow (`document.documentElement.scrollWidth` never exceeds the viewport), and that primary interactive elements (FAB, arc actions, back button, search input, "More options", collection creation) clear the WCAG 2.5.8 24×24 CSS px floor from `.agents/context/ACCESSIBILITY.md`. This audit already found and fixed one real gap: the search screen's `<input>` (`search-screen.tsx`) had no vertical padding of its own and rendered at ~22.5px tall, under the floor — given an explicit `h-7` (28px, matching the `icon-sm` convention from Day 1). Still not a systematic sweep of every interactive element app-wide — only what this flow's screens touch.
+26. 🟡 **Browser compatibility testing** — still no real cross-browser matrix (no Firefox/WebKit engine available here), so genuinely unverified Safari/Firefox-specific gaps remain open. The one concrete, testable piece the Day 5 notes called out — confirming the OPFS→IndexedDB fallback is actually exercised on a browser without OPFS — is closed: `opfs-files.test.ts` (new) covers both branches of `opfs-files.ts` directly (unsupported browser, a supported-but-no-`createWritable` browser like Safari outside workers, and a fully-supported browser) via an in-memory fake OPFS (`src/tests/utils/fake-opfs.ts`); `book-files.test.ts` gains an "OPFS available" describe block covering the primary-store path and the lazy legacy→OPFS migration on read, which previously had zero coverage (the pre-existing tests there only ever exercised jsdom's no-OPFS fallback).
 
 ### Done Criteria
 
-❌ Not started. Manual QA day — largely validation work, not code, except for whatever gaps it surfaces.
+🟡 Automated substitute shipped: cross-device e2e (`pnpm test:e2e`, wired into CI as a separate `playwright` job in `.github/workflows/test.yml`), one real responsive gap found and fixed, and the OPFS-fallback test gap closed. Not done: an actual device lab / real Safari or Firefox pass, and a full app-wide target-size sweep beyond this flow's screens — both stay open as real, not cosmetic, gaps until Sprint 8 or a later hardening pass covers them for real.
 
 ---
 
