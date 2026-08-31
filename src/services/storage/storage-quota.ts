@@ -69,3 +69,10 @@ export async function hasRoomFor(bytes: number): Promise<boolean> {
   const freeBytes = estimate.quotaBytes - estimate.usageBytes;
   return freeBytes > bytes * SAFETY_MARGIN;
 }
+
+/** The pre-flight `hasRoomFor` check is only an estimate — a write can still
+ * exhaust quota mid-transaction. Callers use this to distinguish that case
+ * from any other import failure and show a specific message. */
+export function isQuotaExceededError(err: unknown): boolean {
+  return err instanceof DOMException && err.name === "QuotaExceededError";
+}

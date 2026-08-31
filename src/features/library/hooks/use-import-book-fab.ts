@@ -7,6 +7,7 @@ import { notify } from "@/components/toast/toast";
 import { ROUTES } from "@/utils/routes";
 import {
   hasRoomFor,
+  isQuotaExceededError,
   requestPersistentStorage,
 } from "@/services/storage/storage-quota";
 import { pwaStore } from "@/features/pwa/store/pwa-store";
@@ -84,8 +85,9 @@ export function useImportBookFab() {
       notify.success("Book imported successfully");
       navigate(ROUTES.READER.replace(":bookId", id));
     } catch (err) {
-      const error =
-        err instanceof Error
+      const error = isQuotaExceededError(err)
+        ? `Ran out of storage space while importing "${file.name}". Free up space and try again.`
+        : err instanceof Error
           ? `Couldn't import "${file.name}": ${err.message}`
           : `Couldn't import "${file.name}". The file may not be a valid EPUB.`;
       notify.error(error);
@@ -105,6 +107,7 @@ export function useImportBookFab() {
     try {
       let succeeded = 0;
       const failed: string[] = [];
+      let outOfSpace = false;
 
       for (const file of files) {
         if (!isEpub(file)) {
@@ -113,13 +116,15 @@ export function useImportBookFab() {
         }
         if (!(await hasRoomFor(file.size * IMPORT_EXPANSION_FACTOR))) {
           failed.push(file.name);
+          outOfSpace = true;
           continue;
         }
         try {
           await importBook(file);
           succeeded++;
-        } catch {
+        } catch (err) {
           failed.push(file.name);
+          if (isQuotaExceededError(err)) outOfSpace = true;
         }
       }
 
@@ -135,7 +140,11 @@ export function useImportBookFab() {
         );
       }
       if (failed.length > 0) {
-        notify.error(`Couldn't import: ${failed.join(", ")}`);
+        notify.error(
+          outOfSpace
+            ? `Ran out of storage space. Couldn't import: ${failed.join(", ")}`
+            : `Couldn't import: ${failed.join(", ")}`,
+        );
       }
     } finally {
       setIsLoading(false);
