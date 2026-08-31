@@ -3,6 +3,6 @@
 # Without -e a failing build could still let the push through.
 set -e
 
-# Full test suite runs in CI (.github/workflows/ci.yml), not here — this
+# Full test suite runs in CI (.github/workflows/test.yml), not here — this
 # hook only guards the fast, deterministic build.
 pnpm build

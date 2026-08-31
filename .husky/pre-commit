@@ -6,7 +6,7 @@ set -e
 
 # lint-staged also runs `vitest related` on staged .ts/.tsx — every test that
 # imports a staged file, whether or not the test itself changed. The full
-# suite runs in CI (.github/workflows/ci.yml), not in a local hook.
+# suite runs in CI (.github/workflows/test.yml), not in a local hook.
 pnpm lint-staged
 
 # Non-blocking Impeccable design QA report on staged UI files.
