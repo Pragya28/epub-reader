@@ -11,6 +11,11 @@ import { loadReaderBook } from "../actions/load-reader-book";
 import { jumpToTocItem } from "../actions/jump-to-toc-item";
 import { flattenToc } from "../utils/flatten-toc";
 import { readerStore } from "../store/reader-store";
+import {
+  TAB_ID,
+  postPresence,
+  subscribeToReadingProgressChannel,
+} from "../utils/reading-progress-channel";
 import { useReaderEngine } from "./use-reader-engine";
 import { useWakeLock } from "./use-wake-lock";
 import { useChromeVisibility } from "@/shared/hooks/use-chrome-visibility";
@@ -154,6 +159,56 @@ export function useReaderScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookId]);
 
+  // Cross-tab awareness (Sprint 8 Day 4 item 21): announce this tab's
+  // presence, and surface a dialog when another tab reports either also
+  // having this book open, or a progress save newer than what this tab
+  // loaded — see reading-progress-channel.ts for why this doesn't try to
+  // reposition scroll live. Tracked as "which bookId is this open for"
+  // rather than a plain boolean so a bookId change (navigating straight
+  // from one book's reader to another, no unmount) implicitly clears a
+  // dialog left open for the previous book — no reset effect needed.
+  const [openInAnotherTabFor, setOpenInAnotherTabFor] = useState<string | null>(
+    null,
+  );
+  const openInAnotherTab =
+    bookId !== undefined && openInAnotherTabFor === bookId;
+  const setOpenInAnotherTab = useCallback(
+    (open: boolean) => setOpenInAnotherTabFor(open ? (bookId ?? null) : null),
+    [bookId],
+  );
+
+  const [remoteProgressAvailableFor, setRemoteProgressAvailableFor] = useState<
+    string | null
+  >(null);
+  const remoteProgressAvailable =
+    bookId !== undefined && remoteProgressAvailableFor === bookId;
+  const setRemoteProgressAvailable = useCallback(
+    (open: boolean) =>
+      setRemoteProgressAvailableFor(open ? (bookId ?? null) : null),
+    [bookId],
+  );
+
+  useEffect(() => {
+    if (!bookId) return;
+
+    postPresence(bookId);
+
+    return subscribeToReadingProgressChannel((message) => {
+      if (message.bookId !== bookId || message.tabId === TAB_ID) return;
+
+      if (message.type === "presence") {
+        setOpenInAnotherTabFor(bookId);
+        return;
+      }
+
+      const localUpdatedAt =
+        readerStore.getState().readerDocument?.book.progress?.updatedAt ?? 0;
+      if (message.progress.updatedAt > localUpdatedAt) {
+        setRemoteProgressAvailableFor(bookId);
+      }
+    });
+  }, [bookId]);
+
   const handleTocItemClick = useCallback(
     (item: TocItem) => {
       const iframe = iframeRef.current;
@@ -270,6 +325,12 @@ export function useReaderScreen() {
     pendingExternalHref,
     setPendingExternalHref,
     confirmExternalLink,
+
+    openInAnotherTab,
+    setOpenInAnotherTab,
+    remoteProgressAvailable,
+    setRemoteProgressAvailable,
+    reloadForSyncedProgress: () => window.location.reload(),
 
     chromeVisible,
     setChromeOverlay,

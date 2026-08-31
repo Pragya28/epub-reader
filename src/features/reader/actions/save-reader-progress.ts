@@ -3,6 +3,7 @@ import { updateBookProgress } from "@/services/storage/book-repository";
 import type { ReadingProgress } from "@/services/storage/storage-types";
 import { logger as rootLogger } from "@/shared/logger/logger";
 import { computeScrollAnchor } from "../engine/scroll/scroll-anchor";
+import { postProgressUpdate } from "../utils/reading-progress-channel";
 
 const logger = rootLogger.child("save-reader-progress");
 
@@ -42,6 +43,7 @@ export async function saveReaderProgress(
             b.id === bookId ? { ...b, progress, manualStatus: undefined } : b,
           ),
       );
+    postProgressUpdate(bookId, progress);
     logger.trace("progress saved", { bookId, progress });
   } catch (error) {
     logger.error("failed to save reading progress", error);

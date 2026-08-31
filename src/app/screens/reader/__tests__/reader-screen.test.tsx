@@ -290,4 +290,100 @@ describe("ReaderScreen", () => {
       );
     });
   });
+
+  describe("cross-tab sync (Sprint 8 Day 4 item 21)", () => {
+    function setLoaded(progressUpdatedAt?: number) {
+      readerStore.setState({
+        isLoading: false,
+        error: null,
+        readerDocument: {
+          book: {
+            id: "book-1",
+            title: "Test Book",
+            author: "Test Author",
+            progress:
+              progressUpdatedAt !== undefined
+                ? { updatedAt: progressUpdatedAt }
+                : undefined,
+          } as never,
+          file: new Blob(),
+        },
+        parsedBook: mockParsedBook,
+        currentChapterIndex: 0,
+      });
+    }
+
+    // Simulates a message arriving from a genuinely different tab — posting
+    // through the app's own postPresence/postProgressUpdate would carry this
+    // process's own TAB_ID and get filtered out by the same-tab guard.
+    function postFromOtherTab(message: object) {
+      const channel = new BroadcastChannel("librune-reading-progress");
+      channel.postMessage(message);
+      channel.close();
+    }
+
+    it("shows the 'also open elsewhere' dialog on a presence message for the open book", async () => {
+      setLoaded();
+      renderReaderScreen("book-1");
+
+      postFromOtherTab({
+        type: "presence",
+        bookId: "book-1",
+        tabId: "other-tab",
+      });
+
+      expect(
+        await screen.findByText("Also open in another tab"),
+      ).toBeInTheDocument();
+    });
+
+    it("ignores a presence message for a different book", async () => {
+      setLoaded();
+      renderReaderScreen("book-1");
+
+      postFromOtherTab({
+        type: "presence",
+        bookId: "some-other-book",
+        tabId: "other-tab",
+      });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(
+        screen.queryByText("Also open in another tab"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("shows the progress-sync dialog when another tab's save is newer", async () => {
+      setLoaded(500);
+      renderReaderScreen("book-1");
+
+      postFromOtherTab({
+        type: "progress",
+        bookId: "book-1",
+        tabId: "other-tab",
+        progress: { updatedAt: 1000 },
+      });
+
+      expect(
+        await screen.findByText("Progress updated in another tab"),
+      ).toBeInTheDocument();
+    });
+
+    it("does not show the progress-sync dialog when the other tab's save is not newer", async () => {
+      setLoaded(1000);
+      renderReaderScreen("book-1");
+
+      postFromOtherTab({
+        type: "progress",
+        bookId: "book-1",
+        tabId: "other-tab",
+        progress: { updatedAt: 500 },
+      });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(
+        screen.queryByText("Progress updated in another tab"),
+      ).not.toBeInTheDocument();
+    });
+  });
 });
