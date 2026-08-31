@@ -1,6 +1,6 @@
 # Sprint 8 — Task List (Gap Analysis vs Codebase)
 
-Generated 2026-08-28 by comparing `central-docs/06 - Implementation/Sprint - 08 Production Polish.md` against the current codebase, following the format of `docs/tasks/SPRINT-07-TASKS.md`.
+Generated 2026-08-28 by comparing `central-docs/06 - Implementation/Sprint - 08 Production Polish.md` against the current codebase, following the format of `docs/tasks/SPRINT-07-TASKS.md`. Status refreshed 2026-08-31 against everything landed since: Day 1-3 unchanged (still ✅); the full-codebase code-review + audit pass (`docs/code-review-2026-08-30.md`, PR #12) tightened error handling on several Day 4 call sites without closing any remaining Day 4-7 gap outright, and confirmed the Day 1 bundle-size finding fully resolved. Days 4-7 status is otherwise as it was — no multi-tab, quota-exceeded, export, or QA/release work has landed yet.
 
 Legend: ✅ done · 🟡 partial · ❌ missing
 
@@ -37,7 +37,7 @@ Unlike Sprint 7 (zero prior art for series/collections), Sprint 8 is a hardening
 
 - **Reader iframe not fully in the a11y tree** — resolved as item 3 above (accepted limitation + chapter-transition live region).
 - **`icon-xs` button variant at the 24px WCAG 2.5.8 floor** — resolved: variant had zero call sites, deleted from `button.tsx`. Smallest icon button in use is `icon-sm` (28px).
-- **P2 — main JS bundle 945.95 kB (295.92 kB gzip)** — out of scope for Day 1; already tracked as Day 3 items 9 and 13.
+- **P2 — main JS bundle 945.95 kB (295.92 kB gzip)** — out of scope for Day 1; already tracked as Day 3 items 9 and 13. **Confirmed resolved**: the 2026-08-30 full-codebase audit rerun (`docs/AUDIT_REPORT.md`, `docs/code-review-2026-08-30.md`) explicitly notes "the prior audit's bundle-size P2 was already resolved by Sprint 8 Day 3's route splitting" — score now 20/20, 0 P0-P3 outstanding.
 
 ---
 
@@ -90,10 +90,10 @@ Unlike Sprint 7 (zero prior art for series/collections), Sprint 8 is a hardening
 16. ✅ **Edge-case handling: corrupt EPUB** — `epub.service.ts`/`epub-parser.ts` already throw descriptive errors for broken spine references, invalid files, missing metadata (all covered by existing fixtures/tests — see `src/tests/fixtures/*.epub`'s "missing-metadata", "broken-spine", "invalid" cases).
 17. 🟡 **Edge-case handling: unsupported/DRM'd files** — essentially closed. DRM detection shipped (see Baseline); "unsupported" (non-EPUB file types) is caught by the `isEpub()` extension/MIME check in `use-import-book-fab.ts`. Only gap: no test exercises the DRM-detection path specifically — cosmetic, not a real risk.
 18. ❌ **Edge-case handling: storage quota exceeded** — the _code path_ is defensive (index-build failures already caught and logged without failing the import — Sprint 6/7's established pattern), but there's no actual quota-exceeded simulation test, and no user-facing messaging for it specifically (a generic import-failure toast would fire, not a quota-specific one).
-19. 🟡 **Recovery improvements (graceful degradation on failure)** — the "index/derived-data failures must never fail the thing around them" discipline (Sprint 6, reinforced Sprint 7) is exactly this, already applied to search indexing and series/collection membership. Not yet applied-and-verified for storage quota specifically (item 18) or multi-tab conflicts (item 21).
-20. 🟡 **Logging refinement** — `Logger` (`shared/logger/logger.ts`) exists with scoped child loggers and levels, but is `console`-only and dev-enabled by default (`enabled: options?.enabled ?? import.meta.env.DEV`) — no persistent local error log for production debugging, which is specifically what Infrastructure-01's "local error-log recommendation" asks for.
-21. ❌ **Multi-tab concurrency** — nothing exists (no `BroadcastChannel`, no cross-tab IndexedDB-write coordination). Two tabs open on the same book could both write conflicting reading progress with no reconciliation. Fully greenfield.
-22. 🟡 **User-friendly error messaging** — `use-import-book-fab.ts` already distinguishes error types in its toast copy; the `ErrorBoundary` component exists for React crashes. Coverage is inconsistent across other action call sites — worth an audit pass rather than a rebuild.
+19. 🟡 **Recovery improvements (graceful degradation on failure)** — the "index/derived-data failures must never fail the thing around them" discipline (Sprint 6, reinforced Sprint 7) is exactly this, already applied to search indexing and series/collection membership, and **further hardened by the 2026-08-30 code-review pass** (PR #12): `deleteBook` now reflects the deletion in the store immediately and best-effort cleans up dependent rows via `Promise.allSettled` instead of a bare sequential await chain; `ensureIndexesForBooks` guards the whole per-book callback (not just `buildIndex`) so one Dexie error can't reject the backfill; `search-maintenance-store` catches rebuild failures so status can't stick on "running". Still not applied-and-verified for storage quota specifically (item 18) or multi-tab conflicts (item 21) — those remain open.
+20. 🟡 **Logging refinement** — `Logger` (`shared/logger/logger.ts`) exists with scoped child loggers and levels, but is `console`-only and dev-enabled by default (`enabled: options?.enabled ?? import.meta.env.DEV`) — no persistent local error log for production debugging, which is specifically what Infrastructure-01's "local error-log recommendation" asks for. Unchanged since 2026-08-28.
+21. ❌ **Multi-tab concurrency** — nothing exists (no `BroadcastChannel`, no cross-tab IndexedDB-write coordination). Two tabs open on the same book could both write conflicting reading progress with no reconciliation. Fully greenfield. Unchanged since 2026-08-28.
+22. 🟡 **User-friendly error messaging** — `use-import-book-fab.ts` already distinguishes error types in its toast copy; the `ErrorBoundary` component exists for React crashes. The 2026-08-30 pass closed one concrete gap here — `confirm-delete-dialog.tsx` previously swallowed a failed delete silently, now catches and shows `notify.error` — but that was one call site found via a general code review, not the systematic audit this item calls for. Coverage elsewhere is still inconsistent; the audit pass itself remains to-do.
 
 ### Done Criteria
 
@@ -118,7 +118,7 @@ Unlike Sprint 7 (zero prior art for series/collections), Sprint 8 is a hardening
 
 ## Day 6 — Final QA
 
-27. ❌ **Full regression suite execution** — the automated suite (70 files / 625 tests as of Sprint 7) already runs on every push; "full regression suite" here likely means a manual/exploratory pass on top, not new automation.
+27. ❌ **Full regression suite execution** — the automated suite (75 files / 667 tests as of the 2026-08-30 code-review pass, up from 70/625 at Sprint 7) already runs on every push; "full regression suite" here likely means a manual/exploratory pass on top, not new automation.
 28. ❌ **Import → Read → Search → Organize workflow validation** — `book-lifecycle.test.ts` and `groupings-lifecycle.test.ts` cover import→progress→delete and series/collection arcs respectively, but no single test walks the full import→read→search→organize chain end-to-end.
 29. ❌ **Stress testing (large libraries, large books, long sessions)** — large-library (`load-library.perf.test.ts`, `sort-groupings.perf.test.ts`) and large-book (`epub-parser.perf.test.ts`) perf guards exist; "long sessions" (memory/state accumulation over hours of reading) has no coverage — ties directly to Day 3 item 12.
 30. ❌ **Release checklist** — doesn't exist yet as a document.
