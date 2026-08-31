@@ -13,6 +13,12 @@ import { loadFixture } from "@/tests/utils/load-fixtures";
 import { resetTestDb } from "@/tests/utils/reset-test-db";
 import { resetLibraryStore } from "@/tests/utils/reset-store";
 
+// Every successful importBook() call below awaits the returned `indexed`
+// promise (background search indexing — a second full JSZip parse) before
+// the test ends. Left dangling, it can still be mid-flight when the next
+// test's beforeEach() resets the fake IndexedDB, intermittently crashing
+// with an unhandled exception deep in JSZip's stream decoding.
+//
 // Wraps the real buildIndex so the other tests here still exercise real
 // indexing; only the failure test overrides it for a single call.
 vi.mock("@/services/search/search-service", async (importOriginal) => {
@@ -30,7 +36,8 @@ describe("importBook", () => {
   it("imports and persists a book", async () => {
     const file = await loadFixture("valid-book.epub");
     try {
-      await importBook(file);
+      const { indexed } = await importBook(file);
+      await indexed;
     } catch {
       // expected unless using real epub
     }
@@ -43,13 +50,15 @@ describe("importBook", () => {
   it("supports nested opf paths", async () => {
     const file = await loadFixture("nested-opf.epub");
 
-    await expect(importBook(file)).resolves.not.toThrow();
+    const { indexed } = await importBook(file);
+    await indexed;
   });
 
   it("handles missing metadata gracefully", async () => {
     const file = await loadFixture("missing-metadata.epub");
 
-    await importBook(file);
+    const { indexed } = await importBook(file);
+    await indexed;
 
     const books = await getAllBooks();
 
@@ -67,8 +76,9 @@ describe("importBook", () => {
 
     const second = await loadFixture("valid-book-2.epub");
 
-    await importBook(first);
-    await importBook(second);
+    const firstResult = await importBook(first);
+    const secondResult = await importBook(second);
+    await Promise.all([firstResult.indexed, secondResult.indexed]);
 
     const books = await getAllBooks();
 
@@ -82,7 +92,8 @@ describe("importBook", () => {
     // book) — inherits the project's global testTimeout (vite.config.ts)
     // rather than a per-test override, since that budget has needed
     // raising more than once for this exact reason.
-    await expect(importBook(file)).resolves.not.toThrow();
+    const { indexed } = await importBook(file);
+    await indexed;
   });
 
   it("throws for invalid spine references", async () => {
@@ -94,7 +105,8 @@ describe("importBook", () => {
   it("persists chapter count, word count and reading time", async () => {
     const file = await loadFixture("valid-book.epub");
 
-    await importBook(file);
+    const { indexed } = await importBook(file);
+    await indexed;
 
     const [book] = await getAllBooks();
 
@@ -122,7 +134,12 @@ describe("importBook", () => {
     );
 
     const file = await loadFixture("valid-book.epub");
-    await expect(importBook(file)).resolves.toBeDefined();
+    const result = await importBook(file);
+    expect(result).toBeDefined();
+    // Rejects (mocked above) but is swallowed inside importBook's own
+    // .catch, so awaiting it here can't turn this test's failure-path
+    // assertion into an unrelated rejection.
+    await result.indexed;
 
     // Guards against the mock silently not applying, which would make the
     // assertion above pass without ever exercising the failure path.
@@ -132,8 +149,9 @@ describe("importBook", () => {
 
   it("rejects duplicate book imports", async () => {
     const file = await loadFixture("valid-book.epub");
-    await importBook(file);
+    const { indexed } = await importBook(file);
     await expect(importBook(file)).rejects.toThrow("Book already imported");
+    await indexed;
     const books = await getAllBooks();
     expect(books).toHaveLength(1);
   });
@@ -156,7 +174,8 @@ describe("importBook", () => {
     });
 
     const file = await loadFixture("valid-book.epub");
-    await importBook(file);
+    const { indexed } = await importBook(file);
+    await indexed;
 
     const [book] = await getAllBooks();
     expect(book.seriesName).toBe("Foundation Series");
@@ -174,7 +193,8 @@ describe("importBook", () => {
 
   it("does not create a series grouping when the book has no series metadata", async () => {
     const file = await loadFixture("valid-book.epub");
-    await importBook(file);
+    const { indexed } = await importBook(file);
+    await indexed;
 
     const [book] = await getAllBooks();
     expect(book.seriesName).toBeUndefined();
@@ -215,8 +235,9 @@ describe("importBook", () => {
 
     const first = await loadFixture("series-1.epub");
     const second = await loadFixture("series-2.epub");
-    await importBook(first);
-    await importBook(second);
+    const firstResult = await importBook(first);
+    const secondResult = await importBook(second);
+    await Promise.all([firstResult.indexed, secondResult.indexed]);
 
     const books = await getAllBooks();
     expect(books).toHaveLength(2);
@@ -248,7 +269,8 @@ describe("importBook", () => {
     });
 
     const file = await loadFixture("valid-book.epub");
-    await importBook(file);
+    const { indexed } = await importBook(file);
+    await indexed;
 
     const [book] = await getAllBooks();
     expect(book.seriesGroupingId).toBeTypeOf("string");
