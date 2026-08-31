@@ -96,5 +96,8 @@ describe("rebuildSearchIndex", () => {
     expect(result).toEqual({ total: 1, failed: 0 });
     const stale = await findMatches("totallyfakeword", book.id);
     expect(stale).toHaveLength(0);
-  }, 90000);
+    // Same fake-indexeddb slowdown as the first test in this file (delete +
+    // rebuild cycle) — 90000 was cutting it too close in CI, consistently
+    // finishing at ~90030ms.
+  }, 150000);
 });
