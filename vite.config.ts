@@ -1,6 +1,6 @@
 /// <reference types="vitest" />
 
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
@@ -102,5 +102,9 @@ export default defineConfig({
     // so tests that import a fixture need more than the 5s default,
     // especially under the CPU contention of a full pre-commit test run.
     testTimeout: 90000,
+    // e2e/ holds Playwright specs (run via `pnpm test:e2e`), not Vitest
+    // ones — Playwright's own `test()` throws when Vitest picks it up,
+    // since it matches Vitest's default *.spec.ts glob too.
+    exclude: [...configDefaults.exclude, "e2e/**"],
   },
 });
