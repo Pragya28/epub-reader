@@ -32,10 +32,16 @@ describe("EpubService", () => {
   it("rejects a DRM-protected epub before parsing further (Sprint 8 Day 4 item 17)", async () => {
     // Self-contained rather than a fixture file — only the presence of
     // META-INF/encryption.xml matters, checked before container.xml is
-    // even read, so no other EPUB structure is needed.
+    // even read, so no other EPUB structure is needed. Generates as
+    // arraybuffer + wraps in a native Blob rather than JSZip's own
+    // `type: "blob"` output, which crashes in this test environment
+    // (jsdom's Blob support-detection inside JSZip's flate worker) even
+    // though it's never exercised elsewhere in this suite (every other
+    // test here only ever loads pre-built fixture files, never generates).
     const zip = new JSZip();
     zip.file("META-INF/encryption.xml", "<encryption/>");
-    const file = await zip.generateAsync({ type: "blob" });
+    const buffer = await zip.generateAsync({ type: "arraybuffer" });
+    const file = new Blob([buffer]);
 
     await expect(service.extractOpf(file)).rejects.toThrow(
       "This book is protected by DRM and can't be opened.",
