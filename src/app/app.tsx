@@ -1,5 +1,6 @@
 import { useEffect, type FC } from "react";
 import { BrowserRouter } from "react-router-dom";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Router } from "./router";
 import { ErrorBoundary } from "@/components/error-boundary/error-boundary";
 import { clearCoverCache } from "@/services/storage/cover-cache";
@@ -34,6 +35,7 @@ const App: FC = () => {
         <Router />
       </ErrorBoundary>
       <Toaster />
+      <SpeedInsights />
     </BrowserRouter>
   );
 };
