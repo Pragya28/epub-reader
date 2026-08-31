@@ -27,6 +27,12 @@ dev-dist
 src/tests/dev/*
 coverage
 
+# Playwright e2e output
+test-results
+playwright-report
+blob-report
+playwright/.cache
+
 # Symlink to the external notes vault (renamed from `docs` — that name now
 # belongs to the real, tracked docs/ folder holding superpowers/ and tasks/)
 central-docs

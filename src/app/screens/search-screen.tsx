@@ -180,7 +180,7 @@ export const SearchScreen: FC = () => {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search your library"
             aria-label="Search your library"
-            className="font-reading min-w-0 flex-1 bg-transparent text-title-sm text-foreground outline-none placeholder:text-muted-foreground"
+            className="font-reading h-7 min-w-0 flex-1 bg-transparent text-title-sm text-foreground outline-none placeholder:text-muted-foreground"
           />
           {query && (
             <Button
