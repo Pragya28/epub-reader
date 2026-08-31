@@ -43,12 +43,15 @@ describe("reading-progress-channel", () => {
     const progress = makeProgress();
     postProgressUpdate("book-1", progress);
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    expect(received).toEqual([
-      { type: "presence", bookId: "book-1", tabId: TAB_ID },
-      { type: "progress", bookId: "book-1", progress, tabId: TAB_ID },
-    ]);
+    // BroadcastChannel delivery to another instance is asynchronous and its
+    // exact timing isn't guaranteed — poll rather than assuming one
+    // macrotask tick is enough, which flaked under heavier parallel load.
+    await vi.waitFor(() => {
+      expect(received).toEqual([
+        { type: "presence", bookId: "book-1", tabId: TAB_ID },
+        { type: "progress", bookId: "book-1", progress, tabId: TAB_ID },
+      ]);
+    });
   });
 
   it("subscribeToReadingProgressChannel receives messages posted from another tab", async () => {
@@ -64,12 +67,12 @@ describe("reading-progress-channel", () => {
       tabId: "other-tab",
     });
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    expect(handler).toHaveBeenCalledWith({
-      type: "presence",
-      bookId: "book-2",
-      tabId: "other-tab",
+    await vi.waitFor(() => {
+      expect(handler).toHaveBeenCalledWith({
+        type: "presence",
+        bookId: "book-2",
+        tabId: "other-tab",
+      });
     });
     unsubscribe();
   });
@@ -87,7 +90,9 @@ describe("reading-progress-channel", () => {
       bookId: "book-3",
       tabId: "other-tab",
     });
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    // A negative assertion can't "wait for" — give delivery generous time
+    // to rule out it arriving late rather than never.
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     expect(handler).not.toHaveBeenCalled();
   });

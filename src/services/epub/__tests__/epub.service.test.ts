@@ -1,5 +1,5 @@
 import JSZip from "jszip";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { loadFixture } from "@/tests/utils/load-fixtures";
 import { EpubServiceImpl } from "../epub.service";
 
@@ -29,22 +29,28 @@ describe("EpubService", () => {
     await expect(service.extractOpf(file)).rejects.toThrow();
   });
 
-  it("rejects a DRM-protected epub before parsing further (Sprint 8 Day 4 item 17)", async () => {
-    // Self-contained rather than a fixture file — only the presence of
-    // META-INF/encryption.xml matters, checked before container.xml is
-    // even read, so no other EPUB structure is needed. Generates as
-    // arraybuffer + wraps in a native Blob rather than JSZip's own
-    // `type: "blob"` output, which crashes in this test environment
-    // (jsdom's Blob support-detection inside JSZip's flate worker) even
-    // though it's never exercised elsewhere in this suite (every other
-    // test here only ever loads pre-built fixture files, never generates).
-    const zip = new JSZip();
-    zip.file("META-INF/encryption.xml", "<encryption/>");
-    const buffer = await zip.generateAsync({ type: "arraybuffer" });
-    const file = new Blob([buffer]);
+  describe("DRM detection (Sprint 8 Day 4 item 17)", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
 
-    await expect(service.extractOpf(file)).rejects.toThrow(
-      "This book is protected by DRM and can't be opened.",
-    );
+    it("rejects a DRM-protected epub before parsing further", async () => {
+      // checkForDrm only calls zip.file("META-INF/encryption.xml") on the
+      // JSZip instance loadZip() produces — stubbing JSZip.loadAsync with a
+      // synthetic result exercises exactly that check without generating
+      // real zip bytes, which sidesteps an intermittent crash in JSZip's
+      // own DEFLATE worker under this test environment's parallel worker
+      // pool (Cannot read 'uint8array' of undefined in
+      // FlateWorker.processChunk, only ever reproduced via generateAsync
+      // running alongside the rest of the suite).
+      vi.spyOn(JSZip, "loadAsync").mockResolvedValueOnce({
+        file: (name: string) =>
+          name === "META-INF/encryption.xml" ? {} : null,
+      } as any);
+
+      await expect(service.extractOpf(new Blob())).rejects.toThrow(
+        "This book is protected by DRM and can't be opened.",
+      );
+    });
   });
 });
