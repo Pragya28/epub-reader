@@ -9,6 +9,8 @@ import {
   HardDriveIcon,
   ShieldCheckIcon,
   DownloadSimpleIcon,
+  CopyIcon,
+  ShareNetworkIcon,
 } from "@phosphor-icons/react";
 
 import { cn } from "@/utils/cn";
@@ -35,6 +37,7 @@ import { ThemeSelector } from "@/features/preferences/components/theme-selector"
 import { FontSelector } from "@/features/preferences/components/font-selector";
 import { useStorageSettings } from "@/features/pwa/hooks/use-storage-settings";
 import { useInstallPrompt } from "@/features/pwa/hooks/use-install-prompt";
+import { useDiagnostics } from "@/features/preferences/hooks/use-diagnostics";
 import { formatBytes } from "@/utils/format-bytes";
 
 const SectionHeader: FC<{ icon: ReactNode; children: string }> = ({
@@ -73,6 +76,8 @@ export const SettingsScreen: FC = () => {
   const { estimate, persisted, requestPersist } = useStorageSettings();
   const { canInstall, isInstalled, showIosHint, promptInstall } =
     useInstallPrompt();
+  const { errorCount, canShare, copyErrorLog, shareErrorLog } =
+    useDiagnostics();
 
   const handleRebuild = async () => {
     await startRebuild();
@@ -352,6 +357,39 @@ export const SettingsScreen: FC = () => {
                   )}
                 </div>
               )}
+
+              <div className="flex items-center justify-between gap-4 px-4 py-3">
+                <div className="flex flex-col">
+                  <span className="text-ui font-semibold text-foreground">
+                    Diagnostics
+                  </span>
+                  <span className="text-ui-sm text-muted-foreground">
+                    {errorCount === 0
+                      ? "No errors logged this session."
+                      : `${errorCount} ${errorCount === 1 ? "error" : "errors"} logged this session.`}
+                  </span>
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void copyErrorLog()}
+                  >
+                    <CopyIcon weight="light" className="size-4" />
+                    Copy
+                  </Button>
+                  {canShare && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => void shareErrorLog()}
+                    >
+                      <ShareNetworkIcon weight="light" className="size-4" />
+                      Share
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
           </section>
         </div>

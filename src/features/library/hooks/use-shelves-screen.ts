@@ -17,6 +17,7 @@ import {
   sortGroupings,
   splitByType,
 } from "../utils/sort-groupings";
+import { notify } from "@/components/toast/toast";
 
 /**
  * Data layer behind the Shelves tab: loads every Grouping + its members,
@@ -47,24 +48,30 @@ export function useShelvesScreen() {
     let cancelled = false;
 
     async function load() {
-      // Backfill series groupings for books that predate the grouping schema
-      // (derived from the cached seriesName on each row, no re-parsing) so an
-      // older library's series appear here rather than never at all.
-      await ensureSeriesGroupings(
-        libraryStore.getState().books.map((book) => book.id),
-      );
+      try {
+        // Backfill series groupings for books that predate the grouping schema
+        // (derived from the cached seriesName on each row, no re-parsing) so an
+        // older library's series appear here rather than never at all.
+        await ensureSeriesGroupings(
+          libraryStore.getState().books.map((book) => book.id),
+        );
 
-      const all = await listGroupings();
-      const entries = await Promise.all(
-        all.map(
-          async (grouping) =>
-            [grouping.id, await getMembersForGrouping(grouping.id)] as const,
-        ),
-      );
-      if (cancelled) return;
-      setGroupings(all);
-      setMembersByGrouping(new Map(entries));
-      setIsLoading(false);
+        const all = await listGroupings();
+        const entries = await Promise.all(
+          all.map(
+            async (grouping) =>
+              [grouping.id, await getMembersForGrouping(grouping.id)] as const,
+          ),
+        );
+        if (cancelled) return;
+        setGroupings(all);
+        setMembersByGrouping(new Map(entries));
+      } catch {
+        if (cancelled) return;
+        notify.error("Couldn't load shelves. Try again.");
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
     }
 
     void load();

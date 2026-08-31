@@ -8,6 +8,8 @@ export const LogLevel = {
 
 export type LogLevel = (typeof LogLevel)[keyof typeof LogLevel];
 
+import { recordError } from "./error-log";
+
 type Metadata = Record<string, unknown>;
 
 const LEVEL_ORDER: Record<LogLevel, number> = {
@@ -66,6 +68,7 @@ export class Logger {
 
   error(message: string, error?: unknown): void {
     this.log(LogLevel.ERROR, message, { error });
+    recordError({ scope: this.scope, message, error });
   }
 
   private log(level: LogLevel, message: string, metadata?: Metadata): void {

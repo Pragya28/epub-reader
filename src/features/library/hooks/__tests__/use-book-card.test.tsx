@@ -1,4 +1,4 @@
-import { renderHook } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import type { ReactNode } from "react";
@@ -6,6 +6,17 @@ import { useBookCard } from "../use-book-card";
 import { libraryStore } from "../../store/library-store";
 import type { BookWithProgress } from "../../types/library.types";
 import type { StoredBook } from "@/services/storage/storage-types";
+import { markBookFinished } from "../../actions/mark-book-status";
+import { notify } from "@/components/toast/toast";
+
+vi.mock("../../actions/mark-book-status", () => ({
+  markBookFinished: vi.fn(),
+  markBookUnread: vi.fn(),
+  startBookAtBeginning: vi.fn(),
+}));
+vi.mock("@/components/toast/toast", () => ({
+  notify: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
+}));
 
 const wrapper = ({ children }: { children: ReactNode }) => (
   <MemoryRouter>{children}</MemoryRouter>
@@ -86,5 +97,25 @@ describe("useBookCard series link", () => {
     );
 
     expect(result.current.hasSeriesLink).toBe(false);
+  });
+});
+
+describe("useBookCard status action error messaging", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    libraryStore.setState({ books: [], isLoading: false, error: null });
+  });
+
+  it("toasts an error when marking a book finished fails", async () => {
+    vi.mocked(markBookFinished).mockRejectedValueOnce(new Error("boom"));
+
+    const { result } = renderHook(() => useBookCard(makeBook()), { wrapper });
+    const markFinishedItem = result.current.menuItems.find(
+      (item) => item.type === "item" && item.id === "mark-finished",
+    );
+    if (markFinishedItem?.type !== "item") throw new Error("item not found");
+    markFinishedItem.onClick();
+
+    await waitFor(() => expect(notify.error).toHaveBeenCalled());
   });
 });

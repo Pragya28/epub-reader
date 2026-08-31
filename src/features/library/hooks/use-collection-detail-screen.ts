@@ -12,6 +12,7 @@ import { collectionFilterStore } from "../store/filter-store";
 import { filterBooksByCriteria } from "../utils/filter-books";
 import { useGroupingBooks } from "./use-grouping-books";
 import { useLibraryFilters } from "./use-library-filters";
+import { notify } from "@/components/toast/toast";
 
 /**
  * Books in a single user collection, reached from the Shelves tab. Unlike
@@ -42,8 +43,12 @@ export function useCollectionDetailScreen() {
 
   const rename = async (name: string) => {
     if (!groupingId) return;
-    await renameCollection(groupingId, name);
-    reload();
+    try {
+      await renameCollection(groupingId, name);
+      reload();
+    } catch {
+      notify.error("Couldn't rename the collection. Try again.");
+    }
   };
 
   const confirmDelete = async () => {
@@ -54,8 +59,12 @@ export function useCollectionDetailScreen() {
 
   const removeBook = async (bookId: string) => {
     if (!groupingId) return;
-    await removeBookFromCollection(groupingId, bookId);
-    reload();
+    try {
+      await removeBookFromCollection(groupingId, bookId);
+      reload();
+    } catch {
+      notify.error("Couldn't remove the book from the collection. Try again.");
+    }
   };
 
   return {

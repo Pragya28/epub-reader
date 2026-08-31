@@ -45,6 +45,10 @@ vi.mock("../../actions/collections", () => ({
     removeBookFromCollection(...args),
 }));
 
+vi.mock("@/components/toast/toast", () => ({
+  notify: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
+}));
+
 function renderAt(groupingId: string) {
   const wrapper = ({ children }: { children: ReactNode }) => (
     <MemoryRouter initialEntries={[`/library/collection/${groupingId}`]}>
@@ -115,5 +119,27 @@ describe("useCollectionDetailScreen", () => {
     await result.current.removeBook("b1");
 
     expect(removeBookFromCollection).toHaveBeenCalledWith("g1", "b1");
+  });
+
+  it("toasts an error when rename fails", async () => {
+    const { notify } = await import("@/components/toast/toast");
+    renameCollection.mockRejectedValueOnce(new Error("boom"));
+    const { result } = renderAt("g1");
+    await waitFor(() => expect(result.current.groupingName).toBe("Favorites"));
+
+    await result.current.rename("Comfort Reads");
+
+    expect(notify.error).toHaveBeenCalled();
+  });
+
+  it("toasts an error when removeBook fails", async () => {
+    const { notify } = await import("@/components/toast/toast");
+    removeBookFromCollection.mockRejectedValueOnce(new Error("boom"));
+    const { result } = renderAt("g1");
+    await waitFor(() => expect(result.current.groupingName).toBe("Favorites"));
+
+    await result.current.removeBook("b1");
+
+    expect(notify.error).toHaveBeenCalled();
   });
 });

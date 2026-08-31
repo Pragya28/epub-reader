@@ -11,6 +11,7 @@ import type {
 import { libraryStore } from "../store/library-store";
 import { loadLibrary } from "../actions/load-library";
 import { enrichBookWithProgress } from "../utils/derive-book-status";
+import { notify } from "@/components/toast/toast";
 
 const NO_MEMBERS: GroupingMember[] = [];
 
@@ -39,11 +40,16 @@ export function useGroupingBooks(groupingId: string | undefined) {
     onResult: (g: Grouping | null, m: GroupingMember[]) => void,
   ) {
     if (!groupingId) return;
-    const [foundGrouping, foundMembers] = await Promise.all([
-      getGrouping(groupingId),
-      getMembersForGrouping(groupingId),
-    ]);
-    onResult(foundGrouping ?? null, foundMembers);
+    try {
+      const [foundGrouping, foundMembers] = await Promise.all([
+        getGrouping(groupingId),
+        getMembersForGrouping(groupingId),
+      ]);
+      onResult(foundGrouping ?? null, foundMembers);
+    } catch {
+      notify.error("Couldn't load this shelf. Try again.");
+      onResult(null, []);
+    }
   }
 
   useEffect(() => {

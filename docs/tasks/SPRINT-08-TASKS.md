@@ -1,6 +1,6 @@
 # Sprint 8 — Task List (Gap Analysis vs Codebase)
 
-Generated 2026-08-28 by comparing `central-docs/06 - Implementation/Sprint - 08 Production Polish.md` against the current codebase, following the format of `docs/tasks/SPRINT-07-TASKS.md`.
+Generated 2026-08-28 by comparing `central-docs/06 - Implementation/Sprint - 08 Production Polish.md` against the current codebase, following the format of `docs/tasks/SPRINT-07-TASKS.md`. Status refreshed 2026-08-31: Day 1-3 unchanged (still ✅); Day 4 (Error Handling) is now ✅ complete — quota-exceeded messaging, a persistent local error log, cross-tab reading-progress awareness, and a full error-messaging audit all landed and are tested. Days 5-7 are still not started — no mobile/browser QA, export/backup, or release-prep work has landed yet.
 
 Legend: ✅ done · 🟡 partial · ❌ missing
 
@@ -37,7 +37,7 @@ Unlike Sprint 7 (zero prior art for series/collections), Sprint 8 is a hardening
 
 - **Reader iframe not fully in the a11y tree** — resolved as item 3 above (accepted limitation + chapter-transition live region).
 - **`icon-xs` button variant at the 24px WCAG 2.5.8 floor** — resolved: variant had zero call sites, deleted from `button.tsx`. Smallest icon button in use is `icon-sm` (28px).
-- **P2 — main JS bundle 945.95 kB (295.92 kB gzip)** — out of scope for Day 1; already tracked as Day 3 items 9 and 13.
+- **P2 — main JS bundle 945.95 kB (295.92 kB gzip)** — out of scope for Day 1; already tracked as Day 3 items 9 and 13. **Confirmed resolved**: the 2026-08-30 full-codebase audit rerun (`docs/AUDIT_REPORT.md`, `docs/code-review-2026-08-30.md`) explicitly notes "the prior audit's bundle-size P2 was already resolved by Sprint 8 Day 3's route splitting" — score now 20/20, 0 P0-P3 outstanding.
 
 ---
 
@@ -85,21 +85,21 @@ Unlike Sprint 7 (zero prior art for series/collections), Sprint 8 is a hardening
 
 ---
 
-## Day 4 — Error Handling
+## Day 4 — Error Handling ✅
 
 16. ✅ **Edge-case handling: corrupt EPUB** — `epub.service.ts`/`epub-parser.ts` already throw descriptive errors for broken spine references, invalid files, missing metadata (all covered by existing fixtures/tests — see `src/tests/fixtures/*.epub`'s "missing-metadata", "broken-spine", "invalid" cases).
-17. 🟡 **Edge-case handling: unsupported/DRM'd files** — essentially closed. DRM detection shipped (see Baseline); "unsupported" (non-EPUB file types) is caught by the `isEpub()` extension/MIME check in `use-import-book-fab.ts`. Only gap: no test exercises the DRM-detection path specifically — cosmetic, not a real risk.
-18. ❌ **Edge-case handling: storage quota exceeded** — the _code path_ is defensive (index-build failures already caught and logged without failing the import — Sprint 6/7's established pattern), but there's no actual quota-exceeded simulation test, and no user-facing messaging for it specifically (a generic import-failure toast would fire, not a quota-specific one).
-19. 🟡 **Recovery improvements (graceful degradation on failure)** — the "index/derived-data failures must never fail the thing around them" discipline (Sprint 6, reinforced Sprint 7) is exactly this, already applied to search indexing and series/collection membership. Not yet applied-and-verified for storage quota specifically (item 18) or multi-tab conflicts (item 21).
-20. 🟡 **Logging refinement** — `Logger` (`shared/logger/logger.ts`) exists with scoped child loggers and levels, but is `console`-only and dev-enabled by default (`enabled: options?.enabled ?? import.meta.env.DEV`) — no persistent local error log for production debugging, which is specifically what Infrastructure-01's "local error-log recommendation" asks for.
-21. ❌ **Multi-tab concurrency** — nothing exists (no `BroadcastChannel`, no cross-tab IndexedDB-write coordination). Two tabs open on the same book could both write conflicting reading progress with no reconciliation. Fully greenfield.
-22. 🟡 **User-friendly error messaging** — `use-import-book-fab.ts` already distinguishes error types in its toast copy; the `ErrorBoundary` component exists for React crashes. Coverage is inconsistent across other action call sites — worth an audit pass rather than a rebuild.
+17. ✅ **Edge-case handling: unsupported/DRM'd files** — DRM detection shipped (see Baseline); "unsupported" (non-EPUB file types) is caught by the `isEpub()` extension/MIME check in `use-import-book-fab.ts`. The one remaining gap (no test exercised the DRM-detection path) is closed: `epub.service.test.ts` builds a minimal in-memory zip with `META-INF/encryption.xml` and asserts `extractOpf` rejects with the DRM message.
+18. ✅ **Edge-case handling: storage quota exceeded** — `storage-quota.ts` gains `isQuotaExceededError()`; `use-import-book-fab.ts`'s catch blocks (single and batch import) now check it first and show a distinct "Ran out of storage space..." message instead of the generic import-failure toast. `use-import-book-fab.test.tsx` simulates a real `DOMException("QuotaExceededError")` from the primary write (not just the pre-flight `hasRoomFor` estimate) and asserts the distinct copy.
+19. ✅ **Recovery improvements (graceful degradation on failure)** — the "index/derived-data failures must never fail the thing around them" discipline, already applied to search indexing and series/collection membership and further hardened by the 2026-08-30 code-review pass (PR #12), is now also applied to storage quota (item 18) and multi-tab conflicts (item 21) — the two gaps this item used to point at are closed below.
+20. ✅ **Logging refinement** — `Logger.error()` now also records into `shared/logger/error-log.ts`, a capped (50-entry) `localStorage`-backed ring buffer, always active regardless of the `enabled`/DEV gate — closing Infrastructure-01's "local error-log recommendation". Settings → Storage gets a Diagnostics row (`use-diagnostics.ts`) to Copy or Share (Web Share API, feature-detected) the log as a timestamped JSON file.
+21. ✅ **Multi-tab concurrency** — scoped via user decision: last-write-wins at the storage layer (unchanged) + live cross-tab awareness via a new `BroadcastChannel`-based `reading-progress-channel.ts` (feature-detected/fail-soft), surfaced through two reader dialogs — "also open in another tab" on presence from another tab, and "progress updated in another tab" (with a Reload action) when a broadcast save is newer than what this tab loaded. Makes the conflict visible instead of silent rather than adding a full lock.
+22. ✅ **User-friendly error messaging** — the systematic audit this item called for is done (an Explore pass over every `actions/`/`hooks/` call site into `services/storage|epub|search`): collection mutations (`toggle`/`createAndAdd`, `rename`/`removeBook`), book-status actions (`markBookFinished`/`Unread`, `startBookAtBeginning`), the shelves/grouping-detail loads, and the search-result preview loader all get a try/catch + `notify.error` now, matching the import/delete/rebuild-index pattern that was already consistent. `use-storage-settings.ts`'s `requestPersist` gets a try/catch too but logs only — denial is already a normal `false` return, not a throw.
 
 ### Done Criteria
 
-🟡 Partial. Corrupt/DRM/unsupported-file handling is genuinely done; quota messaging, local error logging, and multi-tab concurrency are the real gaps.
+✅ Complete. Corrupt/DRM/unsupported-file handling, quota-exceeded messaging, a persistent local error log, cross-tab progress-conflict awareness, and consistent error-messaging across action call sites are all shipped and tested.
 
-**Related Gaps:** [[Storage-01 Quota and Eviction]] (item 18), [[Import-01 DRM and Unsupported Files]] (items 16-17, mostly closed), [[Platform-01 Multi-Tab Concurrency]] (item 21, fully open), [[Infrastructure-01 Error and Crash Visibility]] (item 20).
+**Related Gaps resolved:** [[Storage-01 Quota and Eviction]] (item 18), [[Import-01 DRM and Unsupported Files]] (items 16-17), [[Platform-01 Multi-Tab Concurrency]] (item 21 — scoped to last-write-wins + cross-tab awareness, not a full lock), [[Infrastructure-01 Error and Crash Visibility]] (item 20).
 
 ---
 
@@ -118,7 +118,7 @@ Unlike Sprint 7 (zero prior art for series/collections), Sprint 8 is a hardening
 
 ## Day 6 — Final QA
 
-27. ❌ **Full regression suite execution** — the automated suite (70 files / 625 tests as of Sprint 7) already runs on every push; "full regression suite" here likely means a manual/exploratory pass on top, not new automation.
+27. ❌ **Full regression suite execution** — the automated suite (75 files / 667 tests as of the 2026-08-30 code-review pass, up from 70/625 at Sprint 7) already runs on every push; "full regression suite" here likely means a manual/exploratory pass on top, not new automation.
 28. ❌ **Import → Read → Search → Organize workflow validation** — `book-lifecycle.test.ts` and `groupings-lifecycle.test.ts` cover import→progress→delete and series/collection arcs respectively, but no single test walks the full import→read→search→organize chain end-to-end.
 29. ❌ **Stress testing (large libraries, large books, long sessions)** — large-library (`load-library.perf.test.ts`, `sort-groupings.perf.test.ts`) and large-book (`epub-parser.perf.test.ts`) perf guards exist; "long sessions" (memory/state accumulation over hours of reading) has no coverage — ties directly to Day 3 item 12.
 30. ❌ **Release checklist** — doesn't exist yet as a document.
@@ -159,6 +159,6 @@ Day 1 (accessibility) and Day 2 (PWA/offline) can run in parallel — different 
 
 # Open Questions (need user input before implementation starts)
 
-- **Reader accessibility tree** (Day 1, item 3): documented limitation vs. live-region announcement vs. a linear-reading affordance — ACCESSIBILITY.md flags this as open but doesn't decide it.
+- **Reader accessibility tree** (Day 1, item 3): documented limitation vs. live-region announcement vs. a linear-reading affordance — ACCESSIBILITY.md flags this as open but doesn't decide it. Resolved in Day 1 (see item 3) — left here as a stale entry from the initial gap list, not a live question.
 - **Backup/export scope** (Day 6, item 31 / Related Gap): is this a Sprint 8 Day 6 QA-only day, or does export/import need building from scratch first? The sprint spec's Dev bullets don't list it — only the Related Gap footnote does.
-- **Multi-tab concurrency** (Day 4, item 21): how much reconciliation is in scope — last-write-wins on reading progress, a cross-tab lock, or just a "this book is open in another tab" warning?
+- ~~**Multi-tab concurrency** (Day 4, item 21)~~ — resolved 2026-08-31: last-write-wins on reading progress + cross-tab awareness via `BroadcastChannel`-backed dialogs, not a full lock. See item 21.

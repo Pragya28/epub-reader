@@ -11,6 +11,7 @@ import {
   createCollection,
   removeBookFromCollection,
 } from "../actions/collections";
+import { notify } from "@/components/toast/toast";
 
 /** Data + actions behind the "Add to Collection" sheet on a book card:
  * every collection, its book count, and which ones already contain this
@@ -66,18 +67,26 @@ export function useAddToCollection(bookId: string, open: boolean) {
     });
 
   const toggle = async (groupingId: string) => {
-    if (selectedIds.has(groupingId)) {
-      await removeBookFromCollection(groupingId, bookId);
-    } else {
-      await addBookToCollection(groupingId, bookId);
+    try {
+      if (selectedIds.has(groupingId)) {
+        await removeBookFromCollection(groupingId, bookId);
+      } else {
+        await addBookToCollection(groupingId, bookId);
+      }
+      await refresh();
+    } catch {
+      notify.error("Couldn't update the collection. Try again.");
     }
-    await refresh();
   };
 
   const createAndAdd = async (name: string) => {
-    const groupingId = await createCollection(name);
-    await addBookToCollection(groupingId, bookId);
-    await refresh();
+    try {
+      const groupingId = await createCollection(name);
+      await addBookToCollection(groupingId, bookId);
+      await refresh();
+    } catch {
+      notify.error("Couldn't create the collection. Try again.");
+    }
   };
 
   return { collections, selectedIds, toggle, createAndAdd };

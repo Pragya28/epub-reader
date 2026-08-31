@@ -5,6 +5,9 @@ import {
   requestPersistentStorage,
   type StorageEstimate,
 } from "@/services/storage/storage-quota";
+import { logger as rootLogger } from "@/shared/logger/logger";
+
+const logger = rootLogger.child("use-storage-settings");
 
 async function readStorage(): Promise<{
   estimate: StorageEstimate | null;
@@ -36,8 +39,17 @@ export function useStorageSettings() {
   }, []);
 
   const requestPersist = useCallback(async () => {
-    await requestPersistentStorage();
-    setState(await readStorage());
+    try {
+      await requestPersistentStorage();
+      setState(await readStorage());
+    } catch (error) {
+      // requestPersistentStorage/estimateStorage/isStoragePersisted already
+      // fail soft internally (storage-quota.ts) — denial comes back as a
+      // normal `false`, never a throw. This only catches something
+      // genuinely unexpected, so it logs rather than toasting: there's no
+      // known real-world case for a user-facing message here.
+      logger.error("failed to request persistent storage", error);
+    }
   }, []);
 
   return { ...state, requestPersist };

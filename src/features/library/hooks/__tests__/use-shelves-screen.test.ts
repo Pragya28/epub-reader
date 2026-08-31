@@ -41,6 +41,10 @@ vi.mock("@/services/storage/groupings", () => ({
   ),
 }));
 
+vi.mock("@/components/toast/toast", () => ({
+  notify: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
+}));
+
 describe("useShelvesScreen", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -84,5 +88,16 @@ describe("useShelvesScreen", () => {
     await waitFor(() => expect(result.current.viewMode).toBe("grouped"));
     expect(result.current.series).toHaveLength(1);
     expect(result.current.collections).toHaveLength(0);
+  });
+
+  it("toasts an error and clears loading when listGroupings fails", async () => {
+    const groupings = await import("@/services/storage/groupings");
+    const { notify } = await import("@/components/toast/toast");
+    vi.mocked(groupings.listGroupings).mockRejectedValueOnce(new Error("boom"));
+
+    const { result } = renderHook(() => useShelvesScreen());
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(notify.error).toHaveBeenCalled();
   });
 });

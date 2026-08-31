@@ -4,6 +4,8 @@ import { ReaderFrame } from "@/features/reader/components/reader-frame";
 import { TocDrawer } from "@/features/reader/components/toc-drawer";
 import { ReaderToolbar } from "@/features/reader/components/reader-toolbar";
 import { ExternalLinkDialog } from "@/features/reader/components/external-link-dialog";
+import { OpenElsewhereDialog } from "@/features/reader/components/open-elsewhere-dialog";
+import { ProgressSyncDialog } from "@/features/reader/components/progress-sync-dialog";
 import {
   CaretLeftIcon,
   CaretRightIcon,
@@ -35,6 +37,11 @@ export const ReaderScreen: FC = () => {
     pendingExternalHref,
     setPendingExternalHref,
     confirmExternalLink,
+    openInAnotherTab,
+    setOpenInAnotherTab,
+    remoteProgressAvailable,
+    setRemoteProgressAvailable,
+    reloadForSyncedProgress,
     chromeVisible,
     setChromeOverlay,
     revealChrome,
@@ -249,6 +256,16 @@ export const ReaderScreen: FC = () => {
             setChromeOverlay(false);
           }
         }}
+      />
+
+      <OpenElsewhereDialog
+        open={openInAnotherTab}
+        onOpenChange={setOpenInAnotherTab}
+      />
+      <ProgressSyncDialog
+        open={remoteProgressAvailable}
+        onReload={reloadForSyncedProgress}
+        onOpenChange={setRemoteProgressAvailable}
       />
     </div>
   );
