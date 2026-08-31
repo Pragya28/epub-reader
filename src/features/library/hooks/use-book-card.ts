@@ -10,6 +10,7 @@ import {
 } from "../actions/mark-book-status";
 import { deleteBook } from "../actions/delete-book";
 import { libraryStore } from "../store/library-store";
+import { notify } from "@/components/toast/toast";
 
 export type BookCardMenuEntry =
   | { type: "separator"; id: string }
@@ -61,9 +62,18 @@ export function useBookCard(
   const hasSeriesLink = booksInSeriesCount > 1 && !!seriesGroupingId;
 
   const openInReader = () => navigate(ROUTES.READER.replace(":bookId", id));
-  const markFinished = () => void markBookFinished(id);
-  const markUnread = () => void markBookUnread(id);
-  const startAtBeginning = () => void startBookAtBeginning(id);
+  const markFinished = () =>
+    void markBookFinished(id).catch(() =>
+      notify.error("Couldn't update the book. Try again."),
+    );
+  const markUnread = () =>
+    void markBookUnread(id).catch(() =>
+      notify.error("Couldn't update the book. Try again."),
+    );
+  const startAtBeginning = () =>
+    void startBookAtBeginning(id).catch(() =>
+      notify.error("Couldn't update the book. Try again."),
+    );
   const openAboutSheet = () => setAboutOpen(true);
   const openDeleteConfirm = () => setDeleteOpen(true);
   const openAddToCollection = () => setAddToCollectionOpen(true);

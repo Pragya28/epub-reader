@@ -28,6 +28,10 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { SearchStatusFilter } from "@/features/library/utils/filter-search-results";
 import { getBookCoverUrl } from "@/services/storage/book-repository";
 import type { ChapterMatch } from "@/services/search/search-content";
+import { notify } from "@/components/toast/toast";
+import { logger as rootLogger } from "@/shared/logger/logger";
+
+const logger = rootLogger.child("search-screen");
 
 /** Rows built per page. Each costs a chapter decompress + sanitize. */
 const CONTENT_PAGE_SIZE = 10;
@@ -119,9 +123,16 @@ export const SearchScreen: FC = () => {
       visibleMatches,
       bookCacheRef.current,
       metaCacheRef.current,
-    ).then((results) => {
-      if (!cancelled) setContentDisplay(results);
-    });
+    )
+      .then((results) => {
+        if (!cancelled) setContentDisplay(results);
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        logger.error("failed to load search result previews", error);
+        setContentDisplay([]);
+        notify.error("Couldn't load some search results. Try again.");
+      });
     return () => {
       cancelled = true;
     };
