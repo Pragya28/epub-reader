@@ -10,12 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Node must be set up before pnpm/action-setup: pnpm 11 requires
+      # Node >=22.13, newer than the runner's preinstalled default.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - uses: pnpm/action-setup@v4
         with:
           version: 11.1.2
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:run
