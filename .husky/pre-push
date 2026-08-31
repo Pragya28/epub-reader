@@ -1,11 +1,8 @@
 #!/usr/bin/env sh
 
-# Without -e only the *last* command's exit code reaches git, so a failing
-# build followed by passing tests would let the push through.
+# Without -e a failing build could still let the push through.
 set -e
 
+# Full test suite runs in CI (.github/workflows/test.yml), not here — this
+# hook only guards the fast, deterministic build.
 pnpm build
-
-# test:run, not test — `pnpm test` is vitest watch mode, which can sit
-# re-running forever instead of exiting when something touches files.
-pnpm test:run
