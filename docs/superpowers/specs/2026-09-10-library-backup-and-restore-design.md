@@ -56,9 +56,13 @@ interface BackupManifest {
   groupings: Grouping[]; // series AND collections
   groupingMembers: GroupingMember[];
   preferences: PreferencesSnapshot; // see decision 5
-  covers: Record<string, { type: string }>; // bookId -> cover MIME, entry present iff a cover blob is in covers/
 }
 ```
+
+Which books have a cover is recoverable from the `covers/` zip entries
+themselves — no manifest field. Cover blobs are stored and restored
+verbatim; the browser sniffs image content when rendering, so the blob's
+MIME type is not tracked.
 
 Rejected — **single JSON with base64 blobs**: matches the error-log export
 pattern, but that pattern moves kilobytes; a library is tens of MB of
