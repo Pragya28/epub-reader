@@ -1,6 +1,13 @@
 # Sprint 8 — Task List (Gap Analysis vs Codebase)
 
-Generated 2026-08-28 by comparing `central-docs/06 - Implementation/Sprint - 08 Production Polish.md` against the current codebase, following the format of `docs/tasks/SPRINT-07-TASKS.md`. Status refreshed 2026-08-31: Day 1-3 unchanged (still ✅); Day 4 (Error Handling) is now ✅ complete — quota-exceeded messaging, a persistent local error log, cross-tab reading-progress awareness, and a full error-messaging audit all landed and are tested. Day 5 (Cross-Device Validation) is now 🟡 — real device/browser-lab QA isn't possible in this environment, so it shipped as automated Playwright e2e coverage plus an OPFS-fallback unit-test gap closed; see Day 5 below for what that does and doesn't substitute for. Days 6-7 are still not started — no export/backup or release-prep work has landed yet.
+Generated 2026-08-28 by comparing `central-docs/06 - Implementation/Sprint - 08 Production Polish.md` against the current codebase, following the format of `docs/tasks/SPRINT-07-TASKS.md`.
+
+Status refreshed 2026-09-10 (spec re-verified against the restored `central-docs` symlink — every Day 1-7 Dev/Test bullet and Related Gap is reflected below):
+
+- Days 1-4 ✅ complete and tested.
+- Day 5 (Cross-Device Validation) 🟡 — real device/browser-lab QA isn't possible in this environment, so it shipped as automated Playwright e2e coverage (`e2e/cross-device.spec.ts`, wired into CI as a `playwright` job) plus an OPFS-fallback unit-test gap closed and one real responsive fix (search input < 24px). Now committed (#18, test fix #17). See Day 5 below for what that does and doesn't substitute for.
+- Days 6-7 not started — no backup/export feature exists (`grep` for `backup`/`exportLibrary`/`downloadLibrary` in `src/` is empty), no release checklist, no changelog.
+- Since the 2026-08-31 refresh: automated suite is 83 test files (was 75 at the 2026-08-30 code-review pass); CI restructured — full suite moved out of the pre-push hook into GitHub Actions, pre-push now runs `pnpm build` only (#14), Node bumped to 22 for pnpm 11 (#15); Vercel Speed Insights added (#16). None of these are sprint tasks; noted here so the delta is traceable.
 
 Legend: ✅ done · 🟡 partial · ❌ missing
 
@@ -105,7 +112,7 @@ Unlike Sprint 7 (zero prior art for series/collections), Sprint 8 is a hardening
 
 ## Day 5 — Cross-Device Validation
 
-No physical devices or non-Chromium browser engines are available in this environment, so this day shipped as automated coverage standing in for the manual QA pass, plus real fixes/tests for the gaps it actually found. What it is *not* is a substitute for a real device lab or Safari/Firefox testing before release — that limitation is inherent to the environment, not a scope cut, and is worth re-running for real before a public launch.
+No physical devices or non-Chromium browser engines are available in this environment, so this day shipped as automated coverage standing in for the manual QA pass, plus real fixes/tests for the gaps it actually found. What it is _not_ is a substitute for a real device lab or Safari/Firefox testing before release — that limitation is inherent to the environment, not a scope cut, and is worth re-running for real before a public launch.
 
 23. 🟡 **Mobile testing** — `e2e/cross-device.spec.ts` (Playwright) runs the full import → read → search → organize flow against the `mobile` project (`devices["Pixel 7"]` — Android Chrome viewport + touch emulation, `playwright.config.ts`). Automated, but one engine (Chromium) on one emulated device, not a real-device matrix.
 24. 🟡 **Tablet testing** — same spec against the `tablet` project (`devices["Galaxy Tab S9"]` — an iPad preset was tried first but defaults to WebKit, unavailable in this sandbox; a Chromium-based tablet preset was substituted instead). Same caveat as item 23.
