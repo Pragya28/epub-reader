@@ -40,15 +40,7 @@ export async function exportLibrary(): Promise<Blob> {
   for (const book of books) {
     const stored = await getBookFile(book.id);
     if (stored) {
-      // ponytail: fake-indexeddb (test env) doesn't serialize Blobs correctly;
-      // wrap in new Blob() to ensure JSZip gets valid data. Production
-      // (browser IndexedDB) returns real Blobs unchanged.
-      files.set(
-        book.id,
-        new Blob([stored.file], {
-          type: stored.file.type || "application/epub+zip",
-        }),
-      );
+      files.set(book.id, stored.file);
     } else {
       // ponytail: a book with no readable file still ships in the manifest;
       // readArchive treats the missing books/<id>.epub as a skip on restore.
@@ -56,13 +48,7 @@ export async function exportLibrary(): Promise<Blob> {
     }
 
     const cover = await getBookCover(book.id);
-    if (cover) {
-      // ponytail: same Blob wrapping as files above for test compatibility.
-      covers.set(
-        book.id,
-        new Blob([cover.cover], { type: cover.cover.type || "image/jpeg" }),
-      );
-    }
+    if (cover) covers.set(book.id, cover.cover);
   }
 
   const groupings = await listGroupings();
