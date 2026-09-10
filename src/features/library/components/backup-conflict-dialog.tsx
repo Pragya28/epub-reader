@@ -57,6 +57,7 @@ export const BackupConflictDialog: FC<Props> = ({
                 {c.title}
               </span>
               <RadioGroup
+                aria-label={c.title}
                 value={choices.get(c.localId)}
                 onValueChange={(v) => set(c.localId, v as ConflictResolution)}
               >

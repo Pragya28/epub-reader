@@ -3,6 +3,7 @@ import { revokeCoverUrl } from "@/services/storage/cover-cache";
 import { deleteOpfsFile } from "@/services/storage/opfs-files";
 import { pwaStore } from "@/features/pwa/store/pwa-store";
 import { libraryStore } from "../store/library-store";
+import { searchMaintenanceStore } from "../store/search-maintenance-store";
 
 /**
  * Wipes the library: every table, every OPFS file, cached cover URLs, and
@@ -47,4 +48,10 @@ export async function resetLibrary(): Promise<void> {
   libraryStore.getState().setBooks([]);
   libraryStore.getState().setEvicted(false);
   pwaStore.getState().setHadBooks(false);
+  searchMaintenanceStore.setState({
+    status: "idle",
+    progress: 0,
+    failedCount: 0,
+    lastRebuiltAt: null,
+  });
 }

@@ -4,6 +4,7 @@ import { loadFixture } from "@/tests/utils/load-fixtures";
 import { db } from "@/services/storage/db";
 import { libraryStore } from "@/features/library/store/library-store";
 import { pwaStore } from "@/features/pwa/store/pwa-store";
+import { searchMaintenanceStore } from "@/features/library/store/search-maintenance-store";
 import { importBook } from "../import-book";
 import { createCollection, addBookToCollection } from "../collections";
 import { resetLibrary } from "../reset-library";
@@ -22,6 +23,7 @@ describe("resetLibrary", () => {
     await addBookToCollection(c, id);
     libraryStore.getState().setBooks([{ id } as never]);
     pwaStore.getState().setHadBooks(true);
+    searchMaintenanceStore.setState({ lastRebuiltAt: Date.now() });
 
     await resetLibrary();
 
@@ -37,6 +39,8 @@ describe("resetLibrary", () => {
       expect(await table.count()).toBe(0);
     }
     expect(libraryStore.getState().books).toEqual([]);
+    expect(libraryStore.getState().evicted).toBe(false);
     expect(pwaStore.getState().hadBooks).toBe(false);
+    expect(searchMaintenanceStore.getState().lastRebuiltAt).toBeNull();
   });
 });

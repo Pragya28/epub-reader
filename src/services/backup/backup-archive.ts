@@ -50,6 +50,8 @@ export async function readArchive(input: Blob): Promise<BackupData> {
   if (typeof manifest.version !== "number" || !Array.isArray(manifest.books)) {
     throw new BackupFormatError(NOT_A_BACKUP);
   }
+  if (!Array.isArray(manifest.groupings)) manifest.groupings = [];
+  if (!Array.isArray(manifest.groupingMembers)) manifest.groupingMembers = [];
   if (manifest.version > BACKUP_VERSION) {
     throw new BackupFormatError(
       "This backup was made by a newer version of Librune — update the app and try again.",

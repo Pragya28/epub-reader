@@ -62,6 +62,19 @@ describe("backup archive", () => {
     ).rejects.toThrow(/isn't a Librune backup/);
   });
 
+  it("defaults missing groupings/groupingMembers to empty arrays", async () => {
+    const zip = new JSZip();
+    zip.file(
+      "manifest.json",
+      JSON.stringify({ version: BACKUP_VERSION, books: [] }),
+    );
+    const restored = await readArchive(
+      await zip.generateAsync({ type: "blob" }),
+    );
+    expect(restored.manifest.groupings).toEqual([]);
+    expect(restored.manifest.groupingMembers).toEqual([]);
+  });
+
   it("rejects a backup from a newer format version", async () => {
     const data = sample();
     data.manifest.version = BACKUP_VERSION + 1;

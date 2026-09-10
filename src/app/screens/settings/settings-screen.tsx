@@ -100,6 +100,7 @@ export const SettingsScreen: FC = () => {
 
   const handleReset = async () => {
     await resetLibrary();
+    setResetOpen(false);
     notify.success("Library cleared");
   };
 

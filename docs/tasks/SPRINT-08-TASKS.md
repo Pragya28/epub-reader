@@ -8,7 +8,7 @@ Status refreshed 2026-09-10 (spec re-verified against the restored `central-docs
 - Day 5 (Cross-Device Validation) 🟡 — real device/browser-lab QA isn't possible in this environment, so it shipped as automated Playwright e2e coverage (`e2e/cross-device.spec.ts`, wired into CI as a `playwright` job) plus an OPFS-fallback unit-test gap closed and one real responsive fix (search input < 24px). Now committed (#18, test fix #17). See Day 5 below for what that does and doesn't substitute for.
 - Day 6 item 31 (backup/export workflow validation) ✅ — the backup/restore feature is built (`src/services/backup/` + `features/library/actions/{export-library,import-backup,reset-library}.ts`, Settings UI, `e2e/backup-restore.spec.ts`). Items 27-30 (regression pass, full-chain workflow test, long-session stress, release checklist) still open.
 - Day 7 not started — no release checklist, no changelog.
-- Since the 2026-08-31 refresh: automated suite grew past 83 test files (was 75 at the 2026-08-30 code-review pass); CI restructured — full suite moved out of the pre-push hook into GitHub Actions, pre-push now runs `pnpm build` only (#14), Node bumped to 22 for pnpm 11 (#15); Vercel Speed Insights added (#16). None of these are sprint tasks; noted here so the delta is traceable.
+- Since the 2026-08-31 refresh: automated suite is 90 test files (was 75 at the 2026-08-30 code-review pass); CI restructured — full suite moved out of the pre-push hook into GitHub Actions, pre-push now runs `pnpm build` only (#14), Node bumped to 22 for pnpm 11 (#15); Vercel Speed Insights added (#16). None of these are sprint tasks; noted here so the delta is traceable.
 
 Legend: ✅ done · 🟡 partial · ❌ missing
 
