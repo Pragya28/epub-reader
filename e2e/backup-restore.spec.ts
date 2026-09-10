@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import path from "node:path";
 import os from "node:os";
-import { mkdtemp } from "node:fs/promises";
+import { mkdtemp, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
 /**
@@ -33,6 +33,12 @@ function parseProgress(text: string): { chapter: number; percent: number } {
   const percent = Number(/·\s*(\d+)%/.exec(text)?.[1] ?? "0");
   return { chapter, percent };
 }
+
+let downloadDir: string | undefined;
+
+test.afterEach(async () => {
+  if (downloadDir) await rm(downloadDir, { recursive: true, force: true });
+});
 
 async function importBook(page: Page) {
   await page.goto("/library");
@@ -99,7 +105,7 @@ test("backup and restore round-trips a book and its progress", async ({
     page.waitForEvent("download"),
     page.getByRole("button", { name: "Export" }).click(),
   ]);
-  const downloadDir = await mkdtemp(path.join(os.tmpdir(), "librune-backup-"));
+  downloadDir = await mkdtemp(path.join(os.tmpdir(), "librune-backup-"));
   const backupPath = path.join(
     downloadDir,
     download.suggestedFilename() || "backup.zip",
@@ -135,11 +141,10 @@ test("backup and restore round-trips a book and its progress", async ({
   });
 
   // ...and its reading position came back with it.
+  await expect
+    .poll(async () => await continueReadingProgress(page), { timeout: 15_000 })
+    .not.toBeNull();
   const afterText = await continueReadingProgress(page);
-  expect(
-    afterText,
-    "continue-reading banner missing after restore",
-  ).not.toBeNull();
   const after = parseProgress(afterText!);
   expect(after.percent).toBe(before.percent);
   expect(after.chapter).toBe(before.chapter);
