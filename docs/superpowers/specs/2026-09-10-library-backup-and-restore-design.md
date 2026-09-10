@@ -161,29 +161,39 @@ item 34). `BACKUP_VERSION` is a standalone integer owned by
 up an app version, it can be added to the manifest as an optional
 informational field without a `BACKUP_VERSION` bump.
 
-### 5. Preferences: restore only what isn't set locally
+### 5. Preferences: applied only on a fresh device
 
 ```ts
 interface PreferencesSnapshot {
-  theme?: Theme;
-  applyThemeToReader?: boolean;
-  readerFont?: string;
-  fontScale?: number;
-  lineHeight?: number;
-  paragraphSpacing?: number;
-  keepScreenAwake?: boolean;
-  keepScreenAwakeMinutes?: number;
+  theme: AppTheme;
+  applyThemeToReader: boolean;
+  readerFont: ReaderFontId;
+  readerTheme: AppTheme;
+  fontScale: number;
+  lineHeight: number;
+  margins: number;
+  paragraphSpacing: number;
+  keepScreenAwake: boolean;
+  keepScreenAwakeMinutes: number;
 }
 ```
 
-Export snapshots the current `preferencesStore` state (the persisted
-keys only — no transient fields). Import applies a key **only if the user
-has not set it on this device**. The preferences store is `persist`-backed
-in `localStorage`; "not set locally" = the persisted blob has no value for
-that key (first-run defaults still count as unset). Any key already
-present locally is left untouched — the device wins. This is a
-non-destructive, best-effort nicety, not a guaranteed round-trip; it is
-logged, never toasted on partial application.
+All ten persisted `preferencesStore` keys (the `librune-preferences`
+`persist` blob), snapshotted whole on export — no transient fields
+(`set*` actions, derived selectors).
+
+The `persist` middleware always writes every key (defaults included), so
+"which keys did the user deliberately change" is not recoverable from the
+stored blob. Rather than guess by comparing against defaults, import uses
+a coarser, predictable rule: **apply the snapshot only when
+`localStorage['librune-preferences']` is entirely absent** — a genuinely
+fresh device that has never run the app. If the key exists at all, the
+user has used this device and their preferences are kept untouched, in
+full. This satisfies "on conflict, keep current" without a fragile
+default-comparison heuristic. Applied via `preferencesStore.setState(snapshot)`
+before the store's first render is not possible from an async import, so
+the apply calls each individual setter (`setTheme`, `setFontScale`, …) so
+the store's own clamping runs. Best-effort: logged, never toasted.
 
 ### 6. Reset library
 
@@ -251,7 +261,7 @@ Import:  settings → file picker → use-backup.import(file)
                collections: requireCollection find-or-create + addMember
                ensureSeriesGroupings(touchedIds)
                background: buildIndex(localId, file) per restored book
-               applyPreferences(snapshot)  [only unset keys]
+               applyPreferences(snapshot)  [only if no librune-preferences in localStorage]
            → libraryStore.reload() → toast summary
 
 Reset:   settings → confirm dialog → resetLibrary()
@@ -296,8 +306,9 @@ Colocated `__tests__/`, Vitest + `fake-indexeddb`, reusing
     `detectConflicts` returns one entry with the right
     local/backup chapter numbers; `applyBackup` with `"take-backup"`
     writes the archive's `ReadingProgress`; with `"keep"` leaves it;
-  - preferences: local `theme` set, archive `theme` different → local
-    kept; local `fontScale` unset, archive has one → applied;
+  - preferences: `librune-preferences` present in `localStorage` → store
+    unchanged after import even though the archive's snapshot differs;
+    key absent → every snapshot value applied through the store's setters;
   - a manifest book with no matching `books/` entry → `failed: 1`, others
     unaffected.
 - **`reset-library.test.ts`** — populate all seven tables, `resetLibrary()`,
