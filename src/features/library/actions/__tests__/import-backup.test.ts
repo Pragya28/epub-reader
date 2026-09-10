@@ -4,7 +4,10 @@ import { createFakeOpfsDirectory, stubOpfs } from "@/tests/utils/fake-opfs";
 import { loadFixture } from "@/tests/utils/load-fixtures";
 import { getAllBooks } from "@/services/storage/book-repository";
 import { getBookFile } from "@/services/storage/book-files";
-import { updateBookProgress } from "@/services/storage/book-repository";
+import {
+  resetBookProgress,
+  updateBookProgress,
+} from "@/services/storage/book-repository";
 import { listGroupings } from "@/services/storage/groupings";
 import { preferencesStore } from "@/features/preferences/store/preferences-store";
 import { importBook } from "../import-book";
@@ -128,10 +131,44 @@ describe("readBackup + applyBackup", () => {
     const local = await importBook(await loadFixture("valid-book.epub"));
 
     const { data, conflicts } = await readBackup(archive);
-    await applyBackup(data, new Map([[conflicts[0].localId, "keep"]]));
+    const summary = await applyBackup(
+      data,
+      new Map([[conflicts[0].localId, "keep"]]),
+    );
 
     const [book] = await getAllBooks();
     expect(book.progress?.chapterIndex).toBe(0);
+    expect(summary.skipped).toBe(1);
+  });
+
+  it("resets local progress on take-backup when the backup book has none", async () => {
+    let archiveBookId = "";
+    const archive = await archiveOf(async () => {
+      const r = await importBook(await loadFixture("valid-book.epub"));
+      archiveBookId = r.id;
+      await resetBookProgress(archiveBookId); // manifest row: progress undefined
+    });
+    const local = await importBook(await loadFixture("valid-book.epub"));
+    await updateBookProgress(local.id, {
+      chapterIndex: 5,
+      totalChapters: 10,
+      scrollFraction: 0,
+      anchorPath: null,
+      atDocumentEnd: false,
+      percent: 50,
+      updatedAt: Date.now(),
+    });
+
+    const { data, conflicts } = await readBackup(archive);
+    expect(conflicts).toHaveLength(1);
+
+    const summary = await applyBackup(
+      data,
+      new Map([[conflicts[0].localId, "take-backup"]]),
+    );
+    const [book] = await getAllBooks();
+    expect(book.progress?.chapterIndex).toBeFalsy();
+    expect(summary.conflictsResolved).toBe(1);
   });
 
   it("applies preferences only when none are stored locally", async () => {

@@ -5,6 +5,7 @@ import type {
 } from "@/services/backup/backup-types";
 import {
   getBookByFileHash,
+  resetBookProgress,
   saveImportedBook,
   updateBookManualStatus,
   updateBookProgress,
@@ -103,7 +104,11 @@ export async function applyBackup(
         archiveToLocal.set(book.id, local.id);
         const differs = chapterOf(local) !== chapterOf(book);
         if (differs && resolutions.get(local.id) === "take-backup") {
-          if (book.progress) await updateBookProgress(local.id, book.progress);
+          if (book.progress) {
+            await updateBookProgress(local.id, book.progress);
+          } else {
+            await resetBookProgress(local.id);
+          }
           if (book.manualStatus) {
             await updateBookManualStatus(local.id, book.manualStatus);
           }
@@ -121,7 +126,11 @@ export async function applyBackup(
       }
 
       const localId = createId();
-      const restored: StoredBook = { ...book, id: localId };
+      const restored: StoredBook = {
+        ...book,
+        id: localId,
+        seriesGroupingId: undefined,
+      };
       await saveImportedBook({
         metadata: restored,
         file,
