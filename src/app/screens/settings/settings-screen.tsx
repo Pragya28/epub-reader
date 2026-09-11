@@ -1,4 +1,4 @@
-import type { FC, ReactNode } from "react";
+import { useRef, useState, type FC, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
   CaretLeftIcon,
@@ -11,6 +11,10 @@ import {
   DownloadSimpleIcon,
   CopyIcon,
   ShareNetworkIcon,
+  ArchiveBoxIcon,
+  UploadSimpleIcon,
+  TrashIcon,
+  SpinnerIcon,
 } from "@phosphor-icons/react";
 
 import { cn } from "@/utils/cn";
@@ -38,6 +42,10 @@ import { FontSelector } from "@/features/preferences/components/font-selector";
 import { useStorageSettings } from "@/features/pwa/hooks/use-storage-settings";
 import { useInstallPrompt } from "@/features/pwa/hooks/use-install-prompt";
 import { useDiagnostics } from "@/features/preferences/hooks/use-diagnostics";
+import { useBackup } from "@/features/library/hooks/use-backup";
+import { resetLibrary } from "@/features/library/actions/reset-library";
+import { BackupConflictDialog } from "@/features/library/components/backup-conflict-dialog";
+import { ConfirmDeleteDialog } from "@/features/library/components/confirm-delete-dialog";
 import { formatBytes } from "@/utils/format-bytes";
 
 const SectionHeader: FC<{ icon: ReactNode; children: string }> = ({
@@ -78,6 +86,23 @@ export const SettingsScreen: FC = () => {
     useInstallPrompt();
   const { errorCount, canShare, copyErrorLog, shareErrorLog } =
     useDiagnostics();
+  const {
+    exporting,
+    importing,
+    conflicts,
+    exportNow,
+    importFile,
+    resolveConflicts,
+    cancelImport,
+  } = useBackup();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [resetOpen, setResetOpen] = useState(false);
+
+  const handleReset = async () => {
+    await resetLibrary();
+    setResetOpen(false);
+    notify.success("Library cleared");
+  };
 
   const handleRebuild = async () => {
     await startRebuild();
@@ -390,9 +415,128 @@ export const SettingsScreen: FC = () => {
                   )}
                 </div>
               </div>
+
+              <div className="flex items-center justify-between gap-4 px-4 py-3">
+                <div className="flex flex-col">
+                  <span className="text-ui font-semibold text-foreground">
+                    Delete all books &amp; data
+                  </span>
+                  <span className="text-ui-sm text-muted-foreground">
+                    Remove every book, cover, and reading position from this
+                    device.
+                  </span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 text-destructive"
+                  onClick={() => setResetOpen(true)}
+                >
+                  <TrashIcon weight="light" className="size-4" />
+                  Delete all
+                </Button>
+              </div>
+            </div>
+          </section>
+
+          <section className="flex flex-col gap-3">
+            <SectionHeader
+              icon={
+                <ArchiveBoxIcon
+                  className="size-4 text-muted-foreground"
+                  weight="light"
+                />
+              }
+            >
+              Backup &amp; Restore
+            </SectionHeader>
+
+            <div className="flex flex-col divide-y divide-border rounded-sm border border-border bg-card">
+              <div className="flex items-center justify-between gap-4 px-4 py-3">
+                <div className="flex flex-col">
+                  <span className="text-ui font-semibold text-foreground">
+                    Save a backup
+                  </span>
+                  <span className="text-ui-sm text-muted-foreground">
+                    Download your books, reading progress, and collections as
+                    one file.
+                  </span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  disabled={exporting}
+                  onClick={() => void exportNow()}
+                >
+                  {exporting ? (
+                    <SpinnerIcon
+                      weight="light"
+                      className="size-4 animate-spin"
+                    />
+                  ) : (
+                    <DownloadSimpleIcon weight="light" className="size-4" />
+                  )}
+                  Export
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between gap-4 px-4 py-3">
+                <div className="flex flex-col">
+                  <span className="text-ui font-semibold text-foreground">
+                    Restore from a backup
+                  </span>
+                  <span className="text-ui-sm text-muted-foreground">
+                    Add books and progress from a Librune backup file.
+                  </span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  disabled={importing}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {importing ? (
+                    <SpinnerIcon
+                      weight="light"
+                      className="size-4 animate-spin"
+                    />
+                  ) : (
+                    <UploadSimpleIcon weight="light" className="size-4" />
+                  )}
+                  Import
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".zip,application/zip"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    if (file) void importFile(file);
+                  }}
+                />
+              </div>
             </div>
           </section>
         </div>
+
+        {conflicts && (
+          <BackupConflictDialog
+            conflicts={conflicts}
+            onApply={(r) => void resolveConflicts(r)}
+            onCancel={cancelImport}
+          />
+        )}
+        <ConfirmDeleteDialog
+          open={resetOpen}
+          onOpenChange={setResetOpen}
+          title="Delete all books & data?"
+          description="This removes every book, cover, collection, and reading position from this device. Your saved backups are not affected. This can't be undone."
+          onConfirm={handleReset}
+        />
       </main>
     </div>
   );

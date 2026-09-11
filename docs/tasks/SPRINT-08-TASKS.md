@@ -1,6 +1,14 @@
 # Sprint 8 — Task List (Gap Analysis vs Codebase)
 
-Generated 2026-08-28 by comparing `central-docs/06 - Implementation/Sprint - 08 Production Polish.md` against the current codebase, following the format of `docs/tasks/SPRINT-07-TASKS.md`. Status refreshed 2026-08-31: Day 1-3 unchanged (still ✅); Day 4 (Error Handling) is now ✅ complete — quota-exceeded messaging, a persistent local error log, cross-tab reading-progress awareness, and a full error-messaging audit all landed and are tested. Day 5 (Cross-Device Validation) is now 🟡 — real device/browser-lab QA isn't possible in this environment, so it shipped as automated Playwright e2e coverage plus an OPFS-fallback unit-test gap closed; see Day 5 below for what that does and doesn't substitute for. Days 6-7 are still not started — no export/backup or release-prep work has landed yet.
+Generated 2026-08-28 by comparing `central-docs/06 - Implementation/Sprint - 08 Production Polish.md` against the current codebase, following the format of `docs/tasks/SPRINT-07-TASKS.md`.
+
+Status refreshed 2026-09-10 (spec re-verified against the restored `central-docs` symlink — every Day 1-7 Dev/Test bullet and Related Gap is reflected below):
+
+- Days 1-4 ✅ complete and tested.
+- Day 5 (Cross-Device Validation) 🟡 — real device/browser-lab QA isn't possible in this environment, so it shipped as automated Playwright e2e coverage (`e2e/cross-device.spec.ts`, wired into CI as a `playwright` job) plus an OPFS-fallback unit-test gap closed and one real responsive fix (search input < 24px). Now committed (#18, test fix #17). See Day 5 below for what that does and doesn't substitute for.
+- Day 6 item 31 (backup/export workflow validation) ✅ — the backup/restore feature is built (`src/services/backup/` + `features/library/actions/{export-library,import-backup,reset-library}.ts`, Settings UI, `e2e/backup-restore.spec.ts`). Items 27-30 (regression pass, full-chain workflow test, long-session stress, release checklist) still open.
+- Day 7 not started — no release checklist, no changelog.
+- Since the 2026-08-31 refresh: automated suite is 90 test files (was 75 at the 2026-08-30 code-review pass); CI restructured — full suite moved out of the pre-push hook into GitHub Actions, pre-push now runs `pnpm build` only (#14), Node bumped to 22 for pnpm 11 (#15); Vercel Speed Insights added (#16). None of these are sprint tasks; noted here so the delta is traceable.
 
 Legend: ✅ done · 🟡 partial · ❌ missing
 
@@ -105,7 +113,7 @@ Unlike Sprint 7 (zero prior art for series/collections), Sprint 8 is a hardening
 
 ## Day 5 — Cross-Device Validation
 
-No physical devices or non-Chromium browser engines are available in this environment, so this day shipped as automated coverage standing in for the manual QA pass, plus real fixes/tests for the gaps it actually found. What it is *not* is a substitute for a real device lab or Safari/Firefox testing before release — that limitation is inherent to the environment, not a scope cut, and is worth re-running for real before a public launch.
+No physical devices or non-Chromium browser engines are available in this environment, so this day shipped as automated coverage standing in for the manual QA pass, plus real fixes/tests for the gaps it actually found. What it is _not_ is a substitute for a real device lab or Safari/Firefox testing before release — that limitation is inherent to the environment, not a scope cut, and is worth re-running for real before a public launch.
 
 23. 🟡 **Mobile testing** — `e2e/cross-device.spec.ts` (Playwright) runs the full import → read → search → organize flow against the `mobile` project (`devices["Pixel 7"]` — Android Chrome viewport + touch emulation, `playwright.config.ts`). Automated, but one engine (Chromium) on one emulated device, not a real-device matrix.
 24. 🟡 **Tablet testing** — same spec against the `tablet` project (`devices["Galaxy Tab S9"]` — an iPad preset was tried first but defaults to WebKit, unavailable in this sandbox; a Chromium-based tablet preset was substituted instead). Same caveat as item 23.
@@ -118,19 +126,19 @@ No physical devices or non-Chromium browser engines are available in this enviro
 
 ---
 
-## Day 6 — Final QA
+## Day 6 — Final QA 🟡
 
 27. ❌ **Full regression suite execution** — the automated suite (75 files / 667 tests as of the 2026-08-30 code-review pass, up from 70/625 at Sprint 7) already runs on every push; "full regression suite" here likely means a manual/exploratory pass on top, not new automation.
 28. ❌ **Import → Read → Search → Organize workflow validation** — `book-lifecycle.test.ts` and `groupings-lifecycle.test.ts` cover import→progress→delete and series/collection arcs respectively, but no single test walks the full import→read→search→organize chain end-to-end.
 29. ❌ **Stress testing (large libraries, large books, long sessions)** — large-library (`load-library.perf.test.ts`, `sort-groupings.perf.test.ts`) and large-book (`epub-parser.perf.test.ts`) perf guards exist; "long sessions" (memory/state accumulation over hours of reading) has no coverage — ties directly to Day 3 item 12.
 30. ❌ **Release checklist** — doesn't exist yet as a document.
-31. ❌ **Backup/export workflow validation** — moot until export itself is built (see Related Gap below).
+31. ✅ **Backup/export workflow validation** — `services/backup/` (ZIP archive: `manifest.json` + `books/<id>.epub` + `covers/<id>`, `createArchive`/`readArchive`, framework-agnostic). `exportLibrary()` packs every book/file/cover/grouping plus the ten persisted preference keys; `import-backup.ts` merges by `StoredBook.fileHash` — unknown books restored with a fresh `createId()` + a fire-and-forget background index build, known books skipped unless a chapter-level reading-progress conflict is resolved "use backup" via `BackupConflictDialog` (per book). Series membership is re-derived by `ensureSeriesGroupings` on import, not trusted from the archive; collections are recreated by case-insensitive name; preferences apply only on a device with no `librune-preferences` in `localStorage`. `resetLibrary()` wipes all seven tables + OPFS files + cached cover URLs and resets the library/pwa stores. Settings → "Backup & Restore" (Export/Import) and Settings → Storage → "Delete all books & data" (reuses `ConfirmDeleteDialog`). Covered by unit tests (`backup-archive`, `export-library`, `import-backup`, `reset-library`, `download-blob`, `use-backup`, `backup-conflict-dialog`) and `e2e/backup-restore.spec.ts` (export → reset → restore round-trip, all three device projects, in CI's `playwright` job).
 
 ### Done Criteria
 
-❌ Not started — blocked on Days 1-5 (and the missing export feature) landing first, same shape as every prior sprint's QA day.
+🟡 Item 31 (backup/export) done — the feature is built and validated by unit + e2e coverage. Items 27-30 remain: a manual/exploratory regression pass, a single end-to-end import→read→search→organize test, long-session stress coverage, and the release checklist document.
 
-**Related Gap:** [[Library-02 Backup and Export]] — explicitly deferred from Sprint 7 to "the last practical point to include it before release," i.e. here. Not yet scoped as a Day 6 dev task in the spec itself (the spec lists it only under "Related Gap," not the Dev bullets) — **needs a scoping decision**: is Sprint 8 building export/import from scratch, or only validating it if it already existed? Given Sprint 7 explicitly did not build it, Sprint 8 must build it if this gap is to close at all before release.
+**Related Gap:** [[Library-02 Backup and Export]] — closed. `services/backup/` + `features/library/actions/{export-library,import-backup,reset-library}.ts` implement export/import from scratch (Sprint 7 kept the schema export-friendly but built no mechanism); the Settings UI and `e2e/backup-restore.spec.ts` cover the round-trip.
 
 ---
 
@@ -162,5 +170,5 @@ Day 1 (accessibility) and Day 2 (PWA/offline) can run in parallel — different 
 # Open Questions (need user input before implementation starts)
 
 - **Reader accessibility tree** (Day 1, item 3): documented limitation vs. live-region announcement vs. a linear-reading affordance — ACCESSIBILITY.md flags this as open but doesn't decide it. Resolved in Day 1 (see item 3) — left here as a stale entry from the initial gap list, not a live question.
-- **Backup/export scope** (Day 6, item 31 / Related Gap): is this a Sprint 8 Day 6 QA-only day, or does export/import need building from scratch first? The sprint spec's Dev bullets don't list it — only the Related Gap footnote does.
+- **Backup/export scope** (Day 6, item 31 / Related Gap): settled — Sprint 8 built export/import from scratch (`services/backup/` + `features/library/actions/`). Series groupings are re-derived on import rather than trusted from the archive; preferences apply only on a fresh device.
 - ~~**Multi-tab concurrency** (Day 4, item 21)~~ — resolved 2026-08-31: last-write-wins on reading progress + cross-tab awareness via `BroadcastChannel`-backed dialogs, not a full lock. See item 21.

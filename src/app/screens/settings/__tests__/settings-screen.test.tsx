@@ -1,8 +1,12 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, beforeEach } from "vitest";
+import { describe, expect, it, beforeEach, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { SettingsScreen } from "../settings-screen";
+
+vi.mock("@/features/library/actions/reset-library", () => ({
+  resetLibrary: vi.fn().mockResolvedValue(undefined),
+}));
 import { preferencesStore } from "@/features/preferences/store/preferences-store";
 import { searchMaintenanceStore } from "@/features/library/store/search-maintenance-store";
 
@@ -181,6 +185,36 @@ describe("SettingsScreen", () => {
     expect(
       screen.getByRole("button", { name: "Increase screen-on limit" }),
     ).toBeDisabled();
+  });
+
+  it("renders the Backup & Restore controls", () => {
+    renderScreen();
+    expect(screen.getByRole("button", { name: /export/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /^import$/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("opens the reset confirmation dialog", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(screen.getByRole("button", { name: /delete all/i }));
+    expect(
+      screen.getByRole("alertdialog", { name: /delete all books/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("closes the reset confirmation dialog after a successful wipe", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(screen.getByRole("button", { name: /delete all/i }));
+    await user.click(screen.getByRole("button", { name: /^delete$/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    });
   });
 
   it("steps the screen-on limit by 5 minutes", async () => {

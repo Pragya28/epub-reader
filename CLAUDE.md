@@ -96,6 +96,14 @@ Index lifecycle: built on import, deleted on book removal, and lazily backfilled
 
 Service worker (`vite-plugin-pwa`, see `vite.config.ts`) precaches only the app shell — EPUB files and covers live in IndexedDB and must **not** be added to `globPatterns` or runtime caching.
 
+### Backup & restore
+
+`services/backup/` owns the archive format only — `backup-archive.ts` (`createArchive`/`readArchive`) reads/writes a ZIP: `manifest.json` (book rows, groupings, a ten-key `PreferencesSnapshot`) + `books/<id>.epub` + `covers/<id>`. Only jszip + type imports — no Dexie/Zustand.
+
+`features/library/actions/` orchestrates: `export-library.ts` gathers storage + a preferences-store snapshot; `import-backup.ts` merges an archive back in (`readBackup` / `applyBackup`), keyed by `StoredBook.fileHash` — unknown books get a fresh `createId()` + a fire-and-forget background `buildIndex`, known books are skipped unless a **chapter-level** reading-progress difference is resolved "use backup" (per book, via `backup-conflict-dialog.tsx`). Series membership is always re-derived through `ensureSeriesGroupings` rather than trusted from the archive; collections are recreated by case-insensitive name. Preferences from a backup apply only on a device with no `librune-preferences` in `localStorage`. `reset-library.ts` (`resetLibrary`) clears all seven tables + OPFS files + cached cover URLs and resets the library/pwa/search-maintenance stores (`hadBooks` → false); preferences and other PWA flags survive. `use-backup.ts` drives the Settings "Backup & Restore" section (Export / Import); `download-blob.ts` (`src/utils/`) triggers the file save.
+
+`searchIndex`/`chapterText` are never in an archive — they rebuild on import. `BACKUP_VERSION` (in `backup-types.ts`) gates import compatibility and is a standalone integer, unrelated to any app version.
+
 ### State management
 
 Zustand, one store per feature (`library-store.ts`, `reader-store.ts`), each wrapped in `devtools` middleware. Stores hold ephemeral UI/session state only (loaded chapter indices, current index, loading/error flags) — persisted data always round-trips through the storage service, never lives solely in a store. Store mutation logic lives in `actions/` files next to the store, not inline in components.
