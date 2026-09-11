@@ -24,11 +24,11 @@ export async function createArchive(data: BackupData): Promise<Blob> {
     zip.file(`${COVERS_DIR}${bookId}`, cover);
   }
 
-  // ponytail: no compression — the archive's bulk is already-compressed EPUB
-  // files, so DEFLATE barely shrinks it but adds JSZip's async Flate-worker
-  // pipeline, which produced flaky unhandled-exception failures on CPU-
-  // constrained CI runners. STORE writes/reads raw bytes with no worker
-  // chain at all.
+  /* No compression — the archive's bulk is already-compressed EPUB files,
+     so DEFLATE barely shrinks it but adds JSZip's async Flate-worker
+     pipeline, which produced flaky unhandled-exception failures on CPU-
+     constrained CI runners. STORE writes/reads raw bytes with no worker
+     chain at all. */
   return zip.generateAsync({ type: "blob", compression: "STORE" });
 }
 

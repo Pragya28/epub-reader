@@ -19,8 +19,8 @@ import { readBackup, applyBackup } from "../import-backup";
 const buildIndex = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 vi.mock("@/services/search/search-service", () => ({ buildIndex }));
 
-// fake-indexeddb doesn't preserve Blob fidelity, and covers have no OPFS path
-// to round-trip through — return a real Blob so the covers loop is exercised.
+/* fake-indexeddb doesn't preserve Blob fidelity, and covers have no OPFS path
+   to round-trip through — return a real Blob so the covers loop is exercised. */
 vi.mock("@/services/storage/book-repository", async (importOriginal) => ({
   ...(await importOriginal<
     typeof import("@/services/storage/book-repository")

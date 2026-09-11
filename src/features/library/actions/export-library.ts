@@ -42,8 +42,8 @@ export async function exportLibrary(): Promise<Blob> {
     if (stored) {
       files.set(book.id, stored.file);
     } else {
-      // ponytail: a book with no readable file still ships in the manifest;
-      // readArchive treats the missing books/<id>.epub as a skip on restore.
+      /* A book with no readable file still ships in the manifest;
+         readArchive treats the missing books/<id>.epub as a skip on restore. */
       logger.error(`no file for book ${book.id}; exported without its EPUB`);
     }
 

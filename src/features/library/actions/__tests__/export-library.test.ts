@@ -7,8 +7,8 @@ import { importBook } from "../import-book";
 import { createCollection, addBookToCollection } from "../collections";
 import { exportLibrary } from "../export-library";
 
-// fake-indexeddb doesn't preserve Blob fidelity, and covers have no OPFS path
-// to round-trip through — return a real Blob so the covers loop is exercised.
+/* fake-indexeddb doesn't preserve Blob fidelity, and covers have no OPFS path
+   to round-trip through — return a real Blob so the covers loop is exercised. */
 vi.mock("@/services/storage/book-repository", async (importOriginal) => ({
   ...(await importOriginal<
     typeof import("@/services/storage/book-repository")
@@ -19,8 +19,8 @@ vi.mock("@/services/storage/book-repository", async (importOriginal) => ({
   })),
 }));
 
-// Stub a fake OPFS so importBook writes the EPUB there and getBookFile reads a
-// real Blob back — fake-indexeddb doesn't preserve Blob fidelity.
+/* Stub a fake OPFS so importBook writes the EPUB there and getBookFile reads a
+   real Blob back — fake-indexeddb doesn't preserve Blob fidelity. */
 beforeEach(async () => {
   await resetTestDb();
   stubOpfs(createFakeOpfsDirectory());
