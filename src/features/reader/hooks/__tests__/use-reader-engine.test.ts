@@ -1585,4 +1585,130 @@ describe("useReaderEngine", () => {
       expect(onSwipeChapter).not.toHaveBeenCalled();
     });
   });
+
+  // Sprint 8 Day 6 item 29 — a long session doesn't accumulate listeners or
+  // leak blob URLs. chapter-window.test.ts already proves the pure windowing
+  // math stays bounded; this proves the actual hook (real listener
+  // attach/detach, real revocation) stays bounded too, since those only run
+  // through startEngine/cleanup, not the pure function.
+  describe("long reading session — bounded listeners and blob URLs", () => {
+    it("attaches each iframe listener exactly once no matter how many scroll ticks fire", async () => {
+      vi.spyOn(getChapterSectionsModule, "getChapterSections").mockReturnValue(
+        Array.from({ length: 2 }, (_, i) => {
+          const section = mockIframeDoc.createElement("section");
+          section.setAttribute("data-chapter", String(i));
+          return section as HTMLElement;
+        }),
+      );
+
+      renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const mockWin = iframeRef.current?.contentWindow as any;
+      const onScroll = mockWin.addEventListener.mock.calls.find(
+        ([event]: [string]) => event === "scroll",
+      )?.[1];
+
+      // A few hours of reading is thousands of scroll events, not a handful —
+      // simulate that volume against the single captured listener rather than
+      // letting the test re-derive one per tick.
+      for (let i = 0; i < 2000; i++) {
+        mockWin.scrollY = i;
+        onScroll();
+      }
+
+      const scrollAttachCalls = mockWin.addEventListener.mock.calls.filter(
+        ([event]: [string]) => event === "scroll",
+      );
+      expect(scrollAttachCalls).toHaveLength(1);
+    });
+
+    it("removes every listener it added, exactly once, on unmount", async () => {
+      vi.spyOn(getChapterSectionsModule, "getChapterSections").mockReturnValue(
+        Array.from({ length: 2 }, (_, i) => {
+          const section = mockIframeDoc.createElement("section");
+          section.setAttribute("data-chapter", String(i));
+          return section as HTMLElement;
+        }),
+      );
+
+      const { unmount } = renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: mockParsedBook,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const mockWin = iframeRef.current?.contentWindow as any;
+      const winAdds = mockWin.addEventListener.mock.calls.map(
+        ([event]: [string]) => event,
+      );
+
+      unmount();
+
+      const winRemoves = mockWin.removeEventListener.mock.calls.map(
+        ([event]: [string]) => event,
+      );
+      expect(winRemoves.sort()).toEqual(winAdds.sort());
+    });
+
+    it("revokes each chapter asset blob URL exactly once for the whole session, not per scroll tick", async () => {
+      const bookWithAssets: ParsedBook = {
+        ...mockParsedBook,
+        chapters: mockParsedBook.chapters.map((chapter, i) => ({
+          ...chapter,
+          assetMap: new Map([[`asset-${i}`, `blob:asset-${i}`]]),
+        })),
+      };
+
+      vi.spyOn(getChapterSectionsModule, "getChapterSections").mockReturnValue(
+        Array.from({ length: 2 }, (_, i) => {
+          const section = mockIframeDoc.createElement("section");
+          section.setAttribute("data-chapter", String(i));
+          return section as HTMLElement;
+        }),
+      );
+
+      const revokeSpy = vi.spyOn(URL, "revokeObjectURL");
+
+      const { unmount } = renderHook(() =>
+        useReaderEngine({
+          iframeRef,
+          parsedBook: bookWithAssets,
+        }),
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const mockWin = iframeRef.current?.contentWindow as any;
+      const onScroll = mockWin.addEventListener.mock.calls.find(
+        ([event]: [string]) => event === "scroll",
+      )?.[1];
+      for (let i = 0; i < 500; i++) {
+        mockWin.scrollY = i;
+        onScroll();
+      }
+
+      expect(revokeSpy).not.toHaveBeenCalled();
+
+      unmount();
+
+      const expectedUrls = bookWithAssets.chapters.flatMap((c) => [
+        ...c.assetMap.values(),
+      ]);
+      const revokedUrls = revokeSpy.mock.calls.map(([url]) => url);
+      expect(revokedUrls.sort()).toEqual(expectedUrls.sort());
+      expect(revokeSpy).toHaveBeenCalledTimes(expectedUrls.length);
+
+      revokeSpy.mockRestore();
+    });
+  });
 });
