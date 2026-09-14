@@ -37,7 +37,6 @@ export const LibraryAuthorScreen: FC = () => {
           variant="ghost"
           size="icon"
           aria-label="Back to library"
-          nativeButton={false}
           render={<Link to={ROUTES.LIBRARY} />}
         >
           <CaretLeftIcon weight="light" className="size-6" />

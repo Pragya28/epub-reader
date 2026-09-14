@@ -127,7 +127,6 @@ export const LibraryScreen: FC = () => {
             variant="ghost"
             size="icon"
             aria-label="Search"
-            nativeButton={false}
             render={<Link to={ROUTES.SEARCH} />}
           >
             <MagnifyingGlassIcon weight="light" className="size-5" />
@@ -145,7 +144,6 @@ export const LibraryScreen: FC = () => {
             variant="ghost"
             size="icon"
             aria-label="Settings"
-            nativeButton={false}
             render={<Link to={ROUTES.SETTINGS} />}
           >
             <GearIcon weight="light" className="size-5" />

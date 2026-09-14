@@ -27,10 +27,11 @@ async function continueReadingProgress(page: Page): Promise<string | null> {
   return (await banner.innerText()).replace(/\s+/g, " ").trim();
 }
 
-/** Parsed { chapter, percent } from the banner text ("3 of 12 · 40%"). */
+/** Parsed { chapter, percent } from the banner text ("3 of 12 · 40.1%") —
+ * percent is shown to one decimal place (see save-reader-progress.ts). */
 function parseProgress(text: string): { chapter: number; percent: number } {
   const chapter = Number(/(\d+) of \d+/.exec(text)?.[1] ?? "1");
-  const percent = Number(/·\s*(\d+)%/.exec(text)?.[1] ?? "0");
+  const percent = Number(/·\s*(\d+(?:\.\d+)?)%/.exec(text)?.[1] ?? "0");
   return { chapter, percent };
 }
 
