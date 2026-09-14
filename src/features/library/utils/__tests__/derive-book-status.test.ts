@@ -127,6 +127,29 @@ describe("enrichBookWithProgress", () => {
     expect(enriched.status).toBe("finished");
   });
 
+  it("marks a book finished at 100% even before reaching the literal last chapter (tiny final chapter, e.g. end notes)", () => {
+    // "17 of 18" — chapterIndex 16, totalChapters 18, one chapter short of
+    // the literal last one. A tiny final "End Notes" chapter means the
+    // book-wide word-weighted percent already reads 100 here; the old
+    // logic returned "reading" for any non-last chapter before ever
+    // checking percent, so a book like this could never register as
+    // finished until landing exactly on that last, near-empty chapter.
+    const book = makeBook({
+      progress: {
+        chapterIndex: 16,
+        totalChapters: 18,
+        scrollFraction: 0.9,
+        percent: 100,
+        updatedAt: Date.now(),
+        atDocumentEnd: false,
+      },
+    });
+
+    const enriched = enrichBookWithProgress(book);
+
+    expect(enriched.status).toBe("finished");
+  });
+
   it("does not mark a book finished just for being near the end of a non-last chapter", () => {
     const book = makeBook({
       progress: {

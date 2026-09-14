@@ -35,6 +35,15 @@ function deriveReadingStatus(
 
   if (isUntouchedProgress(progress)) return "unread";
 
+  // percent is a book-wide, word-count-weighted figure, independent of
+  // chapter position — on a book whose literal last chapter is tiny (an
+  // "End Notes"/acknowledgments page), the word-weighted percent can
+  // already reach 100 while chapterIndex is still one chapter short of
+  // the last one (e.g. "17 of 18"). Checked unconditionally, before the
+  // isLastChapter gate below, or a book like that would never register
+  // as finished until landing exactly on its literal last chapter.
+  if (progress.percent >= 100) return "finished";
+
   const isLastChapter = progress.chapterIndex >= progress.totalChapters - 1;
   if (!isLastChapter) return "reading";
 
@@ -45,16 +54,10 @@ function deriveReadingStatus(
   // could never reach the threshold in that case even at the book's
   // literal last pixel). scrollFraction stays as a fallback for older
   // saved progress written before atDocumentEnd existed, or any case
-  // where the document-height check behaves unexpectedly. percent is a
-  // book-wide, word-count-weighted figure computed independently of
-  // scrollFraction/atDocumentEnd — on a short final chapter it can round
-  // up to 100 while this chapter's own scrollFraction is still under
-  // threshold, so it's checked too rather than leaving a visible "100%"
-  // book stuck as "reading".
+  // where the document-height check behaves unexpectedly.
   const reachedEnd =
     progress.atDocumentEnd === true ||
-    progress.scrollFraction >= FINISHED_SCROLL_FRACTION_THRESHOLD ||
-    progress.percent >= 100;
+    progress.scrollFraction >= FINISHED_SCROLL_FRACTION_THRESHOLD;
 
   return reachedEnd ? "finished" : "reading";
 }
