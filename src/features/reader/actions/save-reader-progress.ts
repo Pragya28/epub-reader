@@ -79,6 +79,10 @@ interface ComputeProgressParams {
  */
 const END_OF_DOCUMENT_TOLERANCE_PX = 4;
 
+function roundToOneDecimal(value: number): number {
+  return Math.round(value * 10) / 10;
+}
+
 /**
  * Derives a ReadingProgress snapshot from the current scroll state.
  * scrollFraction is measured relative to the active chapter's own
@@ -140,11 +144,11 @@ export function computeReaderProgress({
 
   const percent =
     wordOffset !== undefined && totalWordCount
-      ? Math.min(100, Math.round((wordOffset / totalWordCount) * 100))
+      ? Math.min(100, roundToOneDecimal((wordOffset / totalWordCount) * 100))
       : totalChapters > 0
         ? Math.min(
             100,
-            Math.round(
+            roundToOneDecimal(
               ((activeIndex + effectiveFraction) / totalChapters) * 100,
             ),
           )

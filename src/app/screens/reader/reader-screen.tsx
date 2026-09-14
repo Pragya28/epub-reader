@@ -190,7 +190,11 @@ export const ReaderScreen: FC = () => {
         }`}
       >
         {/* Progress bar */}
-        <Progress value={progressPercent} className="px-2 gap-1">
+        <Progress
+          value={progressPercent}
+          format={{ style: "percent", maximumFractionDigits: 1 }}
+          className="px-2 gap-1"
+        >
           <ProgressValue />
         </Progress>
 

@@ -33,6 +33,26 @@ describe("enrichBookWithProgress", () => {
     expect(enriched.progress).toBeUndefined();
   });
 
+  it("marks a freshly imported multi-chapter book as unread, not reading", () => {
+    // import-book.ts seeds a full progress object at import time
+    // (chapterIndex 0, scrollFraction 0, atDocumentEnd false) rather than
+    // leaving progress undefined — this must still read as unread.
+    const book = makeBook({
+      progress: {
+        chapterIndex: 0,
+        totalChapters: 10,
+        scrollFraction: 0,
+        percent: 0,
+        updatedAt: Date.now(),
+        atDocumentEnd: false,
+      },
+    });
+
+    const enriched = enrichBookWithProgress(book);
+
+    expect(enriched.status).toBe("unread");
+  });
+
   it("marks a book with partial progress as reading", () => {
     const book = makeBook({
       progress: {

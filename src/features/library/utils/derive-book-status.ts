@@ -7,13 +7,33 @@ const NEW_BOOK_WINDOW_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
 /** Consider a book finished once it's on the last chapter and near its end. */
 const FINISHED_SCROLL_FRACTION_THRESHOLD = 0.98;
 
+/**
+ * True for a book that's never actually been opened — either no progress
+ * row at all, or the full progress object import-book.ts seeds at import
+ * time (chapterIndex 0, scrollFraction 0, atDocumentEnd false), which is
+ * indistinguishable from "unread" by any real signal. Without this,
+ * deriveReadingStatus's `!progress` check never fires (import always seeds
+ * a progress object) and every freshly imported multi-chapter book reads
+ * as "reading" from the moment it's imported.
+ */
+function isUntouchedProgress(
+  progress: StoredBook["progress"],
+): progress is undefined {
+  return (
+    !progress ||
+    (progress.chapterIndex === 0 &&
+      progress.scrollFraction === 0 &&
+      progress.atDocumentEnd !== true)
+  );
+}
+
 function deriveReadingStatus(
   progress: StoredBook["progress"],
   manualStatus?: StoredBook["manualStatus"],
 ): ReadingStatus {
   if (manualStatus) return manualStatus;
 
-  if (!progress) return "unread";
+  if (isUntouchedProgress(progress)) return "unread";
 
   const isLastChapter = progress.chapterIndex >= progress.totalChapters - 1;
   if (!isLastChapter) return "reading";
@@ -62,15 +82,10 @@ export function pickCurrentlyReadingBook(
 export function enrichBookWithProgress(book: StoredBook): BookWithProgress {
   const status = deriveReadingStatus(book.progress, book.manualStatus);
 
-  // "Untouched" rather than status === "unread": import seeds a full progress
-  // object (chapterIndex 0, fraction 0), so a freshly imported book derives to
-  // "reading" and would never qualify for the NEW badge otherwise.
-  const untouched =
-    !book.manualStatus &&
-    (!book.progress ||
-      (book.progress.chapterIndex === 0 &&
-        book.progress.scrollFraction === 0 &&
-        book.progress.atDocumentEnd !== true));
+  // isNew needs "untouched", not status === "unread": a book manually reset
+  // to unread via "Mark as Unread" also derives status "unread" but isn't a
+  // new import, so manualStatus is excluded here on top of the progress check.
+  const untouched = !book.manualStatus && isUntouchedProgress(book.progress);
 
   return {
     ...book,

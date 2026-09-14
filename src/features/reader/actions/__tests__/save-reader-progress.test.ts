@@ -289,6 +289,23 @@ describe("computeReaderProgress", () => {
       expect(result.percent).toBe(0);
     });
 
+    it("rounds to one decimal place instead of a whole number", () => {
+      // (0 + 0.5) / 3 * 100 = 16.666...7 → 16.7, not 17.
+      const doc = makeDoc(
+        [{ chapterIndex: 0, offsetTop: 0, scrollHeight: 1000 }],
+        5000,
+      );
+
+      const result = computeReaderProgress({
+        iframeDoc: doc,
+        win: makeWin(500, 200) as Window,
+        activeIndex: 0,
+        totalChapters: 3,
+      });
+
+      expect(result.percent).toBe(16.7);
+    });
+
     it("never exceeds 100", () => {
       const doc = makeDoc(
         [{ chapterIndex: 4, offsetTop: 0, scrollHeight: 200 }],
