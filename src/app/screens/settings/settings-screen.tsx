@@ -524,6 +524,10 @@ export const SettingsScreen: FC = () => {
           </section>
         </div>
 
+        <p className="text-ui-sm text-muted-foreground/60 text-center pt-4">
+          Librune v{__APP_VERSION__}
+        </p>
+
         {conflicts && (
           <BackupConflictDialog
             conflicts={conflicts}

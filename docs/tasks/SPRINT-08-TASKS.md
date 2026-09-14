@@ -150,12 +150,12 @@ No physical devices or non-Chromium browser engines are available in this enviro
 
 32. ✅ **Documentation** — `CLAUDE.md` was already well-maintained per-subsystem. Added `CHANGELOG.md` (Keep a Changelog format, one `[1.0.0]` entry summarizing Sprints 1-8 by feature area, since no prior tags/changelog existed to build on incrementally) and refreshed `README.md`, which had drifted well behind the codebase — missing search, series/collections, backup/restore, cross-tab awareness, storage quota, and diagnostics entirely, plus a stale hooks description (pre-commit/pre-push no longer run the full `pnpm test`, see Sprint 8's CI restructuring, #14).
 33. ❌ **Final cleanup** — TBD until items 34/35 surface what needs cleaning up.
-34. ❌ **Versioning** — `package.json` is pinned at `"version": "1.0.0"` already (not `0.x`); `CHANGELOG.md` now exists (item 32) but no tagging convention or version-bump process is established yet.
+34. ✅ **Versioning** — `package.json`'s `version` is now the single source of truth end to end: injected into the build via `vite.config.ts`'s `__APP_VERSION__` define (read from `package.json` at config-load time, no duplicated version string anywhere), typed in `vite-env.d.ts`, and shown to users at the bottom of Settings (`Librune v1.0.0`, muted). `docs/RELEASE_CHECKLIST.md`'s Versioning section updated with the actual process: bump `package.json`, move `CHANGELOG.md`'s `[Unreleased]` entries under a dated heading, bump `BACKUP_VERSION` separately if the archive format changed, tag `vX.Y.Z`.
 35. ❌ **Production build validation** — `pnpm build` runs in every pre-push hook already (tsc -b && vite build), so the build itself is continuously validated; a dedicated "production build smoke test" (serving the built output and exercising it, not just compiling it) doesn't exist.
 
 ### Done Criteria
 
-🟡 Item 32 done. Items 33-35 remain.
+🟡 Items 32 and 34 done. Item 33 (final cleanup) and 35 (production build smoke test) remain.
 
 ---
 

@@ -22,6 +22,12 @@ doesn't apply here.
 
 - [ ] Bump `version` in `package.json` (semver: patch for fixes, minor for
       features, major for breaking changes to stored data or backup format).
+      The version is injected into the built app via `vite.config.ts`'s
+      `__APP_VERSION__` define — no other file needs updating — and shown
+      to users at the bottom of Settings.
+- [ ] Move `CHANGELOG.md`'s `[Unreleased]` entries under a new
+      `## [X.Y.Z] - YYYY-MM-DD` heading matching the version above (Keep a
+      Changelog format — Added/Changed/Fixed subheadings as needed).
 - [ ] If the backup archive format changed, bump `BACKUP_VERSION` in
       `backup-types.ts` separately — it's intentionally decoupled from the
       app version.
@@ -48,5 +54,5 @@ doesn't apply here.
 - No server-side migration step — all data lives in each user's IndexedDB.
 - No feature flags or staged rollout — Vercel serves the latest `main` to
   everyone at once.
-- No changelog automation yet — none exists; this checklist doesn't gate on
-  writing one.
+- No changelog automation — `CHANGELOG.md` is hand-maintained (see
+  Versioning above), not generated from commits or PR titles.
