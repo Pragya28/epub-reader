@@ -21,6 +21,11 @@ const launchOptions = existsSync(SANDBOX_CHROMIUM)
 
 export default defineConfig({
   testDir: "./e2e",
+  // production-build.spec.ts needs the real built-and-served output (a
+  // service worker never registers against this dev server — see
+  // vite.config.ts's devOptions.enabled: false) — it runs only via
+  // playwright.build.config.ts, not here.
+  testIgnore: "**/production-build.spec.ts",
   fullyParallel: true,
   retries: process.env.CI ? 1 : 0,
   reporter: "list",

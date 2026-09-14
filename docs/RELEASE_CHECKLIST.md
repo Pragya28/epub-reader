@@ -11,6 +11,13 @@ doesn't apply here.
       jobs in `.github/workflows/test.yml`.
 - [ ] `pnpm build` passes locally (pre-push hook already enforces this,
       including the bundle-size guard in `scripts/check-bundle-size.mjs`).
+- [ ] `pnpm test:e2e:build` passes — a separate build+`vite preview` smoke
+      test (`playwright.build.config.ts`) that the regular `pnpm test:e2e`
+      (source-served dev mode) can't cover: the service worker never
+      registers against dev (`devOptions.enabled: false`), so this is the
+      only check that exercises the real minified/chunk-split output and
+      confirms it activates. Not run on every push — a full build+preview
+      cycle is release-time only, not a per-commit gate.
 - [ ] If `src/index.css` reading-token changes shipped, confirm
       `iframe-renderer.ts` was updated to match (see CLAUDE.md — the reader
       iframe doesn't inherit parent CSS custom properties).

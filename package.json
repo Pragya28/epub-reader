@@ -13,6 +13,7 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:e2e": "playwright test",
+    "test:e2e:build": "playwright test --config=playwright.build.config.ts",
     "coverage": "vitest run --coverage --no-file-parallelism",
     "prepare": "husky",
     "lint-staged": "lint-staged"

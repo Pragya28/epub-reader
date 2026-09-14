@@ -37,6 +37,7 @@ pnpm test           # vitest (watch mode)
 pnpm test:run       # vitest run (single pass, use in CI/scripts)
 pnpm test:ui        # vitest with UI
 pnpm test:e2e       # playwright (cross-device e2e, real browsers)
+pnpm test:e2e:build # playwright against a real build+preview (release-time smoke test)
 pnpm coverage       # vitest run --coverage
 ```
 
