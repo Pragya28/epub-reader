@@ -87,6 +87,26 @@ describe("enrichBookWithProgress", () => {
     expect(enriched.status).toBe("finished");
   });
 
+  it("marks a book finished when percent rounds to 100 on a short final chapter, even if scrollFraction/atDocumentEnd haven't caught up", () => {
+    // A short epilogue means the book-wide word-weighted percent can round
+    // up to 100 while this chapter's own scrollFraction is still well
+    // under the 0.98 threshold and atDocumentEnd hasn't fired yet.
+    const book = makeBook({
+      progress: {
+        chapterIndex: 9,
+        totalChapters: 10,
+        scrollFraction: 0.5,
+        percent: 100,
+        updatedAt: Date.now(),
+        atDocumentEnd: false,
+      },
+    });
+
+    const enriched = enrichBookWithProgress(book);
+
+    expect(enriched.status).toBe("finished");
+  });
+
   it("does not mark a book finished just for being near the end of a non-last chapter", () => {
     const book = makeBook({
       progress: {

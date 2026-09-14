@@ -25,10 +25,16 @@ function deriveReadingStatus(
   // could never reach the threshold in that case even at the book's
   // literal last pixel). scrollFraction stays as a fallback for older
   // saved progress written before atDocumentEnd existed, or any case
-  // where the document-height check behaves unexpectedly.
+  // where the document-height check behaves unexpectedly. percent is a
+  // book-wide, word-count-weighted figure computed independently of
+  // scrollFraction/atDocumentEnd — on a short final chapter it can round
+  // up to 100 while this chapter's own scrollFraction is still under
+  // threshold, so it's checked too rather than leaving a visible "100%"
+  // book stuck as "reading".
   const reachedEnd =
     progress.atDocumentEnd === true ||
-    progress.scrollFraction >= FINISHED_SCROLL_FRACTION_THRESHOLD;
+    progress.scrollFraction >= FINISHED_SCROLL_FRACTION_THRESHOLD ||
+    progress.percent >= 100;
 
   return reachedEnd ? "finished" : "reading";
 }
