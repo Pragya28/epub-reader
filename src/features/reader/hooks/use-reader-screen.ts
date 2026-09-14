@@ -58,7 +58,9 @@ export function useReaderScreen() {
   const isJumping = readerStore((state) => state.isJumping);
 
   const totalChapters = parsedBook?.chapters.length ?? 0;
-  const toc = parsedBook?.toc ?? [];
+  // Memoized so an absent TOC doesn't hand currentChapterLabel's useMemo a
+  // fresh [] reference (and thus a forced recompute) on every render.
+  const toc = useMemo(() => parsedBook?.toc ?? [], [parsedBook]);
 
   // Announced by ReaderScreen's polite live region on every chapter transition —
   // the virtualized iframe mounts/unmounts chapters silently otherwise (see

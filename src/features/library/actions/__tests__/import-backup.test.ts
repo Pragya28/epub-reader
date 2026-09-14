@@ -128,7 +128,7 @@ describe("readBackup + applyBackup", () => {
         updatedAt: Date.now(),
       });
     });
-    const local = await importBook(await loadFixture("valid-book.epub"));
+    await importBook(await loadFixture("valid-book.epub"));
 
     const { data, conflicts } = await readBackup(archive);
     const summary = await applyBackup(

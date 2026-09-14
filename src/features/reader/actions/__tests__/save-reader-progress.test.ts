@@ -109,9 +109,6 @@ describe("computeReaderProgress", () => {
       const docBefore = makeDoc([
         { chapterIndex: 0, offsetTop: 0, scrollHeight: 1000 },
       ]);
-      const docAfter = makeDoc([
-        { chapterIndex: 0, offsetTop: 0, scrollHeight: 2000 },
-      ]);
 
       const progressBefore = computeReaderProgress({
         iframeDoc: docBefore,
