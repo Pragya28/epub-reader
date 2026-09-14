@@ -146,16 +146,16 @@ No physical devices or non-Chromium browser engines are available in this enviro
 
 ---
 
-## Day 7 — Release Preparation
+## Day 7 — Release Preparation 🟡
 
-32. 🟡 **Documentation** — `CLAUDE.md` is well-maintained per-subsystem (most recently Sprint 7's grouping section); no user-facing release notes/changelog exist yet.
-33. ❌ **Final cleanup** — TBD until Days 1-6 surface what needs cleaning up.
-34. ❌ **Versioning** — `package.json` is pinned at `"version": "1.0.0"` already (not `0.x`), but no versioning _process_ (changelog, tagging convention) exists.
+32. ✅ **Documentation** — `CLAUDE.md` was already well-maintained per-subsystem. Added `CHANGELOG.md` (Keep a Changelog format, one `[1.0.0]` entry summarizing Sprints 1-8 by feature area, since no prior tags/changelog existed to build on incrementally) and refreshed `README.md`, which had drifted well behind the codebase — missing search, series/collections, backup/restore, cross-tab awareness, storage quota, and diagnostics entirely, plus a stale hooks description (pre-commit/pre-push no longer run the full `pnpm test`, see Sprint 8's CI restructuring, #14).
+33. ❌ **Final cleanup** — TBD until items 34/35 surface what needs cleaning up.
+34. ❌ **Versioning** — `package.json` is pinned at `"version": "1.0.0"` already (not `0.x`); `CHANGELOG.md` now exists (item 32) but no tagging convention or version-bump process is established yet.
 35. ❌ **Production build validation** — `pnpm build` runs in every pre-push hook already (tsc -b && vite build), so the build itself is continuously validated; a dedicated "production build smoke test" (serving the built output and exercising it, not just compiling it) doesn't exist.
 
 ### Done Criteria
 
-❌ Not started. Naturally sequenced last.
+🟡 Item 32 done. Items 33-35 remain.
 
 ---
 
