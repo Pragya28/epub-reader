@@ -56,6 +56,41 @@ describe("TocDrawer", () => {
     expect(onItemClick).toHaveBeenCalledWith(toc[0]);
   });
 
+  it("highlights only the topmost entry when nested children share the parent's chapterIndex", async () => {
+    // Nested entries are often just anchors within their parent's chapter
+    // file (subheadings inside one big chapter), so several flattened
+    // entries can share the same chapterIndex — only the first (topmost)
+    // one should render as current, not the whole matching cluster.
+    const toc = [
+      makeItem("Boolean retrieval", 2, [
+        makeItem("An example information retrieval problem", 2),
+        makeItem("A first take at building an inverted index", 2),
+      ]),
+      makeItem("Next chapter", 3),
+    ];
+    const user = userEvent.setup();
+
+    render(
+      <TocDrawer toc={toc} currentChapterIndex={2} onItemClick={vi.fn()} />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Table of contents" }));
+
+    expect(
+      screen.getByText("Boolean retrieval").closest("button"),
+    ).toHaveAttribute("aria-current", "true");
+    expect(
+      screen
+        .getByText("An example information retrieval problem")
+        .closest("button"),
+    ).not.toHaveAttribute("aria-current");
+    expect(
+      screen
+        .getByText("A first take at building an inverted index")
+        .closest("button"),
+    ).not.toHaveAttribute("aria-current");
+  });
+
   it("disables entries whose chapterIndex is unresolved", async () => {
     const toc = [makeItem("Unresolved", -1)];
     const user = userEvent.setup();

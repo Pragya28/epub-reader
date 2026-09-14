@@ -26,6 +26,20 @@ export const TocDrawer = memo(function TocDrawer({
   onOpenChange,
 }: TocDrawerProps) {
   const flatItems = useMemo(() => flattenToc(toc, 0), [toc]);
+  // Nested entries are often just anchors within their parent's chapter
+  // file (subheadings inside one big chapter), so they share chapterIndex
+  // with their parent — matching on chapterIndex alone would highlight the
+  // whole cluster at once instead of a single position. Highlight only the
+  // first (topmost/parent) match, matching "which chapter" rather than
+  // trying to guess which subsection is current without real scroll-
+  // position tracking against each anchor.
+  const activeFlatIndex = useMemo(
+    () =>
+      flatItems.findIndex(
+        ({ item }) => item.chapterIndex === currentChapterIndex,
+      ),
+    [flatItems, currentChapterIndex],
+  );
   const [open, setOpen] = useState(false);
 
   const handleOpenChange = (next: boolean) => {
@@ -61,7 +75,7 @@ export const TocDrawer = memo(function TocDrawer({
         <ScrollArea className="flex-1 overflow-auto">
           <div className="flex flex-col gap-2 px-2 py-2">
             {flatItems.map(({ item, depth }, index) => {
-              const isActive = item.chapterIndex === currentChapterIndex;
+              const isActive = index === activeFlatIndex;
               const isNavigable = item.chapterIndex >= 0;
 
               return (
