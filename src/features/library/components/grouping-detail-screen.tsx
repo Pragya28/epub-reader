@@ -66,6 +66,7 @@ export const GroupingDetailScreen: FC<GroupingDetailScreenProps> = ({
           variant="ghost"
           size="icon"
           aria-label="Back to library"
+          nativeButton={false}
           render={<Link to={ROUTES.LIBRARY_SHELVES} />}
         >
           <CaretLeftIcon weight="light" className="size-6" />

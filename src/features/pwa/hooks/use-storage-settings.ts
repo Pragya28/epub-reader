@@ -28,6 +28,10 @@ export function useStorageSettings() {
     persisted: boolean | null;
   }>({ estimate: null, persisted: null });
 
+  const refresh = useCallback(async () => {
+    setState(await readStorage());
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     void readStorage().then((next) => {
@@ -52,5 +56,5 @@ export function useStorageSettings() {
     }
   }, []);
 
-  return { ...state, requestPersist };
+  return { ...state, requestPersist, refresh };
 }

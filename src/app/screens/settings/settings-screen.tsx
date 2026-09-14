@@ -81,7 +81,7 @@ export const SettingsScreen: FC = () => {
   const { status, progress, lastRebuiltAt, startRebuild } =
     searchMaintenanceStore();
 
-  const { estimate, persisted, requestPersist } = useStorageSettings();
+  const { estimate, persisted, requestPersist, refresh } = useStorageSettings();
   const { canInstall, isInstalled, showIosHint, promptInstall } =
     useInstallPrompt();
   const { errorCount, canShare, copyErrorLog, shareErrorLog } =
@@ -102,6 +102,7 @@ export const SettingsScreen: FC = () => {
     await resetLibrary();
     setResetOpen(false);
     notify.success("Library cleared");
+    void refresh();
   };
 
   const handleRebuild = async () => {
@@ -121,6 +122,7 @@ export const SettingsScreen: FC = () => {
           variant="ghost"
           size="icon"
           aria-label="Back to library"
+          nativeButton={false}
           render={<Link to={ROUTES.LIBRARY} />}
         >
           <CaretLeftIcon weight="light" className="size-6" />
