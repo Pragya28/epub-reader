@@ -13,9 +13,21 @@ const App: FC = () => {
   useApplyTheme();
 
   useEffect(() => {
-    return () => {
-      clearCoverCache();
+    // pagehide (genuine page teardown/navigation), not the effect's own
+    // cleanup — React StrictMode's dev-mode double-invoke (mount → cleanup
+    // → mount) would otherwise fire this immediately after the very first
+    // mount, revoking cover blob URLs already handed to <img> elements on
+    // the initial render.
+    const handlePageHide = (event: PageTransitionEvent) => {
+      // event.persisted means the page is only being frozen for the
+      // back-forward cache, not actually torn down — the same <img>
+      // elements (and their blob URLs) will still be on screen if the user
+      // navigates back, so leave the cache intact rather than revoking URLs
+      // there'd be no trigger to replace on a bfcache restore.
+      if (!event.persisted) clearCoverCache();
     };
+    window.addEventListener("pagehide", handlePageHide);
+    return () => window.removeEventListener("pagehide", handlePageHide);
   }, []);
 
   const { needRefresh, updateServiceWorker } = useRegisterSW();

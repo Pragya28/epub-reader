@@ -1,3 +1,4 @@
+import { logger as rootLogger } from "@/shared/logger/logger";
 import * as bookFiles from "./book-files";
 import {
   cacheCoverUrl,
@@ -6,6 +7,8 @@ import {
 } from "./cover-cache";
 import { db } from "./db";
 import type { ReadingProgress, StoredBook } from "./storage-types";
+
+const logger = rootLogger.child("book-repository");
 
 export async function saveBookMetadata(book: StoredBook) {
   await db.books.put(book);
@@ -72,16 +75,34 @@ export async function saveImportedBook({
   // failure here never leaves book metadata pointing at a missing file.
   await bookFiles.saveBookFile(metadata.id, file);
 
-  await db.transaction("rw", db.books, db.bookCovers, async () => {
-    await db.books.put(metadata);
+  try {
+    await db.transaction("rw", db.books, db.bookCovers, async () => {
+      await db.books.put(metadata);
 
-    if (cover) {
-      await db.bookCovers.put({
-        bookId: metadata.id,
-        cover,
-      });
+      if (cover) {
+        await db.bookCovers.put({
+          bookId: metadata.id,
+          cover,
+        });
+      }
+    });
+  } catch (error) {
+    // books.put can fail on a duplicate fileHash (unique index) if a
+    // concurrent import of the same file already committed first — clean up
+    // this attempt's file so it doesn't survive as an orphaned blob under a
+    // bookId no `books` row will ever reference. deleteBookFile can itself
+    // throw (see its own doc comment); that cleanup failure must not mask
+    // the original error the caller actually needs to see.
+    try {
+      await bookFiles.deleteBookFile(metadata.id);
+    } catch (cleanupError) {
+      logger.error(
+        `failed to clean up orphaned file for ${metadata.id} after import conflict`,
+        cleanupError,
+      );
     }
-  });
+    throw error;
+  }
 }
 
 export async function updateBookProgress(

@@ -118,6 +118,15 @@ export function useReaderEngine({
     let preferenceCleanup: (() => void) | undefined;
     let cancelled = false;
     let restoredInitialPosition = false;
+    // Tracks chapter loads currently in flight — loadedChapterIndices only
+    // updates once the async parse resolves, so without this a chapter whose
+    // parse takes longer than one frame gets resubmitted on every subsequent
+    // rAF tick (waitForInitialSections) or scroll tick (maybeLoadNext/Previous).
+    // Maps to the onSettled callbacks queued by every caller that asked for
+    // that index while it was already in flight — a second caller's callback
+    // (e.g. maybeLoadPrevious's scroll-position restore) must still run when
+    // the one real load settles, not be silently dropped.
+    const pendingChapterLoads = new Map<number, Array<() => void>>();
     let saveTimeoutId: ReturnType<typeof setTimeout> | undefined;
     let lastComputedProgress: ReadingProgress | undefined;
     // Recomputes a full progress snapshot (with the expensive anchorPath) from
@@ -272,6 +281,14 @@ export function useReaderEngine({
       };
 
       const loadChapter = async (index: number, onSettled?: () => void) => {
+        const inFlight = pendingChapterLoads.get(index);
+        if (inFlight) {
+          if (onSettled) inFlight.push(onSettled);
+          return;
+        }
+        const callbacks = onSettled ? [onSettled] : [];
+        pendingChapterLoads.set(index, callbacks);
+
         const store = readerStore.getState();
         logger.info("loadChapter", { index });
 
@@ -283,6 +300,12 @@ export function useReaderEngine({
         // jump/prefetch to observe a stuck "mounting" state for no reason.
         try {
           const chapter = await parsedBook.loadChapter(index);
+          // The effect may have been cancelled (e.g. the user switched books)
+          // while this parse was in flight — the iframe document has since
+          // been torn down/reinitialized for a different book, so mounting
+          // into it, or marking this index loaded on the (shared) store,
+          // would corrupt the new book's session instead of this one's.
+          if (cancelled) return;
 
           store.setIsMountingChapter(true);
           try {
@@ -292,6 +315,7 @@ export function useReaderEngine({
             store.setIsMountingChapter(false);
           }
         } catch (error) {
+          if (cancelled) return;
           logger.error(`failed to load/mount chapter ${index}`, error);
           // Mount a placeholder in place of the throwing content so the
           // index is still considered loaded — otherwise the windowing
@@ -303,10 +327,16 @@ export function useReaderEngine({
             store.setIsMountingChapter(false);
           }
         } finally {
-          invalidateChapterSections(iframeDoc);
-          store.addLoadedChapterIndex(index);
-          onSettled?.();
+          pendingChapterLoads.delete(index);
         }
+
+        // No await between here and the two `cancelled` checks above (both
+        // inside the try/catch), so a `cancelled` flip can't have happened
+        // in between — either of those checks already returned before this
+        // point, skipping the rest of the function.
+        invalidateChapterSections(iframeDoc);
+        store.addLoadedChapterIndex(index);
+        callbacks.forEach((settled) => settled());
       };
 
       const maybeLoadNext = (lastIndex: number, viewport: number) => {

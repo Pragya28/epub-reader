@@ -338,17 +338,25 @@ export class ChapterParser {
 
       const assetPath = this.resolvePath(chapterBasePath, src);
 
-      const assetFile = zip.file(assetPath);
+      // Keyed by the resolved path (not the raw src) so resolveCssAssets —
+      // which looks up this same map by resolved path — can reuse a blob
+      // already minted here, and so two elements referencing the same
+      // resolved path (e.g. an <img> and a CSS background-image on the same
+      // file) share one blob instead of the second mint silently orphaning
+      // the first from cleanup.
+      let blobUrl = assetMap.get(assetPath);
 
-      if (!assetFile) continue;
+      if (!blobUrl) {
+        const assetFile = zip.file(assetPath);
 
-      const buffer = await assetFile.async("arraybuffer");
+        if (!assetFile) continue;
 
-      const blob = new Blob([buffer]);
+        const buffer = await assetFile.async("arraybuffer");
+        const blob = new Blob([buffer]);
 
-      const blobUrl = URL.createObjectURL(blob);
-
-      assetMap.set(src, blobUrl);
+        blobUrl = URL.createObjectURL(blob);
+        assetMap.set(assetPath, blobUrl);
+      }
 
       image.setAttribute("src", blobUrl);
       image.setAttribute("loading", "lazy");
@@ -371,17 +379,20 @@ export class ChapterParser {
 
       const assetPath = this.resolvePath(chapterBasePath, href);
 
-      const assetFile = zip.file(assetPath);
+      // Same resolved-path keying (and cache reuse) as the <img> loop above.
+      let blobUrl = assetMap.get(assetPath);
 
-      if (!assetFile) continue;
+      if (!blobUrl) {
+        const assetFile = zip.file(assetPath);
 
-      const buffer = await assetFile.async("arraybuffer");
+        if (!assetFile) continue;
 
-      const blob = new Blob([buffer]);
+        const buffer = await assetFile.async("arraybuffer");
+        const blob = new Blob([buffer]);
 
-      const blobUrl = URL.createObjectURL(blob);
-
-      assetMap.set(href, blobUrl);
+        blobUrl = URL.createObjectURL(blob);
+        assetMap.set(assetPath, blobUrl);
+      }
 
       if (svgImage.hasAttribute("xlink:href")) {
         svgImage.setAttribute("xlink:href", blobUrl);

@@ -11,6 +11,10 @@ import {
   updateBookProgress,
 } from "@/services/storage/book-repository";
 import {
+  listBookFileIds,
+  saveBookFile as repairBookFile,
+} from "@/services/storage/book-files";
+import {
   ensureSeriesGroupings,
   getMembersForGrouping,
   listGroupings,
@@ -62,17 +66,23 @@ function totalOf(book: StoredBook): number {
 async function detectConflicts(data: BackupData): Promise<ProgressConflict[]> {
   const conflicts: ProgressConflict[] = [];
   for (const book of data.manifest.books) {
-    const local = await getBookByFileHash(book.fileHash);
-    if (!local) continue;
-    if (chapterOf(local) === chapterOf(book)) continue;
-    conflicts.push({
-      localId: local.id,
-      title: local.title,
-      localChapter: chapterOf(local),
-      localTotal: totalOf(local),
-      backupChapter: chapterOf(book),
-      backupTotal: totalOf(book),
-    });
+    try {
+      const local = await getBookByFileHash(book.fileHash);
+      if (!local) continue;
+      if (chapterOf(local) === chapterOf(book)) continue;
+      conflicts.push({
+        localId: local.id,
+        title: local.title,
+        localChapter: chapterOf(local),
+        localTotal: totalOf(local),
+        backupChapter: chapterOf(book),
+        backupTotal: totalOf(book),
+      });
+    } catch (error) {
+      // One corrupted manifest entry (e.g. a missing fileHash) shouldn't
+      // abort the conflict scan for every other book in the archive.
+      logger.error(`failed to check conflicts for book ${book.id}`, error);
+    }
   }
   return conflicts;
 }
@@ -95,6 +105,10 @@ export async function applyBackup(
 
   const archiveToLocal = new Map<string, string>();
   const newlyRestored: Array<{ localId: string; file: Blob }> = [];
+  // One upfront batched read instead of a per-book existence check — most
+  // books on a restore already exist locally, so this avoids N sequential
+  // OPFS/IndexedDB round trips for the common "already up to date" case.
+  const existingFileIds = await listBookFileIds();
 
   for (const book of data.manifest.books) {
     try {
@@ -102,20 +116,50 @@ export async function applyBackup(
 
       if (local) {
         archiveToLocal.set(book.id, local.id);
+
+        // A books row can survive a failed file delete and end up pointing
+        // at nothing (see bookFiles.deleteBookFile) — repair it here instead
+        // of treating the fileHash match as proof the book is intact.
+        if (!existingFileIds.has(local.id)) {
+          const file = data.files.get(book.id);
+          if (file) {
+            await repairBookFile(local.id, file);
+            existingFileIds.add(local.id);
+            logger.info(`repaired missing file for existing book ${local.id}`);
+          }
+        }
+
         const differs = chapterOf(local) !== chapterOf(book);
-        if (differs && resolutions.get(local.id) === "take-backup") {
+        const progressResolved =
+          differs && resolutions.get(local.id) === "take-backup";
+
+        if (progressResolved) {
           if (book.progress) {
             await updateBookProgress(local.id, book.progress);
           } else {
             await resetBookProgress(local.id);
           }
-          if (book.manualStatus) {
-            await updateBookManualStatus(local.id, book.manualStatus);
-          }
           summary.conflictsResolved += 1;
         } else {
           summary.skipped += 1;
         }
+
+        // manualStatus is merged independently of progress-conflict
+        // resolution — otherwise a backup taken with a different status but
+        // matching chapter position (e.g. marked "finished" without moving
+        // the scroll position) never surfaces as a conflict and its status
+        // is silently dropped. updateBookProgress/resetBookProgress above
+        // always clear manualStatus as a side effect, so when a progress
+        // resolution just ran, the backup's manualStatus must be reapplied
+        // unconditionally — comparing against the pre-update `local`
+        // snapshot would miss the case where it matches but was just wiped.
+        if (
+          book.manualStatus &&
+          (progressResolved || book.manualStatus !== local.manualStatus)
+        ) {
+          await updateBookManualStatus(local.id, book.manualStatus);
+        }
+
         continue;
       }
 

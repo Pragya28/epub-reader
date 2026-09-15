@@ -55,10 +55,20 @@ export function applyReaderPreferences(
 }
 
 function sanitizeStylesheet(css: string): string {
-  return css
-    .replace(/expression\s*\([^)]*\)/gi, "")
-    .replace(/url\s*\(\s*['"]?\s*javascript:[^)]*\)/gi, "url()")
-    .replace(/@import[^;]+;/gi, "");
+  return (
+    css
+      .replace(/expression\s*\([^)]*\)/gi, "")
+      .replace(/url\s*\(\s*['"]?\s*javascript:[^)]*\)/gi, "url()")
+      .replace(/@import[^;]+;/gi, "")
+      // The result is spliced into `<style>...</style>` verbatim below — a
+      // stylesheet containing a literal "</style" could otherwise close the
+      // tag early and inject markup into the reading iframe. A zero-width
+      // space breaks the browser's exact-match tag-close detection without
+      // deleting any visible character, so legitimate CSS text that happens
+      // to contain this sequence (e.g. inside a `content: "..."` string)
+      // still renders as intended instead of being silently truncated.
+      .replace(/<(\/style)/gi, "<​$1")
+  );
 }
 
 function buildReaderBaseStyle(bookId?: string): string {

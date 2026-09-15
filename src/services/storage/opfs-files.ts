@@ -65,3 +65,21 @@ export async function deleteOpfsFile(bookId: string): Promise<void> {
     // File was never migrated to OPFS, or already deleted — nothing to do.
   }
 }
+
+/** Every file id actually present in the OPFS directory — not derived from
+ * the `books` table, so it also surfaces files orphaned by a failed delete
+ * or a rolled-back import that no `books` row references any more. */
+export async function listOpfsFileIds(): Promise<string[]> {
+  try {
+    const dir = await getEpubDir();
+    if (!dir) return [];
+
+    const ids: string[] = [];
+    for await (const name of dir.keys()) {
+      ids.push(name);
+    }
+    return ids;
+  } catch {
+    return [];
+  }
+}

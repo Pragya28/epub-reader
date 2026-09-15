@@ -42,7 +42,29 @@ export async function loadLibrary({
       })),
     );
 
-    store.setBooks(booksWithProgress);
+    if (silent) {
+      // Merge fresh data into the store's *current* books, not the snapshot
+      // this async work started from — a synchronous mutation (delete/
+      // import) that landed while the cover fetches above were in flight
+      // must not be silently undone by overwriting the whole array with a
+      // stale one. Only safe for the silent (already-populated) refetch —
+      // a non-silent load has no established state yet to merge against,
+      // so it always replaces outright (see the plain setBooks below).
+      // ponytail: a book whose progress/status changed mid-fetch (rather
+      // than being added/removed) can still be briefly overwritten with
+      // pre-change data here; closing that too would need a version/
+      // generation token.
+      const freshById = new Map(
+        booksWithProgress.map((book) => [book.id, book]),
+      );
+      store.setBooks(
+        libraryStore
+          .getState()
+          .books.map((book) => freshById.get(book.id) ?? book),
+      );
+    } else {
+      store.setBooks(booksWithProgress);
+    }
   } catch (error) {
     store.setError(`Failed to load library: ${error}`);
   } finally {

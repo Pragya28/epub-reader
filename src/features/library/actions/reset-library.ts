@@ -1,6 +1,6 @@
 import { db } from "@/services/storage/db";
 import { revokeCoverUrl } from "@/services/storage/cover-cache";
-import { deleteOpfsFile } from "@/services/storage/opfs-files";
+import { deleteOpfsFile, listOpfsFileIds } from "@/services/storage/opfs-files";
 import { pwaStore } from "@/features/pwa/store/pwa-store";
 import { libraryStore } from "../store/library-store";
 import { searchMaintenanceStore } from "../store/search-maintenance-store";
@@ -14,11 +14,16 @@ import { searchMaintenanceStore } from "../store/search-maintenance-store";
 export async function resetLibrary(): Promise<void> {
   const books = await db.books.toArray();
 
-  // OPFS lives outside Dexie's transaction scope — do it first, per book,
-  // while we still have the ids. deleteOpfsFile already fails soft.
   for (const book of books) {
     revokeCoverUrl(book.id);
-    await deleteOpfsFile(book.id);
+  }
+
+  // OPFS lives outside Dexie's transaction scope — clear it from the actual
+  // directory listing, not the books table, so a file orphaned by a failed
+  // delete (no books row referencing it) is wiped too. deleteOpfsFile
+  // already fails soft.
+  for (const id of await listOpfsFileIds()) {
+    await deleteOpfsFile(id);
   }
 
   await db.transaction(
