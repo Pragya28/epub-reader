@@ -3,6 +3,15 @@
 # Without -e a failing build could still let the push through.
 set -e
 
+# Git feeds "<local ref> <local sha> <remote ref> <remote sha>" per ref on
+# stdin; a deleted ref has an all-zero local sha. A push that only deletes
+# branches carries no commits, so there is nothing to build.
+deleting_only=1
+while read -r _ local_sha _ _; do
+  case $local_sha in *[!0]*) deleting_only=0 ;; esac
+done
+[ "$deleting_only" = 1 ] && exit 0
+
 # Full test suite runs in CI (.github/workflows/test.yml), not here — this
 # hook only guards the fast, deterministic build.
 pnpm build

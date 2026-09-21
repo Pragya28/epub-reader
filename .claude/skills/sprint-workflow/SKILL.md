@@ -15,6 +15,14 @@ description: Use when starting a new sprint in this repo, or when asked to write
    - If a finding is in-scope for this sprint's surfaces/days but not yet listed, add it as a new task under the relevant day.
    - If a finding is out of scope (project-wide, or squarely belongs to a later sprint's stated focus), add it to a "Deferred" section with a one-line reason.
 
+## Completing a task
+
+A task is not done until its entry in `docs/tasks/SPRINT-NN-TASKS.md` is updated in the same PR as the code:
+
+- Flip the item's status (❌/🟡 → ✅) and note what was actually delivered, including work that landed under a different day's item.
+- Update the affected day's Done Criteria.
+- Move any scope cut or postponed by the task into the "Deferred / Out of Scope" section with a one-line reason. Every sprint task list keeps that section, even when it is short.
+
 ## Sprint status documents
 
 When asked to create a sprint status document (e.g. `Sprint - NNB – Implementation Status.md`) for the current/most recent sprint:
