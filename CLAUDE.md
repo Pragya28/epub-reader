@@ -18,6 +18,10 @@ Librune — a local-first EPUB reader PWA (React 19 + TypeScript + Vite). All bo
 
 `central-docs/` is a symlink to `~/Personal/some-any-every-thing/04-Projects/Epub Reader` (planning notes, sprint specs) — not tracked in this repo's git history.
 
+## Permissions
+
+This project overrides the global "ask before every build/lint/test/format command" rule: ask once per session before the first `pnpm build` / `pnpm lint` / `pnpm test:run` / `npx tsc -b` (or `pnpm exec tsc -b`), then run them for the rest of that session without asking again. State each time one runs and what it found (pass/fail, counts) — don't ask, just report. This does not extend to mutating commands (`git push`, `git commit`, `git add`, etc.) or anything outside this fixed set — those still follow the normal per-action rules.
+
 ## Commands
 
 Scripts are in `package.json`. Note: `pnpm test` is vitest **watch mode** — use `pnpm test:run` for a single pass in hooks/scripts (a path arg runs one file).
