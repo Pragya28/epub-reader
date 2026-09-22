@@ -1,3 +1,5 @@
+import { WINDOW_RADIUS } from "../windowing/chapter-window";
+
 export interface ChapterLoadPlan {
   /** Chapter indices that should be mounted in the iframe DOM. */
   toLoad: number[];
@@ -12,7 +14,7 @@ export class ChapterLoader {
    */
   private readonly windowRadius: number;
 
-  constructor(windowRadius: number = 2) {
+  constructor(windowRadius: number = WINDOW_RADIUS) {
     this.windowRadius = windowRadius;
   }
 
