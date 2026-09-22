@@ -22,6 +22,7 @@ A task is not done until its entry in `docs/tasks/SPRINT-NN-TASKS.md` is updated
 - Flip the item's status (❌/🟡 → ✅) and note what was actually delivered, including work that landed under a different day's item.
 - Update the affected day's Done Criteria.
 - Move any scope cut or postponed by the task into the "Deferred / Out of Scope" section with a one-line reason. Every sprint task list keeps that section, even when it is short.
+- When the task closes the sprint's last open day, flip that sprint's row in `docs/tasks/STATUS.md` to ✅ Complete.
 
 ## Sprint status documents
 

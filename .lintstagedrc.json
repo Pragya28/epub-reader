@@ -2,7 +2,7 @@
   "*.{ts,tsx}": [
     "eslint --fix",
     "prettier --write",
-    "vitest related --run --passWithNoTests"
+    "vitest related --run --passWithNoTests --exclude \"**/*.perf.test.ts\""
   ],
   "*.{json,md,yml,yaml}": ["prettier --write"]
 }
