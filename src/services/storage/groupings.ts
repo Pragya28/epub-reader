@@ -1,11 +1,14 @@
 import { db } from "@/services/storage/db";
 import { getBook } from "@/services/storage/book-repository";
 import { createId } from "@/utils/create-id";
+import { logger as rootLogger } from "@/shared/logger/logger";
 import type {
   Grouping,
   GroupingMember,
   StoredBook,
 } from "@/services/storage/storage-types";
+
+const logger = rootLogger.child("groupings");
 
 export async function getGrouping(id: string): Promise<Grouping | undefined> {
   return db.groupings.get(id);
@@ -194,8 +197,9 @@ export async function ensureSeriesGroupings(bookIds: string[]): Promise<void> {
         book.seriesName,
         book.seriesIndex ?? null,
       );
-    } catch {
+    } catch (error) {
       // best-effort backfill — skip this book, keep going
+      logger.error(`failed to backfill series grouping for ${bookId}`, error);
     }
   }
 }
