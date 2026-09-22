@@ -18,16 +18,22 @@ Librune — a local-first EPUB reader PWA (React 19 + TypeScript + Vite). All bo
 
 `central-docs/` is a symlink to `~/Personal/some-any-every-thing/04-Projects/Epub Reader` (planning notes, sprint specs) — not tracked in this repo's git history.
 
+## Permissions
+
+This project overrides the global "ask before every build/lint/test/format command" rule: ask once per session before the first `pnpm build` / `pnpm lint` / `pnpm test:run` / `npx tsc -b` (or `pnpm exec tsc -b`), then run them for the rest of that session without asking again. State each time one runs and what it found (pass/fail, counts) — don't ask, just report. This does not extend to mutating commands (`git push`, `git commit`, `git add`, etc.) or anything outside this fixed set — those still follow the normal per-action rules.
+
 ## Commands
 
 Scripts are in `package.json`. Note: `pnpm test` is vitest **watch mode** — use `pnpm test:run` for a single pass in hooks/scripts (a path arg runs one file).
 
 Git hooks (husky) already enforce quality gates — don't skip them:
 
-- `pre-commit`: `lint-staged` — eslint --fix + prettier, then `vitest related --run` on staged `.ts`/`.tsx` (every test that _imports_ a staged file, whether or not the test itself changed).
-- `pre-push`: `pnpm build` only. The full suite does **not** run locally — it runs in GitHub Actions (`.github/workflows/test.yml`, workflow "Test Suite" / job "Vitest") on every push to `main` and every PR.
+- `pre-commit`: `lint-staged` — eslint --fix + prettier, then `vitest related --run` on staged `.ts`/`.tsx` (every test that _imports_ a staged file, whether or not the test itself changed), excluding `*.perf.test.ts` — perf tests are timing-sensitive and flake under a loaded machine; they still run in CI's full suite.
+- `pre-push`: `pnpm build` only, skipped entirely for a branch-deletion-only push (e.g. `git push --delete`, `gh pr merge --delete-branch`). The full suite does **not** run locally — it runs in GitHub Actions (`.github/workflows/test.yml`, workflow "Test Suite" / job "Vitest") on every push to `main` and every PR.
 
 Both hooks `set -e`, so a failure in any step blocks the commit/push rather than being masked by the last command's exit code.
+
+Neither hook runs e2e (`pnpm test:e2e`, Playwright) — a full build+preview cycle is too slow for a git hook, so it only runs in CI. For a change that touches reader/library UI behavior (not just styling), run `pnpm test:e2e` locally before pushing rather than relying on CI to catch it first.
 
 Package manager is pnpm (`packageManager` pinned in package.json) — don't use npm/yarn.
 
