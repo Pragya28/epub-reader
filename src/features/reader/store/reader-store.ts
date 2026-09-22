@@ -2,7 +2,10 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import type { ReaderStore } from "../types/reader-types";
 
-const initialState: Pick<
+// A function, not a plain object — loadedChapterIndices/footnoteBackStack are
+// mutable (Set/Array), so both the initial state and reset() need their own
+// fresh instances rather than sharing one that carries mutations forward.
+function createInitialState(): Pick<
   ReaderStore,
   | "readerDocument"
   | "parsedBook"
@@ -14,23 +17,25 @@ const initialState: Pick<
   | "isJumping"
   | "progressPercent"
   | "footnoteBackStack"
-> = {
-  readerDocument: null,
-  parsedBook: null,
-  currentChapterIndex: 0,
-  isLoading: false,
-  error: null,
-  loadedChapterIndices: new Set<number>(),
-  isMountingChapter: false,
-  isJumping: false,
-  progressPercent: 0,
-  footnoteBackStack: [],
-};
+> {
+  return {
+    readerDocument: null,
+    parsedBook: null,
+    currentChapterIndex: 0,
+    isLoading: false,
+    error: null,
+    loadedChapterIndices: new Set<number>(),
+    isMountingChapter: false,
+    isJumping: false,
+    progressPercent: 0,
+    footnoteBackStack: [],
+  };
+}
 
 export const readerStore = create<ReaderStore>()(
   devtools(
     (set) => ({
-      ...initialState,
+      ...createInitialState(),
 
       setReaderDocument: (readerDocument) =>
         set({ readerDocument }, false, "reader/setReaderDocument"),
@@ -94,16 +99,7 @@ export const readerStore = create<ReaderStore>()(
           "reader/popFootnoteBackPosition",
         ),
 
-      reset: () =>
-        set(
-          {
-            ...initialState,
-            loadedChapterIndices: new Set<number>(),
-            footnoteBackStack: [],
-          },
-          false,
-          "reader/reset",
-        ),
+      reset: () => set(createInitialState(), false, "reader/reset"),
     }),
     {
       name: "reader-store",
