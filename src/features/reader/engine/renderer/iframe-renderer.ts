@@ -60,6 +60,11 @@ function sanitizeStylesheet(css: string): string {
       .replace(/expression\s*\([^)]*\)/gi, "")
       .replace(/url\s*\(\s*['"]?\s*javascript:[^)]*\)/gi, "url()")
       .replace(/@import[^;]+;/gi, "")
+      // IE/old-Firefox behavior hooks — the sandbox has no allow-scripts so
+      // neither would execute today, but stripping them closes the gap for
+      // any future relaxation of the sandbox.
+      .replace(/-moz-binding\s*:[^;]+;/gi, "")
+      .replace(/behavior\s*:[^;]+;/gi, "")
       // The result is spliced into `<style>...</style>` verbatim below — a
       // stylesheet containing a literal "</style" could otherwise close the
       // tag early and inject markup into the reading iframe. A zero-width
