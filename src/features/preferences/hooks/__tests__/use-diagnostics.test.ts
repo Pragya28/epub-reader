@@ -18,9 +18,9 @@ function stubNavigatorShare(value: Partial<Navigator> | undefined) {
   }
 }
 
-function stubClipboard(writeText: (text: string) => Promise<void>) {
+function stubClipboard(writeText?: (text: string) => Promise<void>) {
   Object.defineProperty(navigator, "clipboard", {
-    value: { writeText },
+    value: writeText ? { writeText } : undefined,
     configurable: true,
     writable: true,
   });
@@ -34,6 +34,7 @@ describe("useDiagnostics", () => {
 
   afterEach(() => {
     stubNavigatorShare(undefined);
+    stubClipboard(undefined);
   });
 
   it("reports the current error count", () => {

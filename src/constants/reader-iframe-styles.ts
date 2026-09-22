@@ -138,7 +138,7 @@ export const READER_BASE_STYLE = `
       --sep-ink:  ${SEPARATOR_COLOR_DARK};
       --sep-fade: oklch(18.38% 0.0052 67.5);
       --sep-text: oklch(93.85% 0.0254 86.87);
-      --search-highlight-text: oklch(77.53% 0.123 78.89);
+      --search-highlight-text: oklch(78% 0.123 78.89);
     }
   }
 
@@ -154,7 +154,7 @@ export const READER_BASE_STYLE = `
     --sep-ink:  ${SEPARATOR_COLOR_DARK};
     --sep-fade: oklch(18.38% 0.0052 67.5);
     --sep-text: oklch(93.85% 0.0254 86.87);
-    --search-highlight-text: oklch(77.53% 0.123 78.89);
+    --search-highlight-text: oklch(78% 0.123 78.89);
   }
 
   html, body {

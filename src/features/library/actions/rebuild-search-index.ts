@@ -3,6 +3,7 @@ import { deleteChapterText } from "@/services/search/chapter-text";
 import { buildIndex } from "@/services/search/search-service";
 import { getAllBooks } from "@/services/storage/book-repository";
 import { getBookFile } from "@/services/storage/book-files";
+import { withBookLock } from "@/services/storage/book-lock";
 
 /**
  * Wipes and rebuilds the search index for every book, one at a time.
@@ -20,14 +21,15 @@ export async function rebuildSearchIndex(): Promise<{
 
   for (const book of books) {
     try {
-      await deleteIndex(book.id);
-      await deleteChapterText(book.id);
-      const stored = await getBookFile(book.id);
-      if (!stored) {
-        failed += 1;
-        continue;
-      }
-      await buildIndex(book.id, stored.file);
+      await withBookLock(book.id, async () => {
+        await deleteIndex(book.id);
+        await deleteChapterText(book.id);
+        const stored = await getBookFile(book.id);
+        if (!stored) {
+          throw new Error(`no file for book ${book.id}`);
+        }
+        await buildIndex(book.id, stored.file);
+      });
     } catch {
       failed += 1;
     }

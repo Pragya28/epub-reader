@@ -1,11 +1,14 @@
 import { db } from "@/services/storage/db";
 import { getBook } from "@/services/storage/book-repository";
 import { createId } from "@/utils/create-id";
+import { logger as rootLogger } from "@/shared/logger/logger";
 import type {
   Grouping,
   GroupingMember,
   StoredBook,
 } from "@/services/storage/storage-types";
+
+const logger = rootLogger.child("groupings");
 
 export async function getGrouping(id: string): Promise<Grouping | undefined> {
   return db.groupings.get(id);
@@ -154,20 +157,26 @@ export async function getNextInSeries(
  * user-created shelf is deliberately kept around empty.
  */
 export async function deleteMembersForBook(bookId: string): Promise<void> {
-  const members = await db.groupingMembers.where({ bookId }).toArray();
-  const groupingIds = members.map((member) => member.groupingId);
+  // Wrapped in the same table set upsertSeriesMembership transacts over, so
+  // Dexie serializes the two against each other — without this, a delete
+  // interleaved with a concurrent import/backfill of the same series could
+  // read membership counts mid-write on the other side.
+  await db.transaction("rw", db.groupings, db.groupingMembers, async () => {
+    const members = await db.groupingMembers.where({ bookId }).toArray();
+    const groupingIds = members.map((member) => member.groupingId);
 
-  await db.groupingMembers.where({ bookId }).delete();
+    await db.groupingMembers.where({ bookId }).delete();
 
-  for (const groupingId of groupingIds) {
-    const grouping = await db.groupings.get(groupingId);
-    if (grouping?.type !== "series") continue;
+    for (const groupingId of groupingIds) {
+      const grouping = await db.groupings.get(groupingId);
+      if (grouping?.type !== "series") continue;
 
-    const remaining = await db.groupingMembers.where({ groupingId }).count();
-    if (remaining === 0) {
-      await db.groupings.delete(groupingId);
+      const remaining = await db.groupingMembers.where({ groupingId }).count();
+      if (remaining === 0) {
+        await db.groupings.delete(groupingId);
+      }
     }
-  }
+  });
 }
 
 /**
@@ -194,8 +203,9 @@ export async function ensureSeriesGroupings(bookIds: string[]): Promise<void> {
         book.seriesName,
         book.seriesIndex ?? null,
       );
-    } catch {
+    } catch (error) {
       // best-effort backfill — skip this book, keep going
+      logger.error(`failed to backfill series grouping for ${bookId}`, error);
     }
   }
 }

@@ -60,21 +60,27 @@ export const SearchResultRow: FC<SearchResultRowProps> = ({
           compact
         />
       </div>
-      <div className="flex min-w-0 flex-col gap-0.5">
-        <div className="font-ui text-ui font-semibold text-foreground">
-          {title}
-        </div>
-        <div className="font-ui text-meta tracking-wide text-muted-foreground uppercase">
-          {author}
-        </div>
-        {chapterLabel && (
-          <div className="mt-1 font-ui text-meta tracking-wide text-muted-foreground">
-            {chapterLabel}
+      <div className="flex min-w-0 flex-col gap-1">
+        <div className="flex flex-col gap-0.5">
+          <div className="font-ui text-ui font-semibold text-foreground">
+            {title}
           </div>
-        )}
-        {snippet && (
-          <div className="font-reading mt-0.5 text-title-sm leading-snug text-foreground italic">
-            {renderSnippet(snippet, highlightWord)}
+          <div className="font-ui text-meta tracking-wide text-muted-foreground uppercase">
+            {author}
+          </div>
+        </div>
+        {(chapterLabel || snippet) && (
+          <div className="flex flex-col gap-0.5">
+            {chapterLabel && (
+              <div className="font-ui text-meta tracking-wide text-muted-foreground">
+                {chapterLabel}
+              </div>
+            )}
+            {snippet && (
+              <div className="font-reading text-title-sm leading-snug text-foreground italic">
+                {renderSnippet(snippet, highlightWord)}
+              </div>
+            )}
           </div>
         )}
       </div>

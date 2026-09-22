@@ -1,5 +1,6 @@
 import { EpubParser } from "@/services/epub/epub-parser";
 import { getBookFile } from "@/services/storage/book-files";
+import { withBookLock } from "@/services/storage/book-lock";
 import type {
   StoredChapterText,
   StoredSearchIndexEntry,
@@ -77,8 +78,10 @@ export async function buildIndex(bookId: string, file: Blob): Promise<void> {
 
 /** Builds the index only if one doesn't already exist for this book. */
 export async function ensureIndex(bookId: string, file: Blob): Promise<void> {
-  if (await hasIndex(bookId)) return;
-  await buildIndex(bookId, file);
+  return withBookLock(bookId, async () => {
+    if (await hasIndex(bookId)) return;
+    await buildIndex(bookId, file);
+  });
 }
 
 /**
@@ -96,12 +99,14 @@ export async function ensureIndexesForBooks(bookIds: string[]): Promise<void> {
       // remaining books still return results, and this one is retried on
       // the next search.
       try {
-        if (await hasIndex(bookId)) return;
+        await withBookLock(bookId, async () => {
+          if (await hasIndex(bookId)) return;
 
-        const stored = await getBookFile(bookId);
-        if (!stored) return;
+          const stored = await getBookFile(bookId);
+          if (!stored) return;
 
-        await buildIndex(bookId, stored.file);
+          await buildIndex(bookId, stored.file);
+        });
       } catch (error) {
         logger.error("failed to backfill search index", { bookId, error });
       }

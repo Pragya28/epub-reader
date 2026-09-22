@@ -12,13 +12,11 @@
  * cross-tab awareness, never a thrown error.
  */
 import type { ReadingProgress } from "@/services/storage/storage-types";
+import { createId } from "@/utils/create-id";
 
 const CHANNEL_NAME = "librune-reading-progress";
 
-export const TAB_ID =
-  typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : Math.random().toString(36).slice(2);
+export const TAB_ID = createId();
 
 export type ReadingProgressMessage =
   | { type: "presence"; bookId: string; tabId: string }

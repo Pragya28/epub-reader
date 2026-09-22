@@ -3,6 +3,7 @@ import { notify } from "@/components/toast/toast";
 import { BackupFormatError } from "@/services/backup/backup-types";
 import type { BackupData } from "@/services/backup/backup-types";
 import { downloadBlob } from "@/utils/download-blob";
+import { timestampedFilename } from "@/utils/timestamped-filename";
 import { logger as rootLogger } from "@/shared/logger/logger";
 import { loadLibrary } from "@/features/library/actions/load-library";
 import { exportLibrary } from "../actions/export-library";
@@ -17,7 +18,7 @@ import {
 const logger = rootLogger.child("use-backup");
 
 function backupFilename(): string {
-  return `librune-backup-${new Date().toISOString().replace(/:/g, "-")}.zip`;
+  return timestampedFilename("librune-backup", "zip");
 }
 
 function summarize(s: ApplyBackupSummary): string {

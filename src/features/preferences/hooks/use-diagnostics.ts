@@ -1,9 +1,10 @@
 import { useCallback, useState } from "react";
 import { getErrorLog } from "@/shared/logger/error-log";
 import { notify } from "@/components/toast/toast";
+import { timestampedFilename } from "@/utils/timestamped-filename";
 
 function errorLogFilename(): string {
-  return `librune-error-log-${new Date().toISOString().replace(/:/g, "-")}.json`;
+  return timestampedFilename("librune-error-log", "json");
 }
 
 /** Powers the Settings → Storage → Diagnostics row: how many errors have
