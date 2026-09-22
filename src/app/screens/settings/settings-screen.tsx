@@ -44,6 +44,7 @@ import { useInstallPrompt } from "@/features/pwa/hooks/use-install-prompt";
 import { useDiagnostics } from "@/features/preferences/hooks/use-diagnostics";
 import { useBackup } from "@/features/library/hooks/use-backup";
 import { resetLibrary } from "@/features/library/actions/reset-library";
+import { reconcileOrphanedRows } from "@/services/storage/reconcile";
 import { BackupConflictDialog } from "@/features/library/components/backup-conflict-dialog";
 import { ConfirmDeleteDialog } from "@/features/library/components/confirm-delete-dialog";
 import { formatBytes } from "@/utils/format-bytes";
@@ -97,6 +98,7 @@ export const SettingsScreen: FC = () => {
   } = useBackup();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [resetOpen, setResetOpen] = useState(false);
+  const [repairing, setRepairing] = useState(false);
 
   const handleReset = async () => {
     await resetLibrary();
@@ -112,6 +114,27 @@ export const SettingsScreen: FC = () => {
       notify.error(`Rebuilt search index — ${failedCount} book(s) failed`);
     } else {
       notify.success("Search index rebuilt");
+    }
+  };
+
+  const handleRepair = async () => {
+    setRepairing(true);
+    try {
+      const result = await reconcileOrphanedRows();
+      const removed =
+        result.searchIndexRows +
+        result.chapterTextRows +
+        result.groupingMemberRows +
+        result.bookFiles;
+      notify.success(
+        removed === 0
+          ? "No orphaned data found"
+          : `Repaired library — removed ${removed} orphaned row(s)`,
+      );
+    } catch {
+      notify.error("Repair failed");
+    } finally {
+      setRepairing(false);
     }
   };
 
@@ -415,6 +438,34 @@ export const SettingsScreen: FC = () => {
                     </Button>
                   )}
                 </div>
+              </div>
+
+              <div className="flex items-center justify-between gap-4 px-4 py-3">
+                <div className="flex flex-col">
+                  <span className="text-ui font-semibold text-foreground">
+                    Repair library
+                  </span>
+                  <span className="text-ui-sm text-muted-foreground">
+                    Removes leftover data from books that no longer exist.
+                  </span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  disabled={repairing}
+                  onClick={() => void handleRepair()}
+                >
+                  {repairing ? (
+                    <SpinnerIcon
+                      weight="light"
+                      className="size-4 motion-safe:animate-spin"
+                    />
+                  ) : (
+                    <ArrowsClockwiseIcon weight="light" className="size-4" />
+                  )}
+                  Repair
+                </Button>
               </div>
 
               <div className="flex items-center justify-between gap-4 px-4 py-3">
