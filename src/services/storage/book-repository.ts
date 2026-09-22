@@ -19,6 +19,9 @@ export async function saveBookCover(bookId: string, cover: Blob) {
     bookId,
     cover,
   });
+  // cacheCoverUrl ignores a new blob on a cache hit, so a stale cover would
+  // otherwise keep serving the old blob URL until the tab reloads.
+  revokeCoverUrl(bookId);
 }
 
 export async function getAllBooks() {
