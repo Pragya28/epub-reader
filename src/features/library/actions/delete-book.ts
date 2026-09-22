@@ -3,11 +3,16 @@ import { deleteIndex } from "@/services/search/search-index";
 import { deleteChapterText } from "@/services/search/chapter-text";
 import { deleteBook as deleteBookFromStorage } from "@/services/storage/book-repository";
 import { deleteMembersForBook } from "@/services/storage/groupings";
+import { withBookLock } from "@/services/storage/book-lock";
 import { libraryStore } from "../store/library-store";
 
 const logger = rootLogger.child("delete-book");
 
 export async function deleteBook(bookId: string): Promise<void> {
+  return withBookLock(bookId, () => deleteBookLocked(bookId));
+}
+
+async function deleteBookLocked(bookId: string): Promise<void> {
   await deleteBookFromStorage(bookId);
 
   // The book row, file and cover are gone — reflect that in the UI now,
