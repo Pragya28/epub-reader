@@ -9,6 +9,7 @@ import {
   getMembersForGrouping,
 } from "@/services/storage/groupings";
 import { importBook } from "../import-book";
+import { libraryStore } from "../../store/library-store";
 import { loadFixture } from "@/tests/utils/load-fixtures";
 import { resetTestDb } from "@/tests/utils/reset-test-db";
 import { resetLibraryStore } from "@/tests/utils/reset-store";
@@ -45,6 +46,23 @@ describe("importBook", () => {
     const books = await getAllBooks();
 
     expect(Array.isArray(books)).toBe(true);
+  });
+
+  it("never sets the library-level loading flag, so the grid isn't blanked during a bulk import", async () => {
+    const seen: boolean[] = [];
+    const unsubscribe = libraryStore.subscribe((state) =>
+      seen.push(state.isLoading),
+    );
+    try {
+      const { indexed } = await importBook(
+        await loadFixture("nested-opf.epub"),
+      );
+      await indexed;
+    } finally {
+      unsubscribe();
+    }
+
+    expect(seen).not.toContain(true);
   });
 
   it("supports nested opf paths", async () => {
