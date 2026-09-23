@@ -20,6 +20,12 @@ export interface ErrorLogEntry {
     message: string;
     stack?: string;
   };
+  /** Extra structured context (e.g. a React componentStack, an affected
+   * bookId) — kept separate from `error` so callers stop shoving it into
+   * the `error` slot itself, which used to overwrite the real Error object
+   * and get serialized down to `{ name: "Unknown", message: "[object
+   * Object]" }`. */
+  context?: Record<string, unknown>;
 }
 
 function serializeError(error: unknown): ErrorLogEntry["error"] {
@@ -34,6 +40,7 @@ export function recordError(entry: {
   scope?: string;
   message: string;
   error?: unknown;
+  context?: Record<string, unknown>;
 }): void {
   try {
     const log = getErrorLog();
@@ -42,6 +49,7 @@ export function recordError(entry: {
       scope: entry.scope,
       message: entry.message,
       error: serializeError(entry.error),
+      context: entry.context,
     });
     const trimmed = log.slice(-MAX_ENTRIES);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));

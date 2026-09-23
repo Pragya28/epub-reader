@@ -21,6 +21,18 @@ describe("Logger error persistence", () => {
     expect(log[0].error).toMatchObject({ name: "Error", message: "boom" });
   });
 
+  it("error() keeps context separate from the real error, so the error slot still serializes correctly", () => {
+    const logger = new Logger({ enabled: false, scope: "test-scope" });
+
+    logger.error("uncaught render error", new Error("boom"), {
+      componentStack: "at Bomb",
+    });
+
+    const [entry] = getErrorLog();
+    expect(entry.error).toMatchObject({ name: "Error", message: "boom" });
+    expect(entry.context).toEqual({ componentStack: "at Bomb" });
+  });
+
   it("trace/debug/info/warn do not touch the error log", () => {
     const logger = new Logger({ enabled: true });
 

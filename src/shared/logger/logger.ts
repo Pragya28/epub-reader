@@ -66,9 +66,17 @@ export class Logger {
     this.log(LogLevel.WARN, message, metadata);
   }
 
-  error(message: string, error?: unknown): void {
-    this.log(LogLevel.ERROR, message, { error });
-    recordError({ scope: this.scope, message, error });
+  /**
+   * @param context Extra structured context (e.g. a React componentStack,
+   * an affected bookId) to persist alongside the error. Keep it out of the
+   * `error` param — passing a plain object there instead of the real Error
+   * overwrites it, and the persisted log serializes that object down to
+   * `{ name: "Unknown", message: "[object Object]" }`, losing the actual
+   * error's name/message/stack.
+   */
+  error(message: string, error?: unknown, context?: Metadata): void {
+    this.log(LogLevel.ERROR, message, { error, ...context });
+    recordError({ scope: this.scope, message, error, context });
   }
 
   private log(level: LogLevel, message: string, metadata?: Metadata): void {

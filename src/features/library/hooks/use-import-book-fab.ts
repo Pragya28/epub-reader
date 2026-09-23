@@ -81,7 +81,9 @@ export function useImportBookFab() {
     try {
       const { id } = await importBook(file);
       onFirstImportSucceeded();
-      await loadLibrary();
+      // Silent: new books are already in the store via addBook — this only
+      // refreshes covers, without blanking the grid behind the loading state.
+      await loadLibrary({ silent: true });
       notify.success("Book imported successfully");
       navigate(ROUTES.READER.replace(":bookId", id));
     } catch (err) {
@@ -130,7 +132,9 @@ export function useImportBookFab() {
 
       if (succeeded > 0) onFirstImportSucceeded();
 
-      await loadLibrary();
+      // Silent: new books are already in the store via addBook — this only
+      // refreshes covers, without blanking the grid behind the loading state.
+      await loadLibrary({ silent: true });
 
       if (succeeded > 0) {
         notify.success(
