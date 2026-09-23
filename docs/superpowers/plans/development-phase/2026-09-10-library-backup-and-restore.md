@@ -8,7 +8,7 @@
 
 **Tech Stack:** React 19, TypeScript, Zustand, Dexie/IndexedDB, JSZip (already a dependency), Vitest + fake-indexeddb, Playwright.
 
-**Spec:** `docs/superpowers/specs/2026-09-10-library-backup-and-restore-design.md`
+**Spec:** `docs/superpowers/specs/development-phase/2026-09-10-library-backup-and-restore-design.md`
 
 ## Global Constraints
 
@@ -50,7 +50,7 @@
 | `src/app/screens/settings/settings-screen.tsx`                  | +"Backup & Restore" section; +"Delete all books & data" row in Storage                                                       |
 | `src/app/screens/settings/__tests__/settings-screen.test.tsx`   | export button, import input, reset confirm rendered                                                                          |
 | `e2e/backup-restore.spec.ts`                                    | import → read → export → reset → import → progress restored                                                                  |
-| `docs/tasks/SPRINT-08-TASKS.md`, `CLAUDE.md`                    | status + architecture doc updates                                                                                            |
+| `docs/tasks/development-phase/SPRINT-08-TASKS.md`, `CLAUDE.md`  | status + architecture doc updates                                                                                            |
 
 ---
 
@@ -2034,12 +2034,12 @@ EOF
 
 **Files:**
 
-- Modify: `docs/tasks/SPRINT-08-TASKS.md`
+- Modify: `docs/tasks/development-phase/SPRINT-08-TASKS.md`
 - Modify: `CLAUDE.md`
 
 - [ ] **Step 1: Update the Sprint 8 task list**
 
-In `docs/tasks/SPRINT-08-TASKS.md`:
+In `docs/tasks/development-phase/SPRINT-08-TASKS.md`:
 
 - Change the Day 6 header from `## Day 6 — Final QA` status to reflect item 31 done and others in progress.
 - Rewrite item 31 from `❌` to:
@@ -2083,7 +2083,7 @@ and is unrelated to any app version.
 - [ ] **Step 3: Commit**
 
 ```bash
-git add docs/tasks/SPRINT-08-TASKS.md CLAUDE.md
+git add docs/tasks/development-phase/SPRINT-08-TASKS.md CLAUDE.md
 git commit -m "$(cat <<'EOF'
 docs(sprint-8): mark Day 6 backup/export complete; document services/backup
 

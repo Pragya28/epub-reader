@@ -17,7 +17,7 @@ Tiers are ordered cheapest/safest first.
 ## Already fixed (no action)
 
 - **Stale docs (EPUB3 `belongs-to-collection`)** — both `CLAUDE.md` and
-  `docs/tasks/SPRINT-07-TASKS.md` already document the EPUB3 fallback correctly. Nothing to do.
+  `docs/tasks/development-phase/SPRINT-07-TASKS.md` already document the EPUB3 fallback correctly. Nothing to do.
 - **`putIndexEntries` empty-list guard** — `search-index.ts:12` already returns early
   when `entries.length === 0`; the carried-forward note was describing existing (correct)
   behavior, not a bug.
@@ -90,10 +90,10 @@ Tiers are ordered cheapest/safest first.
       and against `listBookFileIds()`/OPFS legacy ids, deleting anything not in the live set
     - returns a summary count, logs failures per table (same best-effort shape as
       `deleteBook`'s cleanup), never throws
-    Wire it into the existing Settings → Storage section next to "Rebuild search index"
-    (`use-diagnostics.ts`/whatever drives that panel) as a manual "Repair library" action —
-    matches the existing pattern of user-triggered maintenance rather than adding
-    unrequested automatic startup work.
+      Wire it into the existing Settings → Storage section next to "Rebuild search index"
+      (`use-diagnostics.ts`/whatever drives that panel) as a manual "Repair library" action —
+      matches the existing pattern of user-triggered maintenance rather than adding
+      unrequested automatic startup work.
 
 ## Explicitly not doing
 

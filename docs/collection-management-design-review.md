@@ -28,7 +28,7 @@ Delete-button styling (near-black rather than `destructive-clay`) was flagged bu
 
 ## Net effect on Sprint 7 tasks
 
-`docs/tasks/SPRINT-07-TASKS.md` Day 3 (Collections CRUD) and Day 5 (UX Polish, empty states, delete-flow distinction) items are all covered by this design — no new screens needed. Implementation should:
+`docs/tasks/development-phase/SPRINT-07-TASKS.md` Day 3 (Collections CRUD) and Day 5 (UX Polish, empty states, delete-flow distinction) items are all covered by this design — no new screens needed. Implementation should:
 
 - Build one "Collection name" sheet component that serves both create and rename (title/button copy differ, field pre-fills for rename).
 - Extend the existing per-book library menu with a "Remove from collection" action, conditional on collection-detail context, rather than building a new affordance.

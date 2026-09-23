@@ -10,7 +10,7 @@ backup/restore mechanism before release. Sprint 7 explicitly deferred it
 the schema directly"), so there is no schema work — only the export/import
 mechanism and its UI.
 
-`docs/tasks/SPRINT-08-TASKS.md` items 30–31 (release checklist, backup/export
+`docs/tasks/development-phase/SPRINT-08-TASKS.md` items 30–31 (release checklist, backup/export
 workflow validation) depend on this landing first.
 
 ### What exists
@@ -350,5 +350,5 @@ Colocated `__tests__/`, Vitest + `fake-indexeddb`, reusing
 5. `use-backup.ts` + Settings UI (Export, Import, conflict dialog) +
    Reset row + `settings-screen.test.tsx` coverage.
 6. `e2e/backup-restore.spec.ts`.
-7. Update `docs/tasks/SPRINT-08-TASKS.md` (item 31 → ✅, Day 6 progress),
+7. Update `docs/tasks/development-phase/SPRINT-08-TASKS.md` (item 31 → ✅, Day 6 progress),
    `CLAUDE.md` architecture section (new `services/backup/`).

@@ -10,7 +10,7 @@ When executing a superpowers plan in this repo, default to: a feature branch in 
 
 When asked to implement a plan "one task at a time," stop after each plan task completes (implementation, tests passing, and commit) and wait for explicit go-ahead before starting the next task — do not chain into the next task automatically.
 
-Superpowers plans live in `docs/superpowers/plans/` (tracked in this repo), not at the project root.
+Superpowers plans live in `docs/superpowers/plans/` (tracked in this repo), not at the project root. Both `docs/superpowers/{plans,specs}/` and `docs/tasks/` are subdivided by phase — `development-phase/`, `post-development/`, `feature-phase-1/`, etc. — mirroring `central-docs/`'s own phase framing; a new plan/spec/task list goes under the phase folder it belongs to, not loose at the top level.
 
 ## Project
 

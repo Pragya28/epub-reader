@@ -8,7 +8,7 @@
 
 **Tech Stack:** React 19 + TypeScript, Zustand (+ persist middleware), react-router-dom, Dexie/IndexedDB, Vitest + Testing Library, lucide-react icons.
 
-**Spec:** `central-docs/06 - Implementation/Sprint - 07 - Library Organization & Architecture.md` companion design doc: `docs/superpowers/specs/2026-08-17-library-shelves-tab-and-series-screen-design.md`
+**Spec:** `central-docs/06 - Implementation/Sprint - 07 - Library Organization & Architecture.md` companion design doc: `docs/superpowers/specs/development-phase/2026-08-17-library-shelves-tab-and-series-screen-design.md`
 
 ## Global Constraints
 

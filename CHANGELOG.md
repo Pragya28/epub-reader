@@ -28,7 +28,7 @@ The first documented release — everything built across Sprints 1-8, summarized
 
 ### Fixed
 
-Selected correctness/security fixes from the Sprint 8 hardening pass and the manual QA pass that followed it — see `docs/code-review-2026-08-30.md` and `docs/tasks/SPRINT-08-TASKS.md` for the full list:
+Selected correctness/security fixes from the Sprint 8 hardening pass and the manual QA pass that followed it — see `docs/code-review-2026-08-30.md` and `docs/tasks/development-phase/SPRINT-08-TASKS.md` for the full list:
 
 - Reader active-chapter detection used nearest-top-edge instead of viewport coverage, losing the back half of every chapter on resume.
 - EPUB zip paths with spaces or non-ASCII filenames failed to resolve chapters, covers, and TOC targets.

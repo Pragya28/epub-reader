@@ -142,7 +142,7 @@ Also fixed as part of the same pass: `continue-reading-banner.tsx`'s progress ba
 
     **Perf:** no new perf test added, and that's a deliberate call, not an omission — checked the Day 3/4 hot paths (`use-chrome-visibility`'s scroll handler, `get-chapter-sections.ts`) before deciding: `getChapterSections` is already `WeakMap`-cached per iframe document (`// ponytail:` comment marks this as intentional), so a scroll tick is O(1) amortized against at most `MAX_WINDOW_SIZE` (5) mounted sections, not O(chapters). Sprint 4's perf tests (`load-library.perf.test.ts`, `epub-parser.perf.test.ts`) guard genuine O(n)-over-data-scale operations; a scroll-handler perf test would mostly be testing jsdom's `getBoundingClientRect` timing, which isn't representative of real layout cost — not a useful guard. Flagging one pre-existing, unrelated observation instead: `pnpm build` warns the main JS chunk is 872 KB (274 KB gzipped) — not new this sprint (no bundling-relevant dependency changed), not previously flagged in any sprint doc or `AUDIT_REPORT.md`, and genuine code-splitting is out of scope for a hardening pass — noting it here so it doesn't quietly stay undocumented.
 
-    **Docs:** `CLAUDE.md` gained a pointer to `ACCESSIBILITY.md` (existed since `#27` but wasn't cross-referenced from the project's own instructions file). `docs/tasks/SPRINT-05-TASKS.md` (this file) is current through `#28`.
+    **Docs:** `CLAUDE.md` gained a pointer to `ACCESSIBILITY.md` (existed since `#27` but wasn't cross-referenced from the project's own instructions file). `docs/tasks/development-phase/SPRINT-05-TASKS.md` (this file) is current through `#28`.
 
     **Gap docs — light look, per the spec's own "light look during hardening, full resolution scoped to Sprint 8" framing** (implementing either in full here would be scope creep past what a Day 7 pass calls for, and would risk building the wrong shape ahead of Sprint 8's actual design):
     - **Onboarding-01 (First-Run Experience) — largely already satisfied**, not new work needed: `book-grid.tsx`'s empty-library state already matches the gap doc's own recommendation almost exactly — an icon, "Your library is empty," and a plain-text CTA ("Tap + to import your first book"), no tutorial walkthrough. The doc's two remaining open items are real but explicitly Sprint 8 Day 2 scope: no PWA install-prompt handling exists at all yet (so there's no "wrong timing" to fix, just an unbuilt feature), and no first-run persistent-storage request. Nothing built here — assessed and confirmed still correctly deferred.
@@ -154,7 +154,7 @@ Also fixed as part of the same pass: `continue-reading-banner.tsx`'s progress ba
 
 # Deferred (carried over from Sprint 4, now in-scope territory)
 
-- **`prefers-reduced-motion` support** (flagged in `docs/tasks/SPRINT-04-TASKS.md` Deferred section) — Sprint 4 explicitly deferred this here because Sprint 5 is "where user customization through theming and typography becomes the primary focus." Fold into Day 6 (Accessibility Foundations) rather than treating as new scope.
+- **`prefers-reduced-motion` support** (flagged in `docs/tasks/development-phase/SPRINT-04-TASKS.md` Deferred section) — Sprint 4 explicitly deferred this here because Sprint 5 is "where user customization through theming and typography becomes the primary focus." Fold into Day 6 (Accessibility Foundations) rather than treating as new scope.
 - **Font sizes drifted off the DESIGN.md type ramp** (also flagged in Sprint 4) — fold into Day 5 (UI Polish) typography hierarchy pass.
 
 ---

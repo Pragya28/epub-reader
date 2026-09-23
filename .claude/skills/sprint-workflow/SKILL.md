@@ -7,8 +7,15 @@ description: Use when starting a new sprint in this repo, or when asked to write
 
 ## Starting a new sprint
 
-1. Read the sprint spec from `central-docs/06 - Implementation/Sprint - NN <name>.md`.
-2. Compare it against the current codebase and write `docs/tasks/SPRINT-NN-TASKS.md` — a gap list (✅ done / 🟡 partial / ❌ missing) of what the spec asks for vs. what already exists, following the format of prior `docs/tasks/SPRINT-*-TASKS.md` files.
+1. Read the sprint spec from its phase's Implementation folder — Development
+   Phase sprints live in `central-docs/06 - Implementation/Sprint - NN <name>.md`;
+   a Feature Phase's sprints live in `central-docs/<NN - Feature Phase Name>/06 - Implementation/Sprint - N <name>.md`.
+2. Compare it against the current codebase and write the matching task list
+   under `docs/tasks/<phase-slug>/` — e.g. `docs/tasks/development-phase/SPRINT-NN-TASKS.md`
+   for a Development Phase sprint, `docs/tasks/feature-phase-1/SPRINT-N-TASKS.md`
+   for a Feature Phase 1 sprint. A gap list (✅ done / 🟡 partial / ❌ missing)
+   of what the spec asks for vs. what already exists, following the format of
+   prior `SPRINT-*-TASKS.md` files in that same phase folder.
 3. Run `/impeccable audit` to get a fresh `docs/AUDIT_REPORT.md`.
 4. Reconcile the audit findings into the sprint task list:
    - If a finding overlaps a task already in the list (e.g. a dead button that's really an unbuilt feature), cross-reference it there instead of duplicating.
@@ -17,7 +24,7 @@ description: Use when starting a new sprint in this repo, or when asked to write
 
 ## Completing a task
 
-A task is not done until its entry in `docs/tasks/SPRINT-NN-TASKS.md` is updated in the same PR as the code:
+A task is not done until its entry in that phase's `docs/tasks/<phase-slug>/SPRINT-*-TASKS.md` is updated in the same PR as the code:
 
 - Flip the item's status (❌/🟡 → ✅) and note what was actually delivered, including work that landed under a different day's item.
 - Update the affected day's Done Criteria.
@@ -28,6 +35,6 @@ A task is not done until its entry in `docs/tasks/SPRINT-NN-TASKS.md` is updated
 
 When asked to create a sprint status document (e.g. `Sprint - NNB – Implementation Status.md`) for the current/most recent sprint:
 
-1. Write it to `central-docs/06 - Implementation/Sprint - NNB – Implementation Status.md`, following the format of prior `Sprint - NNB` files (grouped by architectural area, each item with a description, "Architectural Areas", and an "Originally Planned" line).
+1. Write it to that phase's Implementation folder (`central-docs/06 - Implementation/Sprint - NNB – Implementation Status.md` for Development Phase, `central-docs/<NN - Feature Phase Name>/06 - Implementation/Sprint - NB – Implementation Status.md` for a Feature Phase), following the format of prior `Sprint - NNB` files (grouped by architectural area, each item with a description, "Architectural Areas", and an "Originally Planned" line).
 2. Only include items that were **not specifically planned** or are **completely new** — i.e. the sprint doc didn't call for that exact mechanism, or it wasn't in the sprint doc at all. Leave out anything that was implemented as the sprint spec literally described it; those don't need a status entry.
 3. If the sprint is still in progress when the doc is created, say so explicitly in the intro (don't imply the sprint is done), and **remind the user to update the document once the sprint actually finishes** — later days may add more unplanned/new items worth folding in.

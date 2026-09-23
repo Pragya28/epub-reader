@@ -1,6 +1,6 @@
 # Sprint 8 — Task List (Gap Analysis vs Codebase)
 
-Generated 2026-08-28 by comparing `central-docs/06 - Implementation/Sprint - 08 Production Polish.md` against the current codebase, following the format of `docs/tasks/SPRINT-07-TASKS.md`.
+Generated 2026-08-28 by comparing `central-docs/06 - Implementation/Sprint - 08 Production Polish.md` against the current codebase, following the format of `docs/tasks/development-phase/SPRINT-07-TASKS.md`.
 
 Status refreshed 2026-09-10 (spec re-verified against the restored `central-docs` symlink — every Day 1-7 Dev/Test bullet and Related Gap is reflected below):
 
