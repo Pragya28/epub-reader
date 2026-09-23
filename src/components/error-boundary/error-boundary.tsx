@@ -25,9 +25,7 @@ export class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
-    logger.error("uncaught render error", {
-      message: error.message,
-      stack: error.stack,
+    logger.error("uncaught render error", error, {
       componentStack: info.componentStack,
     });
   }

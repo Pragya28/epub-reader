@@ -72,7 +72,7 @@ export async function buildIndex(bookId: string, file: Blob): Promise<void> {
       await putChapterTexts(textEntries);
     }
   } catch (error) {
-    logger.error("failed to cache chapter text", { bookId, error });
+    logger.error(`failed to cache chapter text for book ${bookId}`, error);
   }
 }
 
@@ -108,7 +108,10 @@ export async function ensureIndexesForBooks(bookIds: string[]): Promise<void> {
           await buildIndex(bookId, stored.file);
         });
       } catch (error) {
-        logger.error("failed to backfill search index", { bookId, error });
+        logger.error(
+          `failed to backfill search index for book ${bookId}`,
+          error,
+        );
       }
     }),
   );
