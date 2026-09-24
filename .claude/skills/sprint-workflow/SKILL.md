@@ -16,7 +16,7 @@ description: Use when starting a new sprint in this repo, or when asked to write
    for a Feature Phase 1 sprint. A gap list (✅ done / 🟡 partial / ❌ missing)
    of what the spec asks for vs. what already exists, following the format of
    prior `SPRINT-*-TASKS.md` files in that same phase folder.
-3. Run `/impeccable audit` to get a fresh `docs/AUDIT_REPORT.md`.
+3. Run `/impeccable audit` to get a fresh `docs/AUDIT_REPORT.md`. `docs/AUDIT_REPORT.md` is the live report for the current phase; when a phase's last sprint closes, move it to that phase's folder (e.g. `docs/reports/development-phase/AUDIT_REPORT.md`) so the next phase's first audit starts a fresh one.
 4. Reconcile the audit findings into the sprint task list:
    - If a finding overlaps a task already in the list (e.g. a dead button that's really an unbuilt feature), cross-reference it there instead of duplicating.
    - If a finding is in-scope for this sprint's surfaces/days but not yet listed, add it as a new task under the relevant day.
