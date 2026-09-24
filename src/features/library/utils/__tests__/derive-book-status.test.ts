@@ -150,6 +150,24 @@ describe("enrichBookWithProgress", () => {
     expect(enriched.status).toBe("finished");
   });
 
+  it("clamps a corrupted out-of-range stored percent instead of exposing it as-is", () => {
+    const book = makeBook({
+      progress: {
+        chapterIndex: 8,
+        totalChapters: 24,
+        scrollFraction: 0.5,
+        percent: 3090,
+        updatedAt: Date.now(),
+        atDocumentEnd: false,
+      },
+    });
+
+    const enriched = enrichBookWithProgress(book);
+
+    expect(enriched.progress).toBe(100);
+    expect(enriched.status).toBe("finished");
+  });
+
   it("does not mark a book finished just for being near the end of a non-last chapter", () => {
     const book = makeBook({
       progress: {

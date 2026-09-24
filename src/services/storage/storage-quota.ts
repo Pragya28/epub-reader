@@ -6,6 +6,7 @@
  * "fail soft" discipline as opfs-files.ts, since Safari private mode and
  * older browsers expose only parts of the API.
  */
+import { toPercent } from "@/utils/percent";
 
 // ponytail: SAFETY_MARGIN is a guess — an import writes the raw blob plus a
 // cover plus (in the background) a search index. Tighten only if real
@@ -29,7 +30,7 @@ export async function estimateStorage(): Promise<StorageEstimate | null> {
     return {
       usageBytes: usage,
       quotaBytes: quota,
-      percentUsed: Math.min(100, (usage / quota) * 100),
+      percentUsed: toPercent(usage, quota),
     };
   } catch {
     return null;
