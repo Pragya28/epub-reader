@@ -131,6 +131,32 @@ describe("ReaderScreen", () => {
     expect(screen.getByText("1 of 1")).toBeInTheDocument();
   });
 
+  it("shows the progress percent as-is, not multiplied by 100", () => {
+    // Regression test: the footer's Progress used a `format` prop that
+    // bypassed Base UI's default value/100 normalization, so a 79.9%
+    // progressPercent rendered as "7990%" instead of "79.9%".
+    readerStore.setState({
+      isLoading: false,
+      error: null,
+      readerDocument: {
+        book: {
+          id: "book-1",
+          title: "Test Book",
+          author: "Test Author",
+        } as never,
+        file: new Blob(),
+      },
+      parsedBook: mockParsedBook,
+      currentChapterIndex: 0,
+      progressPercent: 79.9,
+    });
+
+    renderReaderScreen();
+
+    expect(screen.getByText("79.9%")).toBeInTheDocument();
+    expect(screen.queryByText("7990%")).not.toBeInTheDocument();
+  });
+
   it("calls loadReaderBook on mount for the given bookId", () => {
     readerStore.setState({ isLoading: true });
 
