@@ -1,5 +1,6 @@
 import { EpubParser } from "@/services/epub/epub-parser";
 import { getBookWithFile } from "@/services/storage/book-repository";
+import { clampPercent } from "@/utils/percent";
 import { readerStore } from "../store/reader-store";
 
 export async function loadReaderBook(
@@ -56,7 +57,10 @@ export async function loadReaderBook(
       store.setCurrentChapterIndex(savedProgress.chapterIndex);
       // Seed the progress bar with the persisted percent so it shows the
       // correct value immediately on open, before the first scroll event.
-      store.setProgressPercent(savedProgress.percent);
+      // Clamped rather than trusted outright — a value saved before
+      // computeReaderProgress's own clamp existed, or carried in from a
+      // backup/import, isn't guaranteed to be in 0-100 range.
+      store.setProgressPercent(clampPercent(savedProgress.percent));
     } else if (
       parsedBook.startChapterIndex !== undefined &&
       parsedBook.startChapterIndex >= 0 &&

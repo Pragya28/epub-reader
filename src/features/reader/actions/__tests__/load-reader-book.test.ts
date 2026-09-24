@@ -203,4 +203,31 @@ describe("loadReaderBook", () => {
 
     expect(readerStore.getState().currentChapterIndex).toBe(1);
   });
+
+  it("clamps a corrupted stored percent instead of seeding it as-is", async () => {
+    const bookWithProgress: StoredBook = {
+      ...storedBook,
+      progress: {
+        chapterIndex: 1,
+        totalChapters: 5,
+        scrollFraction: 0.5,
+        atDocumentEnd: false,
+        percent: 3090,
+        updatedAt: Date.now(),
+      },
+    };
+
+    vi.mocked(getBookWithFile).mockResolvedValue({
+      book: bookWithProgress,
+      file: new Blob(["epub"]),
+    });
+    parseBook.mockResolvedValue({
+      ...parsedBook,
+      chapters: [{}, {}, {}, {}, {}],
+    });
+
+    await loadReaderBook("book-1");
+
+    expect(readerStore.getState().progressPercent).toBe(100);
+  });
 });
