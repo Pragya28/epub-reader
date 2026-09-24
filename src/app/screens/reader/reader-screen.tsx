@@ -190,12 +190,17 @@ export const ReaderScreen: FC = () => {
         }`}
       >
         {/* Progress bar */}
-        <Progress
-          value={progressPercent}
-          format={{ style: "percent", maximumFractionDigits: 1 }}
-          className="px-2 gap-1"
-        >
-          <ProgressValue />
+        <Progress value={progressPercent} className="px-2 gap-1">
+          {/* progressPercent is already 0-100 (see toPercent), but Base
+              UI's own `format` prop bypasses its default /100 normalization
+              entirely — passing `format={{ style: "percent" }}` here used
+              to treat 79.9 as a literal 7990%. Formatting the raw `value`
+              from this render-prop ourselves sidesteps that: no `format`
+              prop, so the indicator's fill width (which reads `value` on
+              the same 0-100 scale independently of `format`) is unaffected. */}
+          <ProgressValue>
+            {(_, value) => (value == null ? null : `${value.toFixed(1)}%`)}
+          </ProgressValue>
         </Progress>
 
         {/* Navigation */}
