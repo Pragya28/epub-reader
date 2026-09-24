@@ -2,6 +2,7 @@ import { libraryStore } from "@/features/library/store/library-store";
 import { updateBookProgress } from "@/services/storage/book-repository";
 import type { ReadingProgress } from "@/services/storage/storage-types";
 import { logger as rootLogger } from "@/shared/logger/logger";
+import { toPercent } from "@/utils/percent";
 import { computeScrollAnchor } from "../engine/scroll/scroll-anchor";
 import { postProgressUpdate } from "../utils/reading-progress-channel";
 
@@ -79,10 +80,6 @@ interface ComputeProgressParams {
  */
 const END_OF_DOCUMENT_TOLERANCE_PX = 4;
 
-function roundToOneDecimal(value: number): number {
-  return Math.round(value * 10) / 10;
-}
-
 /**
  * Derives a ReadingProgress snapshot from the current scroll state.
  * scrollFraction is measured relative to the active chapter's own
@@ -144,14 +141,9 @@ export function computeReaderProgress({
 
   const percent =
     wordOffset !== undefined && totalWordCount
-      ? Math.min(100, roundToOneDecimal((wordOffset / totalWordCount) * 100))
+      ? toPercent(wordOffset, totalWordCount, 1)
       : totalChapters > 0
-        ? Math.min(
-            100,
-            roundToOneDecimal(
-              ((activeIndex + effectiveFraction) / totalChapters) * 100,
-            ),
-          )
+        ? toPercent(activeIndex + effectiveFraction, totalChapters, 1)
         : 0;
 
   return {

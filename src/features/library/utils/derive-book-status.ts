@@ -1,4 +1,5 @@
 import type { StoredBook } from "@/services/storage/storage-types";
+import { clampPercent } from "@/utils/percent";
 import type { BookWithProgress, ReadingStatus } from "../types/library.types";
 
 /** A book counts as "New" if it hasn't been opened yet and was imported recently. */
@@ -42,7 +43,11 @@ function deriveReadingStatus(
   // the last one (e.g. "17 of 18"). Checked unconditionally, before the
   // isLastChapter gate below, or a book like that would never register
   // as finished until landing exactly on its literal last chapter.
-  if (progress.percent >= 100) return "finished";
+  // Clamped, not trusted outright — a value saved before
+  // computeReaderProgress's own clamp existed, or carried in from a
+  // backup/import, isn't guaranteed to be in 0-100 range, and an
+  // out-of-range value here would wrongly mark the book "finished".
+  if (clampPercent(progress.percent) >= 100) return "finished";
 
   const isLastChapter = progress.chapterIndex >= progress.totalChapters - 1;
   if (!isLastChapter) return "reading";
@@ -95,7 +100,10 @@ export function enrichBookWithProgress(book: StoredBook): BookWithProgress {
     status,
     isFinished: status === "finished",
     isReading: status === "reading",
-    progress: book.progress?.percent,
+    progress:
+      book.progress?.percent !== undefined
+        ? clampPercent(book.progress.percent)
+        : undefined,
     progressUpdatedAt: book.progress?.updatedAt,
     chapterIndex: book.progress?.chapterIndex,
     totalChapters: book.progress?.totalChapters,
