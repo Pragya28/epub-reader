@@ -60,7 +60,7 @@ Git hooks (husky) enforce quality gates:
 - `src/components/` — shadcn/ui primitives plus cross-cutting toast/error-boundary components
 - `src/shared/` — cross-feature utilities (logging, decorative ornaments)
 
-See [CLAUDE.md](./CLAUDE.md) for the full architecture reference, including the reader's windowed rendering pipeline, the iframe's token-mirroring constraint, the Dexie storage schema, and the search/backup/collections design decisions. See [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) for the release process and [`CHANGELOG.md`](CHANGELOG.md) for what shipped when.
+See [CLAUDE.md](./CLAUDE.md) for the full architecture reference, including the reader's windowed rendering pipeline, the iframe's token-mirroring constraint, the Dexie storage schema, and the search/backup/collections design decisions. See [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md) for the release process and [`CHANGELOG.md`](CHANGELOG.md) for what shipped when.
 
 ## Tech stack
 

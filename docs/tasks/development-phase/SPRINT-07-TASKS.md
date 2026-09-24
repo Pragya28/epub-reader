@@ -55,7 +55,7 @@ What _does_ already exist and is directly reusable scaffolding for this sprint:
 
 ### Done Criteria
 
-✅ Done — full design pulled forward from Figma (`https://www.figma.com/design/ohsm1arYYCfzARM2RuNBI5/Librune?node-id=103-535`, reconciled in `docs/tasks/collection-management-design-review.md`) and implemented end-to-end, including Day 4's collection browsing/detail screen and Day 5's management UI/empty-state items (see below — pulled forward in the same pass rather than split across days, since the CRUD action layer and its UI are one coherent unit of work). _(done 2026-08-20)_
+✅ Done — full design pulled forward from Figma (`https://www.figma.com/design/ohsm1arYYCfzARM2RuNBI5/Librune?node-id=103-535`, reconciled in `docs/reports/development-phase/design-reviews/collection-management-design-review.md`) and implemented end-to-end, including Day 4's collection browsing/detail screen and Day 5's management UI/empty-state items (see below — pulled forward in the same pass rather than split across days, since the CRUD action layer and its UI are one coherent unit of work). _(done 2026-08-20)_
 
 Two platform changes came with it, not scoped by the sprint spec but needed once collections existed as a second grouping type with its own detail screen:
 

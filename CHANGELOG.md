@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Librune are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this project doesn't yet follow strict [SemVer](https://semver.org/) tagging (see `docs/RELEASE_CHECKLIST.md`), but `package.json`'s `version` is bumped on each dated release below.
+All notable changes to Librune are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this project doesn't yet follow strict [SemVer](https://semver.org/) tagging (see `RELEASE_CHECKLIST.md`), but `package.json`'s `version` is bumped on each dated release below.
 
 ## [Unreleased]
 
@@ -28,7 +28,7 @@ The first documented release — everything built across Sprints 1-8, summarized
 
 ### Fixed
 
-Selected correctness/security fixes from the Sprint 8 hardening pass and the manual QA pass that followed it — see `docs/code-review-2026-08-30.md` and `docs/tasks/development-phase/SPRINT-08-TASKS.md` for the full list:
+Selected correctness/security fixes from the Sprint 8 hardening pass and the manual QA pass that followed it — see `docs/reports/development-phase/code-reviews/code-review-2026-08-30.md` and `docs/tasks/development-phase/SPRINT-08-TASKS.md` for the full list:
 
 - Reader active-chapter detection used nearest-top-edge instead of viewport coverage, losing the back half of every chapter on resume.
 - EPUB zip paths with spaces or non-ASCII filenames failed to resolve chapters, covers, and TOC targets.
