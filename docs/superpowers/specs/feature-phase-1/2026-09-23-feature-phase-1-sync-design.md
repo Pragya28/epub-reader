@@ -1,5 +1,7 @@
 # Feature Phase 1 — Sync & Cross-Device Design
 
+> **Status:** where this spec and the phase decision log ([docs/decisions/feature-phase-1.md](../../../decisions/feature-phase-1.md), D1–D11) differ, the decision log is authoritative — notably the credential model, transport and error codes (D7–D10) and invite-based users (D11).
+
 ## Context
 
 Development Phase (Sprints 1–8) is complete; Sprint 8 Day 7 release prep
@@ -41,7 +43,7 @@ user who chooses to turn sync on.
 
 ### Non-goals (explicit, per product framing)
 
-- No multi-tenant accounts system — personal use, single user.
+- No open signup or user management — built for one person first; further users only by invite code (D11).
 - No usage analytics or telemetry.
 - No automatic/background sync (decision 5).
 - No incremental/per-book sync protocol (decision 3).

@@ -17,7 +17,7 @@ Sprint 1 is the first backend work in this repo — everything before it is a cl
 
 ## Decisions
 
-Phase decisions (D1–D10), scope confirmations, the folder layout and import rules live in [docs/decisions/feature-phase-1.md](../../decisions/feature-phase-1.md). Tasks below reference decisions by number.
+Phase decisions (D1–D11), scope confirmations, the folder layout and import rules live in [docs/decisions/feature-phase-1.md](../../decisions/feature-phase-1.md). Tasks below reference decisions by number.
 
 Each new package needs explicit approval (project rule: never install without asking).
 
@@ -25,8 +25,8 @@ Each new package needs explicit approval (project rule: never install without as
 
 ## Day 1 — Schema & Data Access ❌
 
-1. ❌ **`users` / `sync_state` / `devices` tables + migration** — `users` (id uuid, created_at); `sync_state` (user_id, registration_proof_hash, last_synced_at; a single-row guarantee enforces one user); `devices` (device_id, user_id, label, token_hash, prev_token_hash, token_rotated_at, first_seen_at, last_seen_at — `last_seen_at` is the idle clock). Shape per `02 - Architecture.md` data model.
-2. ❌ **Postgres client (`db.ts`)** — thin raw-row access for all three tables (insert/get per table, plus the queries Days 2-3 need). No ORM, no abstraction layer.
+1. ❌ **`users` / `sync_state` / `devices` / `invites` tables + migration** — `users` (id uuid, created_at); `sync_state` (user_id primary key, registration_proof_hash, last_synced_at — one row per user); `invites` (code_hash, created_by, created_at, expires_at, used_at, used_by — D11); `devices` (device_id, user_id, label, token_hash, prev_token_hash, token_rotated_at, first_seen_at, last_seen_at — `last_seen_at` is the idle clock). Shape per `02 - Architecture.md` data model.
+2. ❌ **Postgres client (`db.ts`)** — thin raw-row access for all four tables (insert/get per table, plus the queries Days 2-3 need). No ORM, no abstraction layer.
 3. ❌ **Server test harness** — node-environment Vitest config/pragma + a `pglite` fixture that applies the migrations fresh per test file, injected through `db.ts`'s `query(sql, params)` seam.
 4. ❌ **Tests** — migration applies cleanly; `db.ts` round-trip (insert + read one row per table).
 5. ❌ **Scaffold `backend/`, `contracts/`, `api/`** — folders per the Layout in [feature-phase-1.md](../../decisions/feature-phase-1.md#layout); `backend/tsconfig.json` (Node types, includes `backend/` + `contracts/`); `tsconfig.app.json` gains `contracts/` in `include` plus an `@contracts/*` alias mirrored in `vite.config.ts` and the Vitest config. Config edits need approval.
@@ -53,26 +53,37 @@ Each new package needs explicit approval (project rule: never install without as
 
 ---
 
-## Day 3 — Setup, Register & Recovery Endpoints ❌
+## Day 3 — Contracts, Setup & Invites ❌
 
-12. ❌ **Contracts** — `contracts/setup.ts`, `contracts/register.ts`, `contracts/recover.ts` (zod request/response schemas + inferred types), `contracts/errors.ts` (the D10 error-code union and `{ error: { code, message } }` shape), a shared authenticated-response fragment with the optional rotated `token` field (D9), the `X-Device-Id` header name, `contracts/auth-constants.ts` (72h, 7d), created on Day 2 with item 10, which consumes it.
-13. ❌ **`setup` endpoint** — `backend/handlers/setup.ts` + `api/setup.ts` re-export. Validates the body via the contracts schema; takes `deviceId`, `label`, `proof`; succeeds only when no `sync_state` row exists; creates the user, stores `SHA-256(proof)`, creates the calling device with its first token (hash stored, plain returned once); returns `userId` + token.
-14. ❌ **`register` endpoint** — `backend/handlers/register.ts` + `api/register.ts` re-export. Takes `userId`, `deviceId`, `label`, `proof`; succeeds only when the user exists and `SHA-256(proof)` matches; creates the device with its own token. Unknown user and wrong proof return the same `registration_rejected`. An already-registered `deviceId` is rejected. A device that cleared its site data generates a new `deviceId` and registers as a new device; its old row lapses through idle expiry.
-15. ❌ **`recover` endpoint** — `backend/handlers/recover.ts` + `api/recover.ts` re-export. Takes `X-Device-Id` + that device's own expired token as `Authorization: Bearer`; succeeds only when the device is known, the token matches its row, **and** it is idle-expired; issues a fresh token.
-16. ❌ **Tests** — every error path returns its D10 code and status; responses carry `Cache-Control: no-store`; `setup` rejects a second call; `register` rejects a wrong proof and an unknown user with the same error; `register` gives the new device its own token without invalidating existing devices' tokens; `recover` rejects an unknown device and a token that doesn't match the device; `recover` rejects when the token isn't expired; malformed body rejected by the schema; happy paths for all three; contract tests parse each handler's actual response body with its response schema.
+12. ❌ **Contracts** — `contracts/setup.ts` (with the optional invite code), `contracts/invites.ts`, `contracts/register.ts`, `contracts/recover.ts` (zod request/response schemas + inferred types), `contracts/errors.ts` (the D10 error-code union and `{ error: { code, message } }` shape), a shared authenticated-response fragment with the optional rotated `token` field (D9), the `X-Device-Id` header name, `contracts/auth-constants.ts` (72h, 7d), created on Day 2 with item 10, which consumes it.
+13. ❌ **`setup` endpoint** — `backend/handlers/setup.ts` + `api/setup.ts` re-export. Validates the body via the contracts schema; takes `deviceId`, `label`, `proof` and an optional `inviteCode`; without a code it succeeds only while no user exists (else `invite_required`); with a code it consumes an unused, unexpired invite in the same statement that creates the user (else `invite_invalid`); creates the user, stores `SHA-256(proof)`, creates the calling device with its first token (hash stored, plain returned once); returns `userId` + token.
+14. ❌ **`invites` endpoint** — `backend/handlers/invites.ts` + `api/invites.ts` re-export. Authenticated via the auth module (D9 headers); creates a single-use invite for the caller's user: 80 random bits encoded as 16 base32 characters in groups of four, 7-day expiry, only the SHA-256 stored; returns the code once, plus any rotated token.
+15. ❌ **Tests** — `setup` without a code is rejected with `invite_required` once any user exists; an unknown, used or expired invite is rejected with the same `invite_invalid`; an invite works exactly once; `invites` rejects an unauthenticated or expired caller; every error path returns its D10 code and status; responses carry `Cache-Control: no-store`; malformed body rejected by the schema; happy paths for `setup` (first user and invited user) and `invites`; contract tests parse each handler's actual response body with its response schema.
 
 ### Done Criteria
 
-❌ A device can bootstrap the first credential; a further device can register with `userId` + proof; a known device can recover after expiry — end to end against the real schema.
+❌ The first user can set up without an invite, an existing user can create an invite, and an invited user can set up with it — against the real schema.
 
 ---
 
-## Day 4 — Hardening ❌
+## Day 4 — Register & Recovery ❌
 
-17. ❌ **One-time `setup` guard under concurrency** — enforce in the database (single-row guarantee on `sync_state`), not check-then-insert in app code.
-18. ❌ **`recover` mid-rotation window** — define and handle a token that is both past 72h and past 7d, a recover racing a normal rotation, a retry with the previous token after a lost rotation response, and the previous token rejected once the current token has been used.
-19. ❌ **Race-condition regression tests** — N concurrent `setup` calls → exactly one succeeds; concurrent rotations of one device issue exactly one new token; recover/rotation overlap. Run against real Postgres through a `pg`-backed implementation of the `query` seam (single-connection `pglite` cannot interleave), gated on `TEST_DATABASE_URL` and skipped when unset. `.github/workflows/test.yml` gains a Postgres service container and sets the variable for the Vitest job. Workflow edit needs approval.
-20. ❌ **Boundary layer 3 — built-output check** — assert that `dist/` (the PWA bundle) contains no `backend/` code or Node-only markers (`pg`/Neon driver, `node:crypto`), added to the existing production-build smoke test.
+16. ❌ **`register` endpoint** — `backend/handlers/register.ts` + `api/register.ts` re-export. Takes `userId`, `deviceId`, `label`, `proof`; succeeds only when the user exists and `SHA-256(proof)` matches; creates the device with its own token. Unknown user and wrong proof return the same `registration_rejected`. An already-registered `deviceId` is rejected. A device that cleared its site data generates a new `deviceId` and registers as a new device; its old row lapses through idle expiry.
+17. ❌ **`recover` endpoint** — `backend/handlers/recover.ts` + `api/recover.ts` re-export. Takes `X-Device-Id` + that device's own expired token as `Authorization: Bearer`; succeeds only when the device is known, the token matches its row, **and** it is idle-expired; issues a fresh token.
+18. ❌ **Tests** — `register` rejects a wrong proof and an unknown user with the same `registration_rejected`; `register` gives the new device its own token without invalidating existing devices' tokens; an already-registered `deviceId` is rejected; `recover` rejects an unknown device and a token that doesn't match the device; `recover` rejects when the token isn't expired; one user's credentials never reach another user's rows; every error path returns its D10 code and status; happy paths for `register` and `recover`; contract tests for both; one end-to-end test across all four endpoints: first user sets up → creates an invite → invited user sets up → a second device registers → an expired device recovers.
+
+### Done Criteria
+
+❌ A further device can register with `userId` + proof and a known device can recover after expiry; all four endpoints work together end to end against the real schema.
+
+---
+
+## Day 5 — Hardening ❌
+
+19. ❌ **`setup` guards under concurrency** — the no-users guard for the first user and single-use invite consumption are both enforced in single atomic statements, not check-then-insert in app code.
+20. ❌ **`recover` mid-rotation window** — define and handle a token that is both past 72h and past 7d, a recover racing a normal rotation, a retry with the previous token after a lost rotation response, and the previous token rejected once the current token has been used.
+21. ❌ **Race-condition regression tests** — N concurrent first-user `setup` calls → exactly one succeeds; N concurrent `setup` calls with the same invite → exactly one succeeds; concurrent rotations of one device issue exactly one new token; recover/rotation overlap. Run against real Postgres through a `pg`-backed implementation of the `query` seam (single-connection `pglite` cannot interleave), gated on `TEST_DATABASE_URL` and skipped when unset. `.github/workflows/test.yml` gains a Postgres service container and sets the variable for the Vitest job. Workflow edit needs approval.
+22. ❌ **Boundary layer 3 — built-output check** — assert that `dist/` (the PWA bundle) contains no `backend/` code or Node-only markers (`pg`/Neon driver, `node:crypto`), added to the existing production-build smoke test.
 
 ### Done Criteria
 

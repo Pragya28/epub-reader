@@ -8,7 +8,7 @@ web
 
 ## Users
 
-Primary user is the developer/owner themself — a personal, single-user reading tool, not a multi-tenant product. No accounts, no sharing, no other audiences to design for.
+Primary user is the developer/owner themself — a personal reading tool built for one person first. Optional sync can also serve a few invited users on the same deployment (family, friends), each with a separate library encrypted with their own key; design and prioritization always target the single-owner case. No public signup, no user management, no sharing between users, no other audiences to design for.
 
 ## Product Purpose
 
