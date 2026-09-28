@@ -25,7 +25,7 @@ Each new package needs explicit approval (project rule: never install without as
 
 ## Day 1 — Schema & Data Access ❌
 
-1. ❌ **`users` / `sync_state` / `devices` / `invites` tables + migration** — `users` (id uuid, created_at); `sync_state` (user_id primary key, registration_proof_hash, last_synced_at — one row per user); `invites` (code_hash, created_by, created_at, expires_at, used_at, used_by — D11); `devices` (device_id, user_id, label, token_hash, prev_token_hash, token_rotated_at, first_seen_at, last_seen_at — `last_seen_at` is the idle clock). Shape per `02 - Architecture.md` data model.
+1. 🟡 **`users` / `sync_state` / `devices` / `invites` tables + migration** — `users` (id uuid, created_at, invited — a partial unique index allows at most one uninvited user, the first-user guard); `sync_state` (user_id primary key, registration_proof_hash, last_synced_at — one row per user); `invites` (code_hash, created_by, created_at, expires_at, used_at, used_by — D11); `devices` (device_id, user_id, label, token_hash, prev_token_hash, token_rotated_at, first_seen_at, last_seen_at — `last_seen_at` is the idle clock). Shape per `02 - Architecture.md` data model.
 2. ❌ **Postgres client (`db.ts`)** — thin raw-row access for all four tables (insert/get per table, plus the queries Days 2-3 need). No ORM, no abstraction layer.
 3. ❌ **Server test harness** — node-environment Vitest config/pragma + a `pglite` fixture that applies the migrations fresh per test file, injected through `db.ts`'s `query(sql, params)` seam.
 4. ❌ **Tests** — migration applies cleanly; `db.ts` round-trip (insert + read one row per table).
@@ -80,7 +80,7 @@ Each new package needs explicit approval (project rule: never install without as
 
 ## Day 5 — Hardening ❌
 
-19. ❌ **`setup` guards under concurrency** — the no-users guard for the first user and single-use invite consumption are both enforced in single atomic statements, not check-then-insert in app code.
+19. ❌ **`setup` guards under concurrency** — the first-user guard is the `users` partial unique index (at most one uninvited user — a `NOT EXISTS` check alone lets two concurrent first setups both pass under read committed), and single-use invite consumption is a conditional `UPDATE … RETURNING` in the same statement that creates the user; neither is check-then-insert in app code.
 20. ❌ **`recover` mid-rotation window** — define and handle a token that is both past 72h and past 7d, a recover racing a normal rotation, a retry with the previous token after a lost rotation response, and the previous token rejected once the current token has been used.
 21. ❌ **Race-condition regression tests** — N concurrent first-user `setup` calls → exactly one succeeds; N concurrent `setup` calls with the same invite → exactly one succeeds; concurrent rotations of one device issue exactly one new token; recover/rotation overlap. Run against real Postgres through a `pg`-backed implementation of the `query` seam (single-connection `pglite` cannot interleave), gated on `TEST_DATABASE_URL` and skipped when unset. `.github/workflows/test.yml` gains a Postgres service container and sets the variable for the Vitest job. Workflow edit needs approval.
 22. ❌ **Boundary layer 3 — built-output check** — assert that `dist/` (the PWA bundle) contains no `backend/` code or Node-only markers (`pg`/Neon driver, `node:crypto`), added to the existing production-build smoke test.
