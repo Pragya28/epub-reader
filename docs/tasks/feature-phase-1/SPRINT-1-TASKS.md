@@ -26,7 +26,7 @@ Each new package needs explicit approval (project rule: never install without as
 ## Day 1 — Schema & Data Access ❌
 
 1. 🟡 **`users` / `sync_state` / `devices` / `invites` tables + migration** — `users` (id uuid, created_at, invited — a partial unique index allows at most one uninvited user, the first-user guard); `sync_state` (user_id primary key, registration_proof_hash, last_synced_at — one row per user); `invites` (code_hash, created_by, created_at, expires_at, used_at, used_by — D11); `devices` (device_id, user_id, label, token_hash, prev_token_hash, token_rotated_at, first_seen_at, last_seen_at — `last_seen_at` is the idle clock). Shape per `02 - Architecture.md` data model.
-2. ❌ **Postgres client (`db.ts`)** — thin raw-row access for all four tables (insert/get per table, plus the queries Days 2-3 need). No ORM, no abstraction layer.
+2. 🟡 **Postgres client (`db.ts`)** — thin raw-row access for all four tables (insert/get per table, plus the queries Days 2-3 need). No ORM, no abstraction layer.
 3. ❌ **Server test harness** — node-environment Vitest config/pragma + a `pglite` fixture that applies the migrations fresh per test file, injected through `db.ts`'s `query(sql, params)` seam.
 4. ❌ **Tests** — migration applies cleanly; `db.ts` round-trip (insert + read one row per table).
 5. ❌ **Scaffold `backend/`, `contracts/`, `api/`** — folders per the Layout in [feature-phase-1.md](../../decisions/feature-phase-1.md#layout); `backend/tsconfig.json` (Node types, includes `backend/` + `contracts/`); `tsconfig.app.json` gains `contracts/` in `include` plus an `@contracts/*` alias mirrored in `vite.config.ts` and the Vitest config. Config edits need approval.
