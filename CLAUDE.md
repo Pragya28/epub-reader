@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Working style
 
-Always work in ponytail mode (full intensity) in this repo — favor the simplest solution that works, stdlib/native/existing-dependency first, no speculative abstractions.
+Always work in ponytail mode (full intensity) in this repo — favor the simplest solution that works, stdlib/native/existing-dependency first, no speculative abstractions. Don't add `ponytail:` marker comments to code — explain a deliberate simplification in a plain comment instead, with no marker prefix.
 
 When executing a superpowers plan in this repo, default to: a feature branch in the current directory (not an isolated worktree), and inline execution (not subagent-driven-development) — unless the user asks for isolation or subagent dispatch for that specific task.
 
