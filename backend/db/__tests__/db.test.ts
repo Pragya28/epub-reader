@@ -31,9 +31,11 @@ describe("migrations", () => {
     const { rows } = await pg.query<{ table_name: string }>(
       "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name",
     );
+    // schema_migrations is the runner's own bookkeeping table (backend/db/migrate.ts), not a migration file.
     expect(rows.map((r) => r.table_name)).toEqual([
       "devices",
       "invites",
+      "schema_migrations",
       "sync_state",
       "users",
     ]);
