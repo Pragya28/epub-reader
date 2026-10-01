@@ -1,5 +1,10 @@
 import { type FC } from "react";
-import { BookOpenIcon, ClockIcon, UsersIcon } from "@phosphor-icons/react";
+import {
+  BookOpenIcon,
+  BooksIcon,
+  ClockIcon,
+  UsersIcon,
+} from "@phosphor-icons/react";
 
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -8,6 +13,7 @@ import { BookCover } from "@/components/book-cover/book-cover";
 import {
   formatReadingProgress,
   formatReadingTime,
+  formatSeriesLink,
 } from "../utils/format-book-details";
 
 interface AboutBookSheetProps {
@@ -16,6 +22,13 @@ interface AboutBookSheetProps {
   onOpenChange: (open: boolean) => void;
   hasMoreByAuthor: boolean;
   onMoreByAuthor: () => void;
+  /** True once this book's series has more than one book in the library —
+   * same bar `useBookCard`'s "View Series" menu item gates on. */
+  hasSeriesLink?: boolean;
+  /** How many books in the library share this book's seriesName — needed
+   * alongside book.seriesIndex for the "X/Y of {series}" label. */
+  seriesBookCount?: number;
+  onViewSeries?: () => void;
 }
 
 export const AboutBookSheet: FC<AboutBookSheetProps> = ({
@@ -24,11 +37,18 @@ export const AboutBookSheet: FC<AboutBookSheetProps> = ({
   onOpenChange,
   hasMoreByAuthor,
   onMoreByAuthor,
+  hasSeriesLink,
+  seriesBookCount,
+  onViewSeries,
 }) => {
   const progressText = formatReadingProgress(book);
   const readingTimeText = book.readingTimeMinutes
     ? formatReadingTime(book.readingTimeMinutes)
     : null;
+  const seriesLinkText =
+    hasSeriesLink && book.seriesName && seriesBookCount !== undefined
+      ? formatSeriesLink(book.seriesName, book.seriesIndex, seriesBookCount)
+      : null;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -81,20 +101,40 @@ export const AboutBookSheet: FC<AboutBookSheetProps> = ({
           </p>
         )}
 
-        {hasMoreByAuthor && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="self-start"
-            onClick={() => {
-              onOpenChange(false);
-              onMoreByAuthor();
-            }}
-          >
-            <UsersIcon size={16} />
-            More by {book.author}
-          </Button>
+        {(seriesLinkText || hasMoreByAuthor) && (
+          <div className="flex flex-col items-start gap-1">
+            {seriesLinkText && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="self-start"
+                onClick={() => {
+                  onOpenChange(false);
+                  onViewSeries?.();
+                }}
+              >
+                <BooksIcon size={16} />
+                {seriesLinkText}
+              </Button>
+            )}
+
+            {hasMoreByAuthor && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="self-start"
+                onClick={() => {
+                  onOpenChange(false);
+                  onMoreByAuthor();
+                }}
+              >
+                <UsersIcon size={16} />
+                More by {book.author}
+              </Button>
+            )}
+          </div>
         )}
       </SheetContent>
     </Sheet>

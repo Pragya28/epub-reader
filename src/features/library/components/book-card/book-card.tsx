@@ -44,6 +44,9 @@ export const BookCard: FC<BookCardProps> = memo(function BookCard({
     setAddToCollectionOpen,
     hasMoreByAuthor,
     openMoreByAuthor,
+    hasSeriesLink,
+    seriesBookCount,
+    openViewSeries,
     menuItems,
   } = useBookCard(book, hideMoreByAuthor, onRemoveFromCollection);
   const { collections, selectedIds, toggle, createAndAdd } = useAddToCollection(
@@ -142,6 +145,9 @@ export const BookCard: FC<BookCardProps> = memo(function BookCard({
         onOpenChange={setAboutOpen}
         hasMoreByAuthor={hasMoreByAuthor}
         onMoreByAuthor={openMoreByAuthor}
+        hasSeriesLink={hasSeriesLink}
+        seriesBookCount={seriesBookCount}
+        onViewSeries={openViewSeries}
       />
 
       <ConfirmDeleteDialog

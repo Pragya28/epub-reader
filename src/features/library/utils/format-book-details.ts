@@ -27,6 +27,22 @@ export function formatReadingProgress(book: BookWithProgress): string | null {
   return `${currentChapter} / ${totalChapters} Chapters`;
 }
 
+/**
+ * "3/7 of Harry Potter • View Series" — falls back to omitting the "N/total"
+ * prefix for a book whose own seriesIndex wasn't parsed (some series entries
+ * lack one even when the series itself is known), since `totalInSeries`
+ * alone can't say which position this book is.
+ */
+export function formatSeriesLink(
+  seriesName: string,
+  seriesIndex: number | undefined,
+  totalInSeries: number,
+): string {
+  const position =
+    seriesIndex !== undefined ? `${seriesIndex}/${totalInSeries} of ` : "";
+  return `${position}${seriesName} • View Series`;
+}
+
 export function formatReadingTime(minutes: number): string {
   if (minutes < 60) return `${minutes} min read`;
 
