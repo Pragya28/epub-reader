@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatReadingProgress,
   formatReadingTime,
+  formatSeriesLink,
 } from "../format-book-details";
 import type { BookWithProgress } from "../../types/library.types";
 
@@ -69,6 +70,20 @@ describe("formatReadingProgress", () => {
     });
 
     expect(formatReadingProgress(book)).toBe("5 / 5 Chapters");
+  });
+});
+
+describe("formatSeriesLink", () => {
+  it("includes the book's position and series total", () => {
+    expect(formatSeriesLink("Harry Potter", 3, 7)).toBe(
+      "3/7 of Harry Potter • View Series",
+    );
+  });
+
+  it("omits the position prefix when the book has no seriesIndex", () => {
+    expect(formatSeriesLink("Harry Potter", undefined, 7)).toBe(
+      "Harry Potter • View Series",
+    );
   });
 });
 

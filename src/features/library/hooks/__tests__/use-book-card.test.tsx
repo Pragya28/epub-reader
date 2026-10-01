@@ -65,6 +65,7 @@ describe("useBookCard series link", () => {
     const { result } = renderHook(() => useBookCard(makeBook()), { wrapper });
 
     expect(result.current.hasSeriesLink).toBe(true);
+    expect(result.current.seriesBookCount).toBe(2);
     expect(
       result.current.menuItems.some((item) => item.id === "view-series"),
     ).toBe(true);
