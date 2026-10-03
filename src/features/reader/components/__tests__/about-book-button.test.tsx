@@ -58,6 +58,21 @@ describe("AboutBookButton", () => {
     expect(screen.getByText("A book about testing.")).toBeInTheDocument();
   });
 
+  it("puts the sheet's content inside a scroll area, so a long description can't be clipped by the sheet's max height", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<AboutBookButton book={makeBook()} coverUrl={coverUrl} />);
+
+    await user.click(screen.getByRole("button", { name: "About this book" }));
+
+    const viewport = document.querySelector(
+      '[data-slot="scroll-area-viewport"]',
+    );
+    expect(viewport).toBeInTheDocument();
+    expect(viewport).toContainElement(
+      screen.getByText("A book about testing."),
+    );
+  });
+
   it("passes the given coverUrl through to the sheet's cover image", async () => {
     const user = userEvent.setup();
     renderWithRouter(<AboutBookButton book={makeBook()} coverUrl={coverUrl} />);
