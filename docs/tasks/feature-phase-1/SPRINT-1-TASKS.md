@@ -42,14 +42,14 @@ Each new package needs explicit approval (project rule: never install without as
 
 ---
 
-## Day 2 — Auth Core ❌
+## Day 2 — Auth Core ✅
 
-10. ❌ **One reusable auth module** — per-device token check (`deviceId` + token against that device's row, accepting the current hash or `prev_token_hash`; a successful check with the current hash clears `prev_token_hash`), activity bump (`last_seen_at`) on every successful check, 72h rotation check (returns a fresh token when due, moving the old hash to `prev_token_hash`), 7-day idle-expiry check per device. Tokens are `randomBytes(32)` base64url with no prefix; only the SHA-256 is stored and lookup is by `device_id`, then hash comparison. Clock injected (`now` param) so tests never sleep. Rules per `03 - Auth & Security.md`.
-11. ❌ **Tests (mocked clock)** — rotation fires past 72h and not before; expiry fires past 7 days idle and not before; activity bump on every successful check; bad token rejected; a token belonging to another device rejected; previous token accepted as a retry and answered with the current token.
+10. ✅ **One reusable auth module** — per-device token check (`deviceId` + token against that device's row, accepting the current hash or `prev_token_hash`; a successful check with the current hash clears `prev_token_hash`), activity bump (`last_seen_at`) on every successful check, 72h rotation check (returns a fresh token when due, moving the old hash to `prev_token_hash`), 7-day idle-expiry check per device. Tokens are `randomBytes(32)` base64url with no prefix; only the SHA-256 is stored and lookup is by `device_id`, then hash comparison. Clock injected (`now` param) so tests never sleep. Rules per `03 - Auth & Security.md`.
+11. ✅ **Tests (mocked clock)** — rotation fires past 72h and not before; expiry fires past 7 days idle and not before; activity bump on every successful check; bad token rejected; a token belonging to another device rejected; previous token accepted as a retry and answered with the current token.
 
 ### Done Criteria
 
-❌ Auth logic fully testable in isolation, ready to wire into endpoints.
+✅ Auth logic fully testable in isolation, ready to wire into endpoints.
 
 ---
 

@@ -97,3 +97,39 @@ export async function insertDevice(
 export function getDevice(deviceId: string): Promise<DeviceRow | undefined> {
   return one("SELECT * FROM devices WHERE device_id = $1", [deviceId]);
 }
+
+// Successful check with the current token: ends the previous token's grace (D8) and bumps activity.
+export async function touchDevice(deviceId: string, now: Date): Promise<void> {
+  await rows(
+    "UPDATE devices SET prev_token_hash = NULL, last_seen_at = $2 WHERE device_id = $1",
+    [deviceId, now],
+  );
+}
+
+// Compare-and-swap on the current hash, so two requests racing to rotate cannot
+// both win. Returns false when another request already rotated.
+export async function rotateDeviceToken(
+  deviceId: string,
+  currentHash: string,
+  newHash: string,
+  now: Date,
+): Promise<boolean> {
+  const updated = await rows(
+    `UPDATE devices
+     SET prev_token_hash = token_hash, token_hash = $3, token_rotated_at = $4, last_seen_at = $4
+     WHERE device_id = $1 AND token_hash = $2 RETURNING device_id`,
+    [deviceId, currentHash, newHash, now],
+  );
+  return updated.length > 0;
+}
+
+// Previous-token retry that needs no rotation: bump activity only, keep the grace.
+export async function bumpDeviceActivity(
+  deviceId: string,
+  now: Date,
+): Promise<void> {
+  await rows("UPDATE devices SET last_seen_at = $2 WHERE device_id = $1", [
+    deviceId,
+    now,
+  ]);
+}
