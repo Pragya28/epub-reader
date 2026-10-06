@@ -4,7 +4,7 @@ import type {
   StoredBook,
 } from "@/services/storage/storage-types";
 
-interface ReaderDocument {
+export interface ReaderDocument {
   book: StoredBook;
   file: Blob;
 }
