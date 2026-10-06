@@ -3,6 +3,7 @@ import { useReaderScreen } from "@/features/reader/hooks/use-reader-screen";
 import { ReaderFrame } from "@/features/reader/components/reader-frame";
 import { TocDrawer } from "@/features/reader/components/toc-drawer";
 import { ReaderToolbar } from "@/features/reader/components/reader-toolbar";
+import { AboutBookButton } from "@/features/reader/components/about-book-button";
 import { ExternalLinkDialog } from "@/features/reader/components/external-link-dialog";
 import { OpenElsewhereDialog } from "@/features/reader/components/open-elsewhere-dialog";
 import { ProgressSyncDialog } from "@/features/reader/components/progress-sync-dialog";
@@ -159,7 +160,14 @@ export const ReaderScreen: FC = () => {
           </p>
         </div>
 
-        <ReaderToolbar onOpenChange={setChromeOverlay} />
+        <div className="flex items-center">
+          <AboutBookButton
+            book={readerDocument.book}
+            coverUrl={coverUrl}
+            onOpenChange={setChromeOverlay}
+          />
+          <ReaderToolbar onOpenChange={setChromeOverlay} />
+        </div>
       </header>
 
       {/* Reader Content */}

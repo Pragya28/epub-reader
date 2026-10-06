@@ -183,6 +183,7 @@ export function useBookCard(
     hasMoreByAuthor,
     openMoreByAuthor,
     hasSeriesLink,
+    seriesBookCount: booksInSeriesCount,
     openViewSeries,
     menuItems,
   };

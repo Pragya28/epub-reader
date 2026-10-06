@@ -157,6 +157,31 @@ describe("ReaderScreen", () => {
     expect(screen.queryByText("7990%")).not.toBeInTheDocument();
   });
 
+  it("opens the About Book sheet from the header's info button", async () => {
+    readerStore.setState({
+      isLoading: false,
+      error: null,
+      readerDocument: {
+        book: {
+          id: "book-1",
+          title: "Test Book",
+          author: "Test Author",
+          description: "A book about testing.",
+        } as never,
+        file: new Blob(),
+      },
+      parsedBook: mockParsedBook,
+      currentChapterIndex: 0,
+    });
+
+    const user = userEvent.setup();
+    renderReaderScreen();
+
+    await user.click(screen.getByRole("button", { name: "About this book" }));
+
+    expect(screen.getByText("A book about testing.")).toBeInTheDocument();
+  });
+
   it("calls loadReaderBook on mount for the given bookId", () => {
     readerStore.setState({ isLoading: true });
 
