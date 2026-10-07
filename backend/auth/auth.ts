@@ -35,7 +35,7 @@ export function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
-function sameHash(a: string, b: string | null): boolean {
+export function sameHash(a: string, b: string | null): boolean {
   return (
     b !== null &&
     a.length === b.length &&
