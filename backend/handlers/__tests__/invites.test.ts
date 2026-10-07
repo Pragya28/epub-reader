@@ -75,6 +75,7 @@ describe("invites", () => {
     for (const headers of bad) {
       const res = await call(headers);
       expect(res.status).toBe(401);
+      expect(res.headers.get("Cache-Control")).toBe("no-store");
       expect(errorResponseSchema.parse(await res.json()).error.code).toBe(
         "invalid_credentials",
       );
@@ -90,6 +91,7 @@ describe("invites", () => {
       new Date(NOW.getTime() + 30 * 24 * 60 * 60 * 1000),
     );
     expect(res.status).toBe(401);
+    expect(res.headers.get("Cache-Control")).toBe("no-store");
     expect(errorResponseSchema.parse(await res.json()).error.code).toBe(
       "token_expired",
     );
