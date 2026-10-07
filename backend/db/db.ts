@@ -181,3 +181,26 @@ export async function createUserWithDevice(
   );
   return created.length > 0;
 }
+
+export interface NewDevice {
+  userId: string;
+  proofHash: string;
+  deviceId: string;
+  label: string;
+  tokenHash: string;
+  now: Date;
+}
+
+// Adds a device only when the user's registration proof matches, in one
+// statement. Returns false for an unknown user or a wrong proof; a taken
+// `deviceId` raises `devices_pkey` (23505).
+export async function createDeviceWithProof(d: NewDevice): Promise<boolean> {
+  const created = await rows(
+    `INSERT INTO devices (device_id, user_id, label, token_hash, token_rotated_at, first_seen_at, last_seen_at)
+     SELECT $3, user_id, $4, $5, $6, $6, $6 FROM sync_state
+     WHERE user_id = $1 AND registration_proof_hash = $2
+     RETURNING device_id`,
+    [d.userId, d.proofHash, d.deviceId, d.label, d.tokenHash, d.now],
+  );
+  return created.length > 0;
+}
