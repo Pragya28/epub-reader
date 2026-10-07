@@ -1,1 +1,1 @@
-export { POST } from "../backend/handlers/setup";
+export { handleSetup as POST } from "../backend/handlers/setup";

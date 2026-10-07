@@ -6,7 +6,7 @@ import { setupResponseSchema } from "../../../contracts/setup";
 import { hashInviteCode } from "../../auth/invite-code";
 import { insertInvite } from "../../db/db";
 import { createTestDb } from "../../tests/test-db";
-import { POST } from "../setup";
+import { handleSetup } from "../setup";
 
 const NOW = new Date("2026-09-28T10:00:00.000Z");
 let pg: PGlite;
@@ -20,7 +20,7 @@ afterAll(async () => {
 });
 
 function setup(extra: object = {}) {
-  return POST(
+  return handleSetup(
     new Request("http://x/api/setup", {
       method: "POST",
       body: JSON.stringify({

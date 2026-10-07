@@ -6,7 +6,10 @@ import { hashToken, issueToken } from "../auth/auth";
 import { createUserWithDevice } from "../db/db";
 import { constraintOf, errorResponse, json, parseBody } from "./http";
 
-export async function POST(req: Request, now = new Date()): Promise<Response> {
+export async function handleSetup(
+  req: Request,
+  now = new Date(),
+): Promise<Response> {
   const body = await parseBody(req, setupRequestSchema);
   if ("response" in body) return body.response;
   const { deviceId, label, proof, inviteCode } = body.data;
