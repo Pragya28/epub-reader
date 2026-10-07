@@ -1,6 +1,11 @@
 import { neon } from "@neondatabase/serverless";
 
-import type { DeviceRow, InviteRow, SyncStateRow, UserRow } from "./db-types";
+import type {
+  DeviceRow,
+  InviteRow,
+  SyncStateRow,
+  UserRow,
+} from "./db-types.ts";
 
 // The one file that imports the driver. Everything else goes through `query`,
 // so tests swap in pglite via `setQuery` and a provider move only touches this file.

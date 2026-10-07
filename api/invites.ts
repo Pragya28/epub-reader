@@ -1,1 +1,1 @@
-export { handleInvites as POST } from "../backend/handlers/invites";
+export { handleInvites as POST } from "../backend/handlers/invites.ts";

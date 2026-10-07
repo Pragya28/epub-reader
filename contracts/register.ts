@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { deviceIdSchema, labelSchema, proofSchema } from "./authenticated";
+import { deviceIdSchema, labelSchema, proofSchema } from "./authenticated.ts";
 
 export const registerRequestSchema = z.object({
   userId: z.uuid(),

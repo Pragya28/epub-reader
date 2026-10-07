@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 
-import { hashToken } from "./auth";
+import { hashToken } from "./auth.ts";
 
 // Codes are shown in groups of four ("ABCD-EFGH-..."); users may type them any way.
 export function hashInviteCode(code: string): string {

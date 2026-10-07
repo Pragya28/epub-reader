@@ -1,10 +1,10 @@
 import {
   registerRequestSchema,
   type RegisterResponse,
-} from "../../contracts/register";
-import { hashToken, issueToken } from "../auth/auth";
-import { createDeviceWithProof } from "../db/db";
-import { constraintOf, errorResponse, json, parseBody } from "./http";
+} from "../../contracts/register.ts";
+import { hashToken, issueToken } from "../auth/auth.ts";
+import { createDeviceWithProof } from "../db/db.ts";
+import { constraintOf, errorResponse, json, parseBody } from "./http.ts";
 
 export async function handleRegister(
   req: Request,

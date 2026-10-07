@@ -1,8 +1,8 @@
-import { INVITE_EXPIRY_MS } from "../../contracts/auth-constants";
-import type { InvitesResponse } from "../../contracts/invites";
-import { generateInviteCode, hashInviteCode } from "../auth/invite-code";
-import { insertInvite } from "../db/db";
-import { authenticateRequest, json } from "./http";
+import { INVITE_EXPIRY_MS } from "../../contracts/auth-constants.ts";
+import type { InvitesResponse } from "../../contracts/invites.ts";
+import { generateInviteCode, hashInviteCode } from "../auth/invite-code.ts";
+import { insertInvite } from "../db/db.ts";
+import { authenticateRequest, json } from "./http.ts";
 
 export async function handleInvites(
   req: Request,
