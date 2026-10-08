@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -94,4 +95,29 @@ test("production build serves the app, registers a service worker, and imports a
 
   expect(consoleErrors).toEqual([]);
   expect(unexpectedFailedRequests).toEqual([]);
+});
+
+// The PWA bundle must never carry backend code (boundary layer 3). These are
+// literals that survive minification: the DB driver packages, Node-only
+// imports, and strings only backend/ contains.
+const BACKEND_MARKERS = [
+  "@neondatabase",
+  "pg-pool",
+  "node:crypto",
+  "DATABASE_URL",
+  "users_single_uninvited",
+  "schema_migrations",
+];
+
+test("dist/ contains no backend code or Node-only markers", () => {
+  const dist = path.join(__dirname, "../dist");
+  const leaks = (readdirSync(dist, { recursive: true }) as string[])
+    .filter((f) => /\.(js|css|html|map|webmanifest)$/.test(f))
+    .flatMap((f) => {
+      const text = readFileSync(path.join(dist, f), "utf8");
+      return BACKEND_MARKERS.filter((m) => text.includes(m)).map(
+        (m) => `${f}: ${m}`,
+      );
+    });
+  expect(leaks).toEqual([]);
 });
