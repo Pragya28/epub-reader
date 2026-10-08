@@ -3,13 +3,13 @@ import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import {
   DEVICE_IDLE_EXPIRY_MS,
   TOKEN_ROTATION_MS,
-} from "../../contracts/auth-constants.ts";
+} from "../../contracts/auth-constants.js";
 import {
   bumpDeviceActivity,
   getDevice,
   rotateDeviceToken,
   touchDevice,
-} from "../db/db.ts";
+} from "../db/db.js";
 
 export type AuthErrorCode = "invalid_credentials" | "token_expired";
 

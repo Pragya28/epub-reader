@@ -1,1 +1,1 @@
-export { handleRegister as POST } from "../backend/handlers/register.ts";
+export { handleRegister as POST } from "../backend/handlers/register.js";

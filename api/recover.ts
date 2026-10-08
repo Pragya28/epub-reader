@@ -1,1 +1,1 @@
-export { handleRecover as POST } from "../backend/handlers/recover.ts";
+export { handleRecover as POST } from "../backend/handlers/recover.js";

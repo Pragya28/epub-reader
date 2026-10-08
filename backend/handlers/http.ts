@@ -1,9 +1,9 @@
 import type { ZodType } from "zod";
 
-import { AuthError, authenticate, type AuthResult } from "../auth/auth.ts";
+import { AuthError, authenticate, type AuthResult } from "../auth/auth.js";
 
-import { DEVICE_ID_HEADER } from "../../contracts/authenticated.ts";
-import { ERROR_STATUS, type ErrorCode } from "../../contracts/errors.ts";
+import { DEVICE_ID_HEADER } from "../../contracts/authenticated.js";
+import { ERROR_STATUS, type ErrorCode } from "../../contracts/errors.js";
 
 export function json(body: unknown, status = 200): Response {
   return Response.json(body, {

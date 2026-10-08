@@ -1,9 +1,9 @@
-import { DEVICE_IDLE_EXPIRY_MS } from "../../contracts/auth-constants.ts";
-import { DEVICE_ID_HEADER } from "../../contracts/authenticated.ts";
-import type { RecoverResponse } from "../../contracts/recover.ts";
-import { hashToken, issueToken, sameHash } from "../auth/auth.ts";
-import { getDevice, rotateDeviceToken } from "../db/db.ts";
-import { errorResponse, json } from "./http.ts";
+import { DEVICE_IDLE_EXPIRY_MS } from "../../contracts/auth-constants.js";
+import { DEVICE_ID_HEADER } from "../../contracts/authenticated.js";
+import type { RecoverResponse } from "../../contracts/recover.js";
+import { hashToken, issueToken, sameHash } from "../auth/auth.js";
+import { getDevice, rotateDeviceToken } from "../db/db.js";
+import { errorResponse, json } from "./http.js";
 
 // Re-issues a token to a device that idled out (D10). `authenticate()` can't be
 // reused: it rejects an expired device, and here that is the required state.
