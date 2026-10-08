@@ -100,15 +100,20 @@ describe.skipIf(!url)("races (real Postgres)", () => {
     expect(rows).toHaveLength(1);
   });
 
-  it("issues exactly one new token when N requests rotate one device", async () => {
+  it("settles on one current token when N requests rotate one device", async () => {
     const { deviceId, token } = await newDevice();
     const now = new Date(T0.getTime() + TOKEN_ROTATION_MS + 1000);
     const results = await Promise.all(
       Array.from({ length: N }, () => authenticate(deviceId, token, now)),
     );
     const issued = results.flatMap((r) => (r.token ? [r.token] : []));
-    expect(issued).toHaveLength(1);
-    expect((await getDevice(deviceId))?.token_hash).toBe(hashToken(issued[0]));
+    // A request that reads after another rotated holds the now-previous token
+    // and is answered with a fresh one (D8), so more than one token can be
+    // issued; the stored current token is always one of them.
+    expect(issued.length).toBeGreaterThanOrEqual(1);
+    expect(issued.map(hashToken)).toContain(
+      (await getDevice(deviceId))?.token_hash,
+    );
   });
 
   it("settles on one current token when recover overlaps a rotation", async () => {
