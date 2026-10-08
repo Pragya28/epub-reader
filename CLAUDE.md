@@ -35,6 +35,8 @@ Both hooks `set -e`, so a failure in any step blocks the commit/push rather than
 
 Neither hook runs e2e (`pnpm test:e2e`, Playwright) — a full build+preview cycle is too slow for a git hook, so it only runs in CI. For a change that touches reader/library UI behavior (not just styling), run `pnpm test:e2e` locally before pushing rather than relying on CI to catch it first.
 
+Docker runs through Colima on this machine (no Docker Desktop): run `colima start` before any `docker` command. The backend race tests (`backend/handlers/__tests__/races.test.ts`) need a real Postgres and skip without `TEST_DATABASE_URL`; locally: `docker run -d --name librune-pg-test -e POSTGRES_PASSWORD=test -p 5433:5432 postgres:16`, then `TEST_DATABASE_URL=postgres://postgres:test@localhost:5433/postgres pnpm test:run backend/handlers/__tests__/races.test.ts`. CI supplies the database through a service container.
+
 Package manager is pnpm (`packageManager` pinned in package.json) — don't use npm/yarn.
 
 ## Architecture
