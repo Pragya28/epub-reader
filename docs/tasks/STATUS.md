@@ -25,9 +25,9 @@ Sprint numbering restarts at 1 within this phase; task lists land under
 `feature-phase-1/` as sprints are kicked off (see
 `central-docs/09 - Feature Phase 1 - Sync & Cross-Device/06 - Implementation/`).
 
-| Sprint | Focus              | Status         | Task list                                              |
-| ------ | ------------------ | -------------- | ------------------------------------------------------ |
-| 1      | Backend foundation | 🟡 Not started | [SPRINT-1-TASKS.md](feature-phase-1/SPRINT-1-TASKS.md) |
+| Sprint | Focus              | Status      | Task list                                              |
+| ------ | ------------------ | ----------- | ------------------------------------------------------ |
+| 1      | Backend foundation | ✅ Complete | [SPRINT-1-TASKS.md](feature-phase-1/SPRINT-1-TASKS.md) |
 
 ---
 
