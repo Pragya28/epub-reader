@@ -27,6 +27,8 @@ Phase-level decisions for Sync & Cross-Device, settled before Sprint 1 and bindi
 - **`register` lands in Sprint 1** (Day 4) — the server only hashes an opaque proof, so nothing server-side waits on Sprint 2's encryption key; `setup` takes the proof from the start, so its contract never changes.
 - **`recover` requires the device's own expired token**, not just its device id — device ids aren't secret.
 - **An already-registered `deviceId` is rejected** by `register`; a device that cleared its data registers under a new id and its old row lapses through idle expiry.
+- **`recover` accepts only the device's current token**, not the previous one: a device that lost a rotation response and then idled out must re-register. A lost `recover` response is retried through any authenticated call, where the old token is still valid as the previous token.
+- **Parallel requests from one device can each rotate its token.** A request that reads after another has rotated holds the now-previous token and is answered with a fresh one (D8), because the current token's plaintext is not stored. A third rotation before the device uses its newest token invalidates the oldest one. Sync is manual and serial, so this is accepted; the race tests assert that the stored current token is one that was issued, not that exactly one was.
 
 ## Layout
 
