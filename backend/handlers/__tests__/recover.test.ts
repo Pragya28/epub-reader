@@ -5,7 +5,7 @@ import { DEVICE_IDLE_EXPIRY_MS } from "../../../contracts/auth-constants";
 import { errorResponseSchema } from "../../../contracts/errors";
 import { recoverResponseSchema } from "../../../contracts/recover";
 import { setupResponseSchema } from "../../../contracts/setup";
-import { hashToken } from "../../auth/auth";
+import { authenticate, hashToken } from "../../auth/auth";
 import { getDevice } from "../../db/db";
 import { createTestDb } from "../../tests/test-db";
 import { handleRecover } from "../recover";
@@ -15,6 +15,7 @@ const NOW = new Date("2026-09-28T10:00:00.000Z");
 const EXPIRED = new Date(NOW.getTime() + DEVICE_IDLE_EXPIRY_MS + 1000);
 let pg: PGlite;
 let token: string;
+let fresh: string;
 
 function recover(
   headers: Record<string, string>,
@@ -74,7 +75,7 @@ describe("recover", () => {
     const res = await recover(creds(), EXPIRED);
     expect(res.status).toBe(200);
     expect(res.headers.get("Cache-Control")).toBe("no-store");
-    const { token: fresh } = recoverResponseSchema.parse(await res.json());
+    ({ token: fresh } = recoverResponseSchema.parse(await res.json()));
     expect(fresh).not.toBe(token);
     const row = await getDevice("first");
     expect(row?.token_hash).toBe(hashToken(fresh));
@@ -83,5 +84,21 @@ describe("recover", () => {
     // the old token no longer matches the current row and the device is live again
     const again = await recover(creds(), EXPIRED);
     expect(again.status).toBe(401);
+  });
+
+  it("treats the pre-recovery token as a one-time retry that ends on first use of the current token", async () => {
+    const later = new Date(EXPIRED.getTime() + 1000);
+    // a recover retry with the old token is not the device's current token
+    expect((await recover(creds(), later)).status).toBe(401);
+
+    // a lost recover response: the old token still authenticates once and is swapped for a fresh one
+    const retry = await authenticate("first", token, later);
+    expect(retry.token).toBeDefined();
+
+    // using the current token ends the previous token's grace
+    await authenticate("first", retry.token!, later);
+    await expect(authenticate("first", fresh, later)).rejects.toMatchObject({
+      code: "invalid_credentials",
+    });
   });
 });
