@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { authenticatedResponseSchema } from "./authenticated";
+import { authenticatedResponseSchema } from "./authenticated.js";
 
 export const invitesResponseSchema = authenticatedResponseSchema.extend({
   code: z.string(),

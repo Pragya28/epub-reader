@@ -3,13 +3,13 @@ import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import {
   DEVICE_IDLE_EXPIRY_MS,
   TOKEN_ROTATION_MS,
-} from "../../contracts/auth-constants";
+} from "../../contracts/auth-constants.js";
 import {
   bumpDeviceActivity,
   getDevice,
   rotateDeviceToken,
   touchDevice,
-} from "../db/db";
+} from "../db/db.js";
 
 export type AuthErrorCode = "invalid_credentials" | "token_expired";
 
@@ -35,7 +35,7 @@ export function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
-function sameHash(a: string, b: string | null): boolean {
+export function sameHash(a: string, b: string | null): boolean {
   return (
     b !== null &&
     a.length === b.length &&

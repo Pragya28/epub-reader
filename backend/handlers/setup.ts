@@ -1,10 +1,13 @@
 import { randomUUID } from "node:crypto";
 
-import { setupRequestSchema, type SetupResponse } from "../../contracts/setup";
-import { hashInviteCode } from "../auth/invite-code";
-import { hashToken, issueToken } from "../auth/auth";
-import { createUserWithDevice } from "../db/db";
-import { constraintOf, errorResponse, json, parseBody } from "./http";
+import {
+  setupRequestSchema,
+  type SetupResponse,
+} from "../../contracts/setup.js";
+import { hashInviteCode } from "../auth/invite-code.js";
+import { hashToken, issueToken } from "../auth/auth.js";
+import { createUserWithDevice } from "../db/db.js";
+import { constraintOf, errorResponse, json, parseBody } from "./http.js";
 
 export async function handleSetup(
   req: Request,

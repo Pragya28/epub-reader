@@ -1,7 +1,7 @@
 import { PGlite } from "@electric-sql/pglite";
 
-import { setQuery } from "../db/db";
-import { migrate, setClientFactory } from "../db/migrate";
+import { setQuery } from "../db/db.js";
+import { migrate, setClientFactory } from "../db/migrate.js";
 
 // A fresh in-process Postgres with every migration applied through the real
 // migration runner, wired into db.ts's `query` seam. Call once per test file
