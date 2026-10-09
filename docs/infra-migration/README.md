@@ -6,9 +6,10 @@ Each file covers one infrastructure decision the backend depends on. It is writt
 
 ## Files
 
-| File                                 | Decision                           |
-| ------------------------------------ | ---------------------------------- |
-| [database-neon.md](database-neon.md) | Postgres hosted on Neon via Vercel |
+| File                                 | Decision                            |
+| ------------------------------------ | ----------------------------------- |
+| [database-neon.md](database-neon.md) | Postgres hosted on Neon via Vercel  |
+| [blob-storage.md](blob-storage.md)   | Encrypted archives on Cloudflare R2 |
 
 ## Shape of each file
 
