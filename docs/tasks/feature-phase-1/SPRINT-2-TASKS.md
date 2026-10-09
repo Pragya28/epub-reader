@@ -26,14 +26,14 @@ Each new package needs explicit approval (project rule: never install without as
 
 ## Day 1 — Encryption Module
 
-1. ❌ **`backup-encryption.ts`** — `encryptArchive(bytes, key)` / `decryptArchive(bytes, key)` using AES-GCM via Web Crypto; random 96-bit IV prepended to the ciphertext; a format version byte so the envelope can evolve. Standalone: no import of sync, auth, or storage code.
-2. ❌ **Distinct wrong-key failure** — a dedicated error class (e.g. `DecryptionError`) for an authentication-tag failure, separate from "input too short / unknown version" so callers can tell "wrong key" from "corrupt file".
-3. ❌ **Key generation + encoding helper** — generate a 256-bit key and encode/decode it for display/entry (Settings UI is Sprint 4; only the pure functions land here). Confirm encoding with the user before building (see Open questions).
-4. ❌ **Tests** — round-trip is byte-identical (empty, small, multi-MB input); wrong key throws the distinct error; tampered ciphertext throws; truncated input throws a different error; two encryptions of the same input differ (IV freshness).
+1. ✅ **`backup-encryption.ts`** — `encryptArchive(bytes, key)` / `decryptArchive(bytes, key)` using AES-GCM via Web Crypto; random 96-bit IV prepended to the ciphertext; a format version byte so the envelope can evolve. Standalone: no import of sync, auth, or storage code.
+2. ✅ **Distinct wrong-key failure** — `WrongKeyError` (a `DecryptionError` subclass) for an authentication-tag failure, separate from the plain `DecryptionError` for "input too short / unknown version" so callers can tell "wrong key" from "corrupt file".
+3. ✅ **Key generation + encoding helper** — generate a 256-bit key and encode/decode it for display/entry (Settings UI is Sprint 4; only the pure functions land here). Delivered as `encryption-key-code.ts`: base32 in groups of four, 52 key characters plus a 4-character checksum (first 20 bits of SHA-256 of the key); decoding ignores case, spaces and dashes and rejects a typo with `KeyCodeError`.
+4. ✅ **Tests** — round-trip is byte-identical (empty, small, multi-MB input); wrong key throws the distinct error; tampered ciphertext throws; truncated input throws a different error; two encryptions of the same input differ (IV freshness).
 
 ### Done Criteria
 
-❌ The archive can be encrypted and decrypted correctly on its own, before anything else depends on it.
+✅ The archive can be encrypted and decrypted correctly on its own, before anything else depends on it.
 
 ---
 
@@ -57,7 +57,7 @@ Each new package needs explicit approval (project rule: never install without as
 11. ❌ **Registration-proof derivation** — `proof = HKDF(encryptionKey, "librune-register")` (D7), one-way with a fixed label, in `src/services/` beside the encryption module; deterministic across devices and never equal to the key. The server side (`setup`/`register` hashing the opaque proof) already exists.
 12. ❌ **End-to-end test** — `setup` → `push` → `pull` as one flow, then a second device `register`s with the same key-derived proof and pulls the same archive. Archive bytes encrypted client-side with the Day 1 module; the in-memory blob fake stands in for the provider.
 13. 🟡 **Token rotation on `pull`/`push`** — rotation, previous-token retry, and "other devices unaffected" are already covered for `invites` and in `auth` tests (Sprint 1 items 10-11, 20); add the same assertions through `pull`/`push` responses.
-14. ❌ **Tests** — freshly set-up device pushes then pulls its own archive back (decrypts to the original); a token due for rotation returns the new token, the old one is accepted only as a retry until the new one is first used; two devices push/pull independently and one's rotation never invalidates the other's token; proof stable across devices, never equal to the key.
+14. ✅ **Tests** — freshly set-up device pushes then pulls its own archive back (decrypts to the original); a token due for rotation returns the new token, the old one is accepted only as a retry until the new one is first used; two devices push/pull independently and one's rotation never invalidates the other's token; proof stable across devices, never equal to the key.
 
 ### Done Criteria
 
@@ -75,7 +75,6 @@ Blob storage is a new infrastructure decision this sprint: [blob-storage.md](../
 
 # Open questions
 
-- Key encoding for user display (base32 groups like invites vs. a word phrase) — only the pure encode/decode lands this sprint.
 - Max archive size / per-user cap — per D11 a non-goal unless the storage free tier is pressured.
 
 # Deferred / Out of Scope
