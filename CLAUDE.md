@@ -8,7 +8,7 @@ Always work in ponytail mode (full intensity) in this repo — favor the simples
 
 When executing a superpowers plan in this repo, default to: a feature branch in the current directory (not an isolated worktree), and inline execution (not subagent-driven-development) — unless the user asks for isolation or subagent dispatch for that specific task.
 
-When asked to implement a plan "one task at a time," stop after each plan task completes (implementation, tests passing, and commit) and wait for explicit go-ahead before starting the next task — do not chain into the next task automatically.
+Implement sprint task lists (`docs/tasks/**/SPRINT-*-TASKS.md`) one numbered task at a time by default, without needing to be asked. Before each task, say which files it touches. After it, explain what was built and why, then stop and wait for explicit go-ahead before starting the next task — never batch a day's tasks, and do not chain into the next task automatically. When asked to implement a plan "one task at a time," the stop point also includes tests passing and the commit.
 
 Superpowers plans live in `docs/superpowers/plans/` (tracked in this repo), not at the project root. Both `docs/superpowers/{plans,specs}/` and `docs/tasks/` are subdivided by phase — `development-phase/`, `post-development/`, `feature-phase-1/`, etc. — mirroring `central-docs/`'s own phase framing; a new plan/spec/task list goes under the phase folder it belongs to, not loose at the top level.
 
