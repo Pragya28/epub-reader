@@ -23,6 +23,8 @@ const SEARCH_DEBOUNCE_MS = 250;
  */
 const MIN_QUERY_LENGTH = 3;
 
+export type SearchScope = "everything" | "titles" | "inside";
+
 const EMPTY_RESULTS: LibrarySearchResults = {
   metadataMatches: [],
   contentMatches: [],
@@ -42,6 +44,7 @@ export function useSearchScreen() {
   // setState in an effect body is what react-hooks/set-state-in-effect
   // forbids (same reason `results` isn't reset there either, below).
   const [settledQuery, setSettledQuery] = useState<string | null>(null);
+  const [scope, setScope] = useState<SearchScope>("everything");
   const [statusFilter, setStatusFilter] = useState<SearchStatusFilter>(
     DEFAULT_SEARCH_STATUS_FILTER,
   );
@@ -111,15 +114,22 @@ export function useSearchScreen() {
     [displayResults, enriched, statusFilter],
   );
 
+  const metadataMatches =
+    scope === "inside" ? EMPTY_RESULTS.metadataMatches : scoped.metadataMatches;
+  const contentMatches =
+    scope === "titles" ? EMPTY_RESULTS.contentMatches : scoped.contentMatches;
+
   return {
     query,
     setQuery,
+    scope,
+    setScope,
     statusFilter,
     setStatusFilter,
     hiddenCount: scoped.hiddenCount,
-    metadataMatches: scoped.metadataMatches,
-    contentMatches: scoped.contentMatches,
-    resultCount: scoped.metadataMatches.length + scoped.contentMatches.length,
+    metadataMatches,
+    contentMatches,
+    resultCount: metadataMatches.length + contentMatches.length,
     isSearching,
     needsMoreInput,
     minQueryLength: MIN_QUERY_LENGTH,

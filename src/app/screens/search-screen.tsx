@@ -7,7 +7,11 @@ import {
   XIcon,
 } from "@phosphor-icons/react";
 import { ROUTES } from "@/utils/routes";
-import { useSearchScreen } from "@/features/library/hooks/use-search-screen";
+import {
+  useSearchScreen,
+  type SearchScope,
+} from "@/features/library/hooks/use-search-screen";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   loadSearchResultDisplays,
   type BookCache,
@@ -36,6 +40,12 @@ const logger = rootLogger.child("search-screen");
 /** Rows built per page. Each costs a chapter decompress + sanitize. */
 const CONTENT_PAGE_SIZE = 10;
 
+const SEARCH_SCOPE_OPTIONS: { value: SearchScope; label: string }[] = [
+  { value: "everything", label: "Everything" },
+  { value: "titles", label: "Titles & authors" },
+  { value: "inside", label: "Inside books" },
+];
+
 const SEARCH_STATUS_OPTIONS: { value: SearchStatusFilter; label: string }[] = [
   { value: "unfinished", label: "Unfinished" },
   { value: "all", label: "All" },
@@ -47,6 +57,8 @@ export const SearchScreen: FC = () => {
   const {
     query,
     setQuery,
+    scope,
+    setScope,
     metadataMatches,
     contentMatches,
     resultCount,
@@ -200,6 +212,20 @@ export const SearchScreen: FC = () => {
       </div>
 
       <div className="px-4 py-4">
+        <Tabs
+          value={scope}
+          onValueChange={(next) => setScope(next as SearchScope)}
+          className="mb-4"
+        >
+          <TabsList variant="pill" aria-label="Search in">
+            {SEARCH_SCOPE_OPTIONS.map(({ value, label }) => (
+              <TabsTrigger key={value} value={value}>
+                {label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+
         {isSearching && (
           <ToggleGroup
             value={[statusFilter]}
@@ -295,6 +321,11 @@ export const SearchScreen: FC = () => {
           </Empty>
         )}
 
+        {metadataMatches.length > 0 && (
+          <h2 className="mb-1 text-ui-sm font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+            Books
+          </h2>
+        )}
         <div className="flex flex-col divide-y divide-divider">
           {metadataMatches.map((book) => (
             <SearchResultRow
@@ -308,6 +339,11 @@ export const SearchScreen: FC = () => {
               }
             />
           ))}
+          {contentDisplay.length > 0 && (
+            <h2 className="pt-4 pb-1 text-ui-sm font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+              In the text
+            </h2>
+          )}
           {contentDisplay.map((match) => (
             <SearchResultRow
               key={`${match.bookId}-${match.chapter}`}

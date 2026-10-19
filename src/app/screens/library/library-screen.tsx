@@ -155,7 +155,7 @@ export const LibraryScreen: FC = () => {
       {/* Extra bottom padding keeps content clear of the fixed bottom bar;
           top padding clears the fixed header above. */}
       <main className="flex-1 pt-(--header-height) pb-36">
-        <div className="sticky top-0 z-40 bg-background px-4">
+        <div className="sticky top-0 z-40 bg-background px-5 pt-3">
           <Tabs
             value={isShelves ? "shelves" : "books"}
             onValueChange={(value) =>
@@ -165,14 +165,14 @@ export const LibraryScreen: FC = () => {
             }
             className="pb-5"
           >
-            <TabsList variant="line" aria-label="Library sections">
+            <TabsList variant="pill" aria-label="Library sections">
               <TabsTrigger value="books">Books</TabsTrigger>
               <TabsTrigger value="shelves">Shelves</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
 
-        <div className="px-4">
+        <div className="px-5">
           {isShelves ? (
             <ShelvesGrid />
           ) : (
