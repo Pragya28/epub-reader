@@ -32,10 +32,16 @@ describe("backup encryption", () => {
     ).rejects.toBeInstanceOf(WrongKeyError);
   });
 
-  it("rejects tampered ciphertext as a wrong-key failure", async () => {
+  // 8-byte payload: byte 0 is the version, 1-12 the IV, 13-20 the body, 21-36 the tag.
+  it.each([
+    ["IV", 5],
+    ["body", 15],
+    ["tag", 36],
+  ])("rejects a flipped %s byte as a wrong-key failure", async (_, index) => {
     const key = generateKey();
-    const envelope = await encryptArchive(new Uint8Array([1, 2, 3]), key);
-    envelope[envelope.length - 1] ^= 1;
+    const envelope = await encryptArchive(new Uint8Array(8), key);
+    expect(envelope.length).toBe(37);
+    envelope[index] ^= 1;
     await expect(decryptArchive(envelope, key)).rejects.toBeInstanceOf(
       WrongKeyError,
     );
@@ -77,6 +83,14 @@ describe("encryption key code", () => {
     const code = await encodeKey(generateKey());
     const typo = (code[0] === "A" ? "B" : "A") + code.slice(1);
     await expect(decodeKey(typo)).rejects.toBeInstanceOf(KeyCodeError);
+  });
+
+  it("decodes to a key that decrypts what the original key encrypted", async () => {
+    const key = generateKey();
+    const data = new Uint8Array([9, 8, 7]);
+    const envelope = await encryptArchive(data, key);
+    const restored = await decodeKey(await encodeKey(key));
+    expect(await decryptArchive(envelope, restored)).toEqual(data);
   });
 
   it("rejects wrong length and invalid characters", async () => {
