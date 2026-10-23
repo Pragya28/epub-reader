@@ -73,6 +73,19 @@ describe("AboutBookButton", () => {
     );
   });
 
+  it("keeps the cover and title outside the scroll area, so they stay in view while the rest scrolls", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<AboutBookButton book={makeBook()} coverUrl={coverUrl} />);
+
+    await user.click(screen.getByRole("button", { name: "About this book" }));
+
+    const viewport = document.querySelector(
+      '[data-slot="scroll-area-viewport"]',
+    );
+    expect(viewport).not.toContainElement(screen.getByText("Test Book"));
+    expect(viewport).not.toContainElement(screen.getByText("Test Author"));
+  });
+
   it("passes the given coverUrl through to the sheet's cover image", async () => {
     const user = userEvent.setup();
     renderWithRouter(<AboutBookButton book={makeBook()} coverUrl={coverUrl} />);
