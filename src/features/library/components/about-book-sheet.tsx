@@ -55,42 +55,46 @@ export const AboutBookSheet: FC<AboutBookSheetProps> = ({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="flex max-h-[85dvh] flex-col rounded-t-3xl border-t bg-card p-0"
+        className="flex max-h-[85dvh] flex-col overflow-hidden rounded-t-3xl border-t bg-card p-0"
       >
         <SheetTitle className="sr-only">About {book.title}</SheetTitle>
+
+        {/* Cover + title stay outside the ScrollArea below, so they're
+            always visible rather than scrolling away with the description —
+            the sheet's one fixed point of reference while the rest scrolls. */}
+        <div className="flex shrink-0 gap-4 border-b border-divider p-6 pb-4">
+          <div className="w-24 shrink-0 aspect-2/3 overflow-hidden rounded-xl border border-border/40 elevated-soft">
+            <BookCover
+              id={book.id}
+              title={book.title}
+              author={book.author}
+              coverUrl={book.coverBg}
+            />
+          </div>
+
+          <div className="flex min-w-0 flex-col justify-center gap-1">
+            <p className="font-bold text-title-sm leading-tight text-foreground wrap-break-word">
+              {book.title}
+            </p>
+            {book.author && (
+              <p className="text-ui-sm text-muted-foreground wrap-break-word">
+                {book.author}
+              </p>
+            )}
+          </div>
+        </div>
 
         {/* max-h-[85dvh] on SheetContent caps the sheet's height, but
             doesn't make overflow scroll on its own — a long description
             (or just a small viewport) got silently clipped at the bottom
             with no way to read the rest. ScrollArea here, not on
             SheetContent itself, keeps the close button (rendered by Sheet
-            outside this tree) fixed in place rather than scrolling away. */}
+            outside this tree) and the header above fixed in place rather
+            than scrolling away. */}
         <ScrollArea className="flex-1 overflow-auto">
-          <div className="flex flex-col gap-5 p-6 pt-8">
-            <div className="flex gap-4">
-              <div className="w-24 shrink-0 aspect-2/3 overflow-hidden rounded-xl border border-border/40 elevated-soft">
-                <BookCover
-                  id={book.id}
-                  title={book.title}
-                  author={book.author}
-                  coverUrl={book.coverBg}
-                />
-              </div>
-
-              <div className="flex min-w-0 flex-col justify-center gap-1">
-                <p className="font-bold text-title-sm leading-tight text-foreground">
-                  {book.title}
-                </p>
-                {book.author && (
-                  <p className="text-ui-sm text-muted-foreground">
-                    {book.author}
-                  </p>
-                )}
-              </div>
-            </div>
-
+          <div className="flex flex-col gap-5 p-6 pt-4">
             {(progressText || readingTimeText) && (
-              <div className="flex flex-col gap-2 border-t border-divider pt-4 text-ui-sm text-muted-foreground">
+              <div className="flex flex-col gap-2 text-ui-sm text-muted-foreground">
                 {progressText && (
                   <div className="flex items-center gap-2">
                     <BookOpenIcon size={16} />
@@ -107,7 +111,13 @@ export const AboutBookSheet: FC<AboutBookSheetProps> = ({
             )}
 
             {book.description && (
-              <p className="border-t border-divider pt-4 text-ui text-foreground/80 leading-relaxed whitespace-pre-line">
+              <p
+                className={`text-ui text-foreground/80 leading-relaxed whitespace-pre-line ${
+                  progressText || readingTimeText
+                    ? "border-t border-divider pt-4"
+                    : ""
+                }`}
+              >
                 {book.description}
               </p>
             )}
@@ -119,13 +129,13 @@ export const AboutBookSheet: FC<AboutBookSheetProps> = ({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="self-start"
+                    className="h-auto w-full min-w-0 justify-start py-1.5 text-left whitespace-normal"
                     onClick={() => {
                       onOpenChange(false);
                       onViewSeries?.();
                     }}
                   >
-                    <BooksIcon size={16} />
+                    <BooksIcon size={16} className="shrink-0" />
                     {seriesLinkText}
                   </Button>
                 )}
@@ -135,13 +145,13 @@ export const AboutBookSheet: FC<AboutBookSheetProps> = ({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="self-start"
+                    className="h-auto w-full min-w-0 justify-start py-1.5 text-left whitespace-normal"
                     onClick={() => {
                       onOpenChange(false);
                       onMoreByAuthor();
                     }}
                   >
-                    <UsersIcon size={16} />
+                    <UsersIcon size={16} className="shrink-0" />
                     More by {book.author}
                   </Button>
                 )}
