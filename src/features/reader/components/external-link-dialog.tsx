@@ -9,6 +9,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { notify } from "@/components/toast/toast";
 
 interface ExternalLinkDialogProps {
   open: boolean;
@@ -23,6 +25,16 @@ export const ExternalLinkDialog: FC<ExternalLinkDialogProps> = ({
   onConfirm,
   onOpenChange,
 }) => {
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(href);
+      notify.success("Link copied");
+      onOpenChange(false);
+    } catch {
+      notify.error("Couldn't copy link");
+    }
+  };
+
   const display = href.replace(/^[a-z][a-z\d+\-.]*:\/\//i, "");
 
   return (
@@ -41,6 +53,10 @@ export const ExternalLinkDialog: FC<ExternalLinkDialogProps> = ({
 
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+          <Button variant="outline" onClick={handleCopy}>
+            Copy link
+          </Button>
 
           <AlertDialogAction
             onClick={onConfirm}
