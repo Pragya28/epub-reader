@@ -66,4 +66,26 @@ describe("ExternalLinkDialog", () => {
 
     expect(onOpenChange.mock.calls[0]?.[0]).toBe(false);
   });
+
+  it("copies the href and closes when Copy link is clicked", async () => {
+    const onOpenChange = vi.fn();
+    const user = userEvent.setup();
+    const writeText = vi
+      .spyOn(navigator.clipboard, "writeText")
+      .mockResolvedValue();
+
+    render(
+      <ExternalLinkDialog
+        open
+        href="https://example.com/page"
+        onConfirm={vi.fn()}
+        onOpenChange={onOpenChange}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Copy link" }));
+
+    expect(writeText).toHaveBeenCalledWith("https://example.com/page");
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
 });
