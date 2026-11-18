@@ -36,6 +36,7 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-tab-strip: var(--tab-strip);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -169,6 +170,7 @@
 
   /* Header */
   --header-bg: oklch(87.5% 0.045 75.14 / 85%);
+  --tab-strip: oklch(87.5% 0.045 75.14);
   --header-height: 80px;
   --header-blur: 12px;
 
@@ -245,7 +247,8 @@
     --sidebar-border: oklch(27.85% 0.0153 84.54);
     --sidebar-ring: oklch(79.03% 0.0611 87.95);
 
-    --header-bg: oklch(32.05% 0.0317 86.63 / 85%);
+    --header-bg: oklch(23.29% 0.0143 81.6 / 85%);
+  --tab-strip: oklch(23.29% 0.0143 81.6);
     --shadow-soft: 0 2px 8px oklch(0% 0 0 / 0.35);
     --shadow-floating: 0 8px 40px oklch(0% 0 0 / 0.65);
   }
@@ -310,7 +313,8 @@
   --sidebar-border: oklch(27.85% 0.0153 84.54);
   --sidebar-ring: oklch(79.03% 0.0611 87.95);
 
-  --header-bg: oklch(32.05% 0.0317 86.63 / 85%);
+  --header-bg: oklch(23.29% 0.0143 81.6 / 85%);
+  --tab-strip: oklch(23.29% 0.0143 81.6);
   --shadow-soft: 0 2px 8px oklch(0% 0 0 / 0.35);
   --shadow-floating: 0 8px 40px oklch(0% 0 0 / 0.65);
 }

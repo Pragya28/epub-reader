@@ -28,7 +28,7 @@ const tabsListVariants = cva(
       variant: {
         default: "bg-muted",
         line: "gap-1 bg-transparent",
-        pill: "w-full gap-1 rounded-xl bg-secondary p-1 group-data-horizontal/tabs:h-auto",
+        pill: "w-full gap-1 rounded-xl bg-tab-strip p-1 group-data-horizontal/tabs:h-auto",
       },
     },
     defaultVariants: {
