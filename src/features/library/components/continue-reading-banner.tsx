@@ -69,7 +69,6 @@ export const ContinueReadingBanner: FC<ContinueReadingBannerProps> = ({
             value={book.progress ?? 0}
             className="flex-1 h-1"
             trackClassName="bg-popover-foreground/20"
-            indicatorClassName="bg-popover-foreground"
           />
           <span className="shrink-0 whitespace-nowrap text-meta text-popover-foreground/90">
             {chapter} · {book.progress ?? 0}%
