@@ -17,12 +17,9 @@ import {
   subscribeToReadingProgressChannel,
 } from "../utils/reading-progress-channel";
 import { useReaderEngine } from "./use-reader-engine";
+import { isBookFinished } from "../utils/is-book-finished";
 import { useWakeLock } from "./use-wake-lock";
 import { useChromeVisibility } from "@/shared/hooks/use-chrome-visibility";
-
-/** Mirrors derive-book-status.ts's FINISHED_SCROLL_FRACTION_THRESHOLD (0.98),
- * on the 0-100 percent scale progressPercent already uses. */
-const FINISHED_PROGRESS_PERCENT_THRESHOLD = 98;
 
 /**
  * All non-visual state behind ReaderScreen: loading the book and its cover,
@@ -58,6 +55,18 @@ export function useReaderScreen() {
   const isJumping = readerStore((state) => state.isJumping);
 
   const totalChapters = parsedBook?.chapters.length ?? 0;
+
+  // Computed ahead of the useMemos below: the React Compiler treats a call
+  // taking these values as a possible mutation of them, which would make it
+  // reject those memos if the call came after.
+  // "Next in series" banner: fires once the reader reaches the book's end,
+  // reusing getNextInSeries (Sprint 7 Day 4 item 15) rather than a second
+  // detection mechanism.
+  const bookFinished = isBookFinished(
+    currentChapterIndex,
+    totalChapters,
+    progressPercent,
+  );
   // Memoized so an absent TOC doesn't hand currentChapterLabel's useMemo a
   // fresh [] reference (and thus a forced recompute) on every render.
   const toc = useMemo(() => parsedBook?.toc ?? [], [parsedBook]);
@@ -76,24 +85,12 @@ export function useReaderScreen() {
       : "";
   }, [toc, currentChapterIndex, totalChapters]);
 
-  // "Next in series" banner: fires once the reader reaches the book's
-  // literal end this session, same threshold the library uses to mark a
-  // book "finished" (derive-book-status.ts), reusing getNextInSeries
-  // (Sprint 7 Day 4 item 15) rather than a second detection mechanism.
-  // Also finished at 100% off the last chapter — a tiny trailing "End Notes"
-  // page can push the word-weighted percent to 100 one chapter early, and the
-  // library already counts that as finished.
-  const isBookFinished =
-    totalChapters > 0 &&
-    (progressPercent >= 100 ||
-      (currentChapterIndex >= totalChapters - 1 &&
-        progressPercent >= FINISHED_PROGRESS_PERCENT_THRESHOLD));
   const [resolvedNextBook, setNextBook] = useState<BookWithProgress | null>(
     null,
   );
   // The resolved book goes stale if the reader scrolls back above the finish
   // line, so only expose it while the book is still finished.
-  const nextBook = isBookFinished ? resolvedNextBook : null;
+  const nextBook = bookFinished ? resolvedNextBook : null;
 
   useEffect(() => {
     let cancelled = false;
@@ -101,7 +98,7 @@ export function useReaderScreen() {
     async function resolveNextBook() {
       const book = readerDocument?.book;
       if (
-        !isBookFinished ||
+        !bookFinished ||
         !book?.seriesGroupingId ||
         book.seriesIndex === undefined
       ) {
@@ -119,7 +116,7 @@ export function useReaderScreen() {
     return () => {
       cancelled = true;
     };
-  }, [isBookFinished, readerDocument?.book]);
+  }, [bookFinished, readerDocument?.book]);
 
   const [coverUrl, setCoverUrl] = useState<string | undefined>(undefined);
   const [coverChecked, setCoverChecked] = useState(false);
