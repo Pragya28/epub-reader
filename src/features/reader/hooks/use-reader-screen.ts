@@ -80,10 +80,14 @@ export function useReaderScreen() {
   // literal end this session, same threshold the library uses to mark a
   // book "finished" (derive-book-status.ts), reusing getNextInSeries
   // (Sprint 7 Day 4 item 15) rather than a second detection mechanism.
+  // Also finished at 100% off the last chapter — a tiny trailing "End Notes"
+  // page can push the word-weighted percent to 100 one chapter early, and the
+  // library already counts that as finished.
   const isBookFinished =
     totalChapters > 0 &&
-    currentChapterIndex >= totalChapters - 1 &&
-    progressPercent >= FINISHED_PROGRESS_PERCENT_THRESHOLD;
+    (progressPercent >= 100 ||
+      (currentChapterIndex >= totalChapters - 1 &&
+        progressPercent >= FINISHED_PROGRESS_PERCENT_THRESHOLD));
   const [resolvedNextBook, setNextBook] = useState<BookWithProgress | null>(
     null,
   );
