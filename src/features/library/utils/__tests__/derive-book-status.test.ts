@@ -1,5 +1,8 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { enrichBookWithProgress } from "../derive-book-status";
+import {
+  enrichBookWithProgress,
+  isProgressFinished,
+} from "../derive-book-status";
 import type { StoredBook } from "@/services/storage/storage-types";
 
 function makeBook(overrides: Partial<StoredBook> = {}): StoredBook {
@@ -238,5 +241,24 @@ describe("enrichBookWithProgress", () => {
     const enriched = enrichBookWithProgress(book);
 
     expect(enriched.isNew).toBe(false);
+  });
+});
+
+describe("isProgressFinished", () => {
+  it("is finished at 100% even off the last chapter", () => {
+    expect(isProgressFinished(16, 18, 100, false)).toBe(true);
+  });
+
+  it("clamps an out-of-range percent rather than trusting it", () => {
+    expect(isProgressFinished(0, 10, 250, false)).toBe(true);
+  });
+
+  it("needs the end reached on the last chapter below 100%", () => {
+    expect(isProgressFinished(9, 10, 99, true)).toBe(true);
+    expect(isProgressFinished(9, 10, 99, false)).toBe(false);
+  });
+
+  it("is not finished mid-book just because the end signal is set", () => {
+    expect(isProgressFinished(5, 10, 99, true)).toBe(false);
   });
 });

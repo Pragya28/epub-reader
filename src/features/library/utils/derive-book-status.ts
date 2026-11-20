@@ -28,6 +28,32 @@ function isUntouchedProgress(
   );
 }
 
+/**
+ * The one "is this book finished" decision, shared by the library's saved-
+ * progress status and the reader's live next-book check. Callers decide
+ * what "reached the end" means from the signals they have (the library
+ * has atDocumentEnd/scrollFraction; the reader only has the live percent).
+ *
+ * percent is a book-wide, word-count-weighted figure, independent of
+ * chapter position — on a book whose literal last chapter is tiny (an
+ * "End Notes"/acknowledgments page), it can already reach 100 while the
+ * chapter index is still one short of the last (e.g. "17 of 18"). So 100
+ * counts as finished unconditionally, before the last-chapter gate.
+ * Clamped, not trusted outright — a value saved before computeReaderProgress's
+ * own clamp existed, or carried in from a backup/import, isn't guaranteed to
+ * be in 0-100 range, and an out-of-range value would wrongly mark the book
+ * "finished".
+ */
+export function isProgressFinished(
+  chapterIndex: number,
+  totalChapters: number,
+  percent: number,
+  reachedEnd: boolean,
+): boolean {
+  if (clampPercent(percent) >= 100) return true;
+  return chapterIndex >= totalChapters - 1 && reachedEnd;
+}
+
 function deriveReadingStatus(
   progress: StoredBook["progress"],
   manualStatus?: StoredBook["manualStatus"],
@@ -35,22 +61,6 @@ function deriveReadingStatus(
   if (manualStatus) return manualStatus;
 
   if (isUntouchedProgress(progress)) return "unread";
-
-  // percent is a book-wide, word-count-weighted figure, independent of
-  // chapter position — on a book whose literal last chapter is tiny (an
-  // "End Notes"/acknowledgments page), the word-weighted percent can
-  // already reach 100 while chapterIndex is still one chapter short of
-  // the last one (e.g. "17 of 18"). Checked unconditionally, before the
-  // isLastChapter gate below, or a book like that would never register
-  // as finished until landing exactly on its literal last chapter.
-  // Clamped, not trusted outright — a value saved before
-  // computeReaderProgress's own clamp existed, or carried in from a
-  // backup/import, isn't guaranteed to be in 0-100 range, and an
-  // out-of-range value here would wrongly mark the book "finished".
-  if (clampPercent(progress.percent) >= 100) return "finished";
-
-  const isLastChapter = progress.chapterIndex >= progress.totalChapters - 1;
-  if (!isLastChapter) return "reading";
 
   // atDocumentEnd is the reliable signal — it's a document-level check,
   // not dependent on measuring the last chapter's own section height,
@@ -64,7 +74,14 @@ function deriveReadingStatus(
     progress.atDocumentEnd === true ||
     progress.scrollFraction >= FINISHED_SCROLL_FRACTION_THRESHOLD;
 
-  return reachedEnd ? "finished" : "reading";
+  return isProgressFinished(
+    progress.chapterIndex,
+    progress.totalChapters,
+    progress.percent,
+    reachedEnd,
+  )
+    ? "finished"
+    : "reading";
 }
 
 /**

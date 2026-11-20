@@ -188,11 +188,12 @@ export const ReaderScreen: FC = () => {
         )}
       </main>
 
-      {/* Footer */}
+      {/* Footer — pinned visible while a "Next book" is offered at the end of
+          the book, so scrolling can't hide the banner. */}
       <footer
         onFocusCapture={revealChrome}
         className={`folio-header absolute inset-x-0 bottom-0 z-20 flex flex-col gap-2 transition-[transform,opacity] duration-300 ease-out ${
-          chromeVisible
+          chromeVisible || nextBook
             ? "translate-y-0 opacity-100"
             : "translate-y-full opacity-0 pointer-events-none"
         }`}
