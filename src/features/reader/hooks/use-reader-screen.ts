@@ -84,7 +84,12 @@ export function useReaderScreen() {
     totalChapters > 0 &&
     currentChapterIndex >= totalChapters - 1 &&
     progressPercent >= FINISHED_PROGRESS_PERCENT_THRESHOLD;
-  const [nextBook, setNextBook] = useState<BookWithProgress | null>(null);
+  const [resolvedNextBook, setNextBook] = useState<BookWithProgress | null>(
+    null,
+  );
+  // The resolved book goes stale if the reader scrolls back above the finish
+  // line, so only expose it while the book is still finished.
+  const nextBook = isBookFinished ? resolvedNextBook : null;
 
   useEffect(() => {
     let cancelled = false;
