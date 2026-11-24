@@ -153,6 +153,11 @@
   --selected: oklch(50% 0.1046 78.37);
   --selected-foreground: oklch(98.38% 0.0159 82.79);
 
+  /* Wordmark accent (the book letters I and U, docs/brand/BRAND.md):
+     antique brown on light, cover gold on dark. Gold fails contrast on
+     parchment (2.2:1), so light reuses the --selected brown. */
+  --logo-accent: var(--selected);
+
   --chart-1: oklch(48.45% 0.0329 79.18);
   --chart-2: oklch(74.32% 0.1171 89.51);
   --chart-3: oklch(26.56% 0.0178 70.68);
@@ -232,6 +237,8 @@
     --selected: oklch(78% 0.123 78.89);
     --selected-foreground: oklch(18.38% 0.0052 67.5);
 
+    --logo-accent: var(--cover-gold);
+
     --chart-1: oklch(79.03% 0.0611 87.95);
     --chart-2: oklch(74.32% 0.1171 89.51);
     --chart-3: oklch(93.85% 0.0254 86.87);
@@ -297,6 +304,8 @@
      case, not just 1.4.11 (3:1) for non-text indicators. */
   --selected: oklch(78% 0.123 78.89);
   --selected-foreground: oklch(18.38% 0.0052 67.5);
+
+  --logo-accent: var(--cover-gold);
 
   --chart-1: oklch(79.03% 0.0611 87.95);
   --chart-2: oklch(74.32% 0.1171 89.51);

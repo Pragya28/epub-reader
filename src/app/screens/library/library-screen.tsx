@@ -121,7 +121,7 @@ export const LibraryScreen: FC = () => {
             : "-translate-y-full opacity-0 pointer-events-none"
         }`}
       >
-        <WordMark className="mr-auto h-16 w-auto shrink-0" />
+        <WordMark className="mr-auto h-8 w-auto shrink-0" />
         <nav className="flex items-center gap-1 text-foreground">
           <Button
             variant="ghost"
