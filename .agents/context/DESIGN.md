@@ -1,6 +1,6 @@
 ---
 name: Librune
-description: A local-first EPUB reader PWA styled like a bound folio — warm paper tones, serif reading type, and crisp architectural chrome.
+description: A local-first EPUB reader PWA styled like a bound folio — warm paper tones, serif reading type, crisp tool-like chrome, and a carved-books mark.
 colors:
   paper-cream: "#fff9ee"
   ink-black: "#1f1c0f"
@@ -11,8 +11,8 @@ colors:
   primary-onyx: "#040505"
   primary-onyx-foreground: "#fff9ee"
   primary-container-charcoal: "#1e1e1e"
-  secondary-sand: "#f2e0c8"
-  secondary-sand-foreground: "#695d4a"
+  secondary-sand: "#e8d2b6"
+  secondary-sand-foreground: "#574b39"
   muted-taupe-foreground: "#444748"
   destructive-clay: "#b3261e"
   border-mist: "#c4c7c7"
@@ -26,15 +26,31 @@ colors:
   selected: "#835a00"
   selected-foreground: "#fff9ee"
 typography:
-  display:
+  display-lg:
     fontFamily: "Cinzel, serif"
     fontSize: "48px"
+    lineHeight: 1.1
+    letterSpacing: "0.08em"
+  display-lg-mobile:
+    fontFamily: "Cinzel, serif"
+    fontSize: "32px"
+    lineHeight: 1.15
     letterSpacing: "0.08em"
   headline:
     fontFamily: "Cinzel, serif"
     fontSize: "24px"
+    lineHeight: 1.2
     letterSpacing: "0.05em"
-  reading:
+  title-sm:
+    fontFamily: "Cinzel, serif"
+    fontSize: "15px"
+    lineHeight: 1.3
+    letterSpacing: "0.06em"
+  reading-lg:
+    fontFamily: "Literata, serif"
+    fontSize: "20px"
+    lineHeight: 1.6
+  reading-md:
     fontFamily: "Literata, serif"
     fontSize: "17px"
     lineHeight: 1.6
@@ -50,40 +66,67 @@ typography:
     fontFamily: "Atkinson Hyperlegible, sans-serif"
     fontSize: "17px"
     lineHeight: 1.6
-  title-sm:
-    fontFamily: "Cinzel, serif"
-    fontSize: "15px"
-    letterSpacing: "0.06em"
   ui:
     fontFamily: "Plus Jakarta Sans, sans-serif"
     fontSize: "14px"
+    lineHeight: 1.4
+  ui-sm:
+    fontFamily: "Plus Jakarta Sans, sans-serif"
+    fontSize: "12px"
+    fontWeight: 500
+    lineHeight: 1.4
   meta:
     fontFamily: "Plus Jakarta Sans, sans-serif"
     fontSize: "11px"
+    lineHeight: 1.4
     letterSpacing: "0.05em"
   mono:
     fontFamily: "JetBrains Mono, monospace"
+    fontSize: "13px"
+    lineHeight: 1.5
 rounded:
+  base: "0.375rem"
   sm: "0.225rem"
   md: "0.3rem"
+  lg: "0.375rem"
   xl: "0.525rem"
+  2xl: "0.675rem"
   3xl: "0.825rem"
+  4xl: "0.975rem"
 spacing:
   sm: "8px"
   md: "16px"
   lg: "20px"
+  grid-y: "28px"
 components:
   button-primary:
     backgroundColor: "{colors.primary-onyx}"
     textColor: "{colors.primary-onyx-foreground}"
     rounded: "{rounded.sm}"
     padding: "0 10px"
-  button-primary-hover:
-    backgroundColor: "{colors.primary-onyx}"
+    height: "32px"
+  button-secondary:
+    backgroundColor: "{colors.secondary-sand}"
+    textColor: "{colors.secondary-sand-foreground}"
+    rounded: "{rounded.sm}"
+    padding: "0 10px"
+    height: "32px"
+  button-outline:
+    backgroundColor: "{colors.paper-cream}"
+    textColor: "{colors.ink-black}"
+    rounded: "{rounded.sm}"
+    padding: "0 10px"
+    height: "32px"
   button-ghost:
     backgroundColor: "transparent"
     textColor: "{colors.ink-black}"
     rounded: "{rounded.sm}"
+    height: "32px"
+  search-field:
+    backgroundColor: "{colors.surface-parchment}"
+    textColor: "{colors.muted-taupe-foreground}"
+    rounded: "{rounded.md}"
+    padding: "10px 12px"
   book-card:
     backgroundColor: "{colors.surface-parchment}"
     rounded: "{rounded.xl}"
@@ -98,151 +141,181 @@ components:
 
 **Creative North Star: "The Bound Folio"**
 
-Librune reads like a physical folio: warm cream paper, an ink-black spine of UI chrome, and a gold-on-dark cover accent that echoes traditional bookbinding. The reading surface is set in serif type on soft parchment tones, while the architectural chrome around it — buttons, toolbars, the sticky header — stays quiet and disciplined, so it never competes with the page. Book covers, bottom sheets, and panels are the "paper objects" of the system: they get more generous rounded corners and a consistent gentle lift, as if resting slightly above the surface beneath them. Depth is soft and consistent rather than occasional — every card-like surface carries the same low ambient shadow at rest, not just on hover, reinforcing the sense of physical layered pages.
+Librune reads like a physical folio: warm cream paper, an ink-black spine of UI chrome, and a gold-on-dark cover accent that echoes traditional bookbinding. The reading surface is set in serif type on soft parchment tones, while the architectural chrome around it — buttons, toolbars, the sticky header — stays quiet and disciplined, so it never competes with the page. The system is warm and papery, and scholarly in its type: engraved Cinzel capitals for titles, a screen-tuned serif for reading, and a neutral sans only for operating the app.
 
-Corners are soft everywhere, but graduated by role rather than uniform: controls (buttons, menus, dialogs) take a small, disciplined radius that keeps them feeling like precise tools; content objects (book covers, bottom sheets) take a larger radius that reads as a physically rounded paper object. The split is in degree, not in kind — nothing in the system is hard-edged.
+Depth comes from tonal layering, not decoration. Four parchment steps stack like pages; hairline rules (0.5px on the header) separate them; and only content objects — book covers — carry a soft resting shadow. Controls are tool-like and modestly rounded; content objects (covers, sheets) are rounded more generously, so they read as physical paper. The identity mark follows the same logic: three carved books standing behind an open book, drawn from straight strokes so they read like carved runes without being real runes.
 
 **Key Characteristics:**
 
 - Warm parchment palette in light mode, near-black ink in dark mode — never a cold neutral gray.
-- Serif display (Cinzel, wide letter-spacing) for titles; serif body (Literata) for reading; sans (Plus Jakarta Sans) for UI chrome only.
-- Softly rounded throughout, graduated by role: controls (buttons, menus: `rounded-sm`) read as precise tools; content objects (covers, sheets: `rounded-xl`/`rounded-3xl`) read as rounded paper.
-- Consistent soft ambient shadow as a resting-state signature, not just a hover effect.
+- Serif display (Cinzel, wide tracking) for titles; serif (Literata) for reading; sans (Plus Jakarta Sans) for UI chrome only.
+- Radius graduated by role: controls `rounded-sm`, search field `rounded-md`, covers `rounded-xl`, sheets `rounded-t-3xl`.
+- Soft ambient shadow only on content objects at rest; a hard top border, not shadow, on bottom sheets.
+- Gold is a book-object colour: it appears on the mark, the app tile, covers and the I and U of the dark wordmark, never on UI chrome.
 
 ## Colors
 
-A warm parchment-and-ink palette that inverts cleanly between a cream light mode and a near-black dark mode, plus one amber accent hue reserved exclusively for selection/status signaling — everything else is tone and weight, not new colors.
+A warm parchment-and-ink palette that inverts cleanly between a cream light mode and a near-black dark mode, plus one amber accent (`selected`) reserved for active-choice signaling and one gold (`cover-gold`) reserved for book objects. Everything else is tone and weight.
 
 ### Primary
 
-- **Primary Onyx** (`#040505` light / `#f5f2ea` dark): primary buttons, active nav, headline emphasis. Near-black in light mode, near-white in dark mode — a true ink/paper inversion rather than a tinted primary.
+- **Primary Onyx** (`#040505` light / `#f5f2ea` dark): primary buttons, active nav, headline emphasis. A true ink/paper inversion, not a tinted primary. Its container tone (`primary-container`) is `#1e1e1e` light / `#2c2a24` dark.
 
 ### Secondary
 
-- **Secondary Sand** (`#f2e0c8` light / `#3a3220` dark): secondary button fill, selected list items in sheets (TOC drawer, toolbar).
+- **Secondary Sand** (`#e8d2b6` light / `#3a3220` dark; foreground `#574b39` / `#cbb98e`): secondary button fill, selected list items in sheets, the tab strip and the header's translucent base. Also serves as `accent`.
 
 ### Accent
 
-- **Warm Accent — Antique Gold** (`#a67c00` bg / `#1a1200` fg, fixed — does not change with theme): reserved for a fixed, theme-independent gold tile, distinct from the primary-onyx ink/paper inversion used everywhere else. Currently unapplied — no surface in the app uses it. The continue-reading banner and the library's speed-dial FAB, its two prior applications, now use the neutral Parchment Low surface (see below) instead, matching the floating chrome elsewhere (dropdown menus, the FAB's own action labels) rather than standing out as gold CTAs.
-- **Selected** (`#835a00` bg light / `#e2ad54` bg dark, tuned per theme for contrast): the one color used both to mark "this option is active" — switch checked-track, radio-row selected ring + checkmark, active-filter status dot (WCAG 1.4.11, 3:1) — and as literal text color on the search-result match highlight (`search-result-row.tsx`'s `<mark>`, WCAG 1.4.3, 4.5:1, the stricter case). Darkened 2026-08-23 (light) / lightened slightly (dark) after the highlight case measured only ~3.2:1 against its `bg-cover-gold/35` background — enough for 1.4.11 but not 1.4.3; both themes now clear 4.5:1 there and 5:1+ against `card`/`surface-high`. Distinct from Cover Gold so an amber accent never gets mistaken for "this is a book object."
+- **Selected** (`#835a00` light / `#e2ad54` dark, tuned per theme): the one color for "this option is active" — switch checked track, radio-row ring and check, active-filter dot — and for the search-result match text. Clears 4.5:1 on its highlight and 5:1+ against `card` and `surface-high`. Distinct from Cover Gold so an amber accent is never mistaken for a book object.
+- **Cover Gold** (`#c9a84c`, fixed): book objects only — cover placeholder gradients, the mark, the app tile, and the I and U of the dark wordmark. Gold on parchment is 2.2:1, so it never appears on a light ground.
+- **Warm Accent** (`#a67c00` bg / `#1a1200` fg, fixed): a theme-independent gold tile defined in the tokens and currently unused by any surface.
+- **Logo Accent** (`--logo-accent`): the book letters I and U of the wordmark. Resolves to `selected` brown on light and `cover-gold` on dark.
 
 ### Neutral
 
 - **Paper Cream** (`#fff9ee` light / `#141210` dark): app background.
-- **Parchment Low/Mid/High/Highest** (`#fbf3df` → `#eae2ce` light; `#1a1713` → `#322b1e` dark): a four-step surface ramp for cards, popovers, and layered panels — each step a shade darker (light mode) or lighter (dark mode) than the background. Parchment Low is also `--popover`, so anything styled `bg-popover` (dropdown menus, the FAB action labels, the continue-reading banner, the library FAB) sits on this same step.
+- **Parchment Low / Mid / High / Highest** (`#fbf3df`, `#f5edd9`, `#f0e8d4`, `#eae2ce` light; `#1a1713`, `#211d16`, `#292319`, `#322b1e` dark): a four-step surface ramp for popovers, cards, muted fills and the highest panels. Low is also `popover` and `sidebar`.
 - **Ink Black** (`#1f1c0f` light / `#f2ead8` dark): primary text.
-- **Muted Taupe** (`#444748` light / `#b3ada0` dark): secondary/meta text.
-- **Border Mist** (`#c4c7c7` light / `#3d3a34` dark): decorative hairlines only — section-card edges, sheet-header rules, cover frames. Deliberately below 3:1; never used on a control.
-- **Control Edge** (`#7c7e7e` light / `#757370` dark, `--input`): every interactive boundary — outline-button edges, the switch's off track, radio outlines, the search underline. Held at ≥3:1 against page, card, and surface-high in both themes (WCAG 1.4.11). See the Boundary vs Decoration Rule.
+- **Muted Taupe** (`#444748` light / `#b3ada0` dark): secondary and meta text.
+- **Destructive Clay** (`#b3261e` light / `#f2b8b5` dark): destructive actions; buttons use it as a low-opacity tint, not a solid fill.
+- **Border Mist** (`#c4c7c7` light / `#3d3a34` dark): decorative hairlines only — section cards, sheet-header rules, cover frames. Deliberately below 3:1.
+- **Control Edge** (`#7c7e7e` light / `#757370` dark, `--input`): every interactive boundary, held at 3:1 or better against page, card and surface-high.
+- **Divider Parchment** (`#eae2ce` light / `#2c2820` dark): header rules and sheet separators.
+
+### Cover Palettes
+
+Book placeholders use one of 30 palettes (`src/constants/cover-palettes.ts`), each a 150° gradient from `from` to `to` with a title in `accent` and an author line in `sub`. The author line carries a per-palette alpha so each palette keeps readable contrast on its own gradient. Choose one per book and keep it stable; do not reorder the palette list, since that reassigns every book's colour.
 
 ### Named Rules
 
-**Contrast minimums live in `ACCESSIBILITY.md`**, not here — that file is hand-maintained and states the target (WCAG 2.2 AA) plus the one deliberate exception (decorative cover art). Any color decision on this page has to clear it.
+**Contrast minimums live in `ACCESSIBILITY.md`**, not here. That file is hand-maintained, targets WCAG 2.2 AA and records the one deliberate exception (decorative cover art). Any color decision here must clear it.
 
-**The Boundary vs Decoration Rule.** `--input` is every _control_ boundary — outline-button edges, the switch's off track, radio outlines, the search field's underline — and is held at 3:1 against every surface it sits on. `--border`/`--divider` are _decorative_ container edges and separators (section cards, sheet headers, cover frames) and stay soft on purpose. Never reach for `border-border` on something the user clicks; never darken `--border` to fix a control's legibility.
+**The Boundary vs Decoration Rule.** `--input` is every control boundary — outline-button edges, the switch's off track, radio outlines, the search field's underline — and is held at 3:1 against every surface it sits on. `--border` and `--divider` are decorative container edges and stay soft. Never put `border-border` on something the user clicks, and never darken `--border` to fix a control's legibility.
 
-**The Cover Accent Rule.** `cover-dark` (`#2b241c`) and `cover-gold` (`#c9a84c`) are reserved for book-cover placeholder gradients and never used as UI chrome colors — they signal "this is a book object," not "this is a control."
+**The Cover Accent Rule.** `cover-dark` and `cover-gold` are reserved for book-cover placeholders, the mark and the app tile. They signal "this is a book object," not "this is a control."
 
-**The Ink Inversion Rule.** Primary is never a fixed hex — it's always the current theme's ink-on-paper extreme (near-black on cream, near-white on near-black). Never hardcode a mid-tone primary; use the `--primary` token so dark mode inverts correctly.
+**The Ink Inversion Rule.** Primary is never a fixed hex. It is always the current theme's ink-on-paper extreme. Use the `--primary` token.
 
-**The Selection Accent Rule.** `selected` is the only color that means "this is the active choice" — it must not be reused for hover states, emphasis, or decoration, or the signal dilutes. It is intentionally a different hue relationship from `cover-gold` (tuned per theme, not fixed) so the two never get confused despite both being amber-family.
+**The Selection Accent Rule.** `selected` is the only color that means "this is the active choice." Never reuse it for hover, emphasis or decoration.
+
+**The No Gold On Parchment Rule.** Gold letters and the gold mark never sit on a light ground; on parchment, use ink for the mark and the wordmark.
 
 ## Typography
 
-**Display Font:** Cinzel (serif, wide tracking) — with system serif fallback
-**Body/Reading Font:** Literata (serif) — with system serif fallback
-**UI Font:** Plus Jakarta Sans (sans-serif) — with system sans fallback
-**Mono Font:** JetBrains Mono
+**Display Font:** Cinzel (serif, wide tracking)
+**Reading Font:** Literata (serif); user-selectable alternatives Lora, DM Sans and Atkinson Hyperlegible
+**UI Font:** Plus Jakarta Sans (sans-serif)
+**Mono Font:** JetBrains Mono, for code and data only
 
-**Character:** Cinzel's engraved, wide-tracked capitals give titles and section headers a bookplate/spine-lettering feel; Literata is a warm, screen-optimized reading serif tuned for long-form text; Plus Jakarta Sans stays deliberately neutral so UI chrome never competes with either serif.
-
-**Reader Fonts (user-selectable, book text only):** Literata (default), **Lora** (serif alternative), **DM Sans** (general-purpose reading sans), **Atkinson Hyperlegible** (accessibility-oriented sans, disambiguates similar characters). Deliberately _not_ Cinzel/Jakarta — those are the app's identity fonts, not reading fonts, and stay reserved for UI chrome/titles per the Serif-For-Content rule below. All four self-hosted under `public/fonts/`, selectable via Settings → Reading or the reader toolbar (`features/preferences`), applied only inside the reader iframe via `--reading-font-family`.
+**Character:** Cinzel's engraved, wide-tracked capitals give titles and section headers a bookplate, spine-lettering feel. Literata is a warm, screen-optimized reading serif. Plus Jakarta Sans stays deliberately neutral so UI chrome never competes with either serif. Reader fonts apply only inside the reader iframe, through `--reading-font-family`, and are never used for app chrome.
 
 ### Hierarchy
 
-- **Display** (Cinzel, 48px / 32px mobile, 0.08em tracking): screen-level titles.
-- **Headline** (Cinzel, 24px, 0.05em tracking, `.section-title`): section headers within screens.
-- **Reading Large/Medium** (Literata, 20px / 17px, 1.6 line-height): chapter body text inside the reader iframe; max width 68ch (`--reading-max-width`).
-- **Title Small** (Cinzel, 15px, 0.06em tracking, `text-title-sm`): compact display titles on small surfaces where the full Headline size (24px) would overwhelm the container — book-cover placeholder titles, and drawer/sheet titles (`SheetTitle`, which carries this treatment by default at 0.18em tracking).
-- **UI** (Plus Jakarta Sans, 14px / 12px small): buttons, labels, nav, controls, and the Continue Reading banner's book title — an exception to the pairing below driven by space, not category: at the banner's 48px row height there's no room for Cinzel's wider tracking without truncating harder than the sans already does.
-- **Meta** (Plus Jakarta Sans, 11px, 0.05em tracking, uppercase, `.metadata`, `text-meta`): timestamps, byline-style metadata, badges, cover-placeholder author labels.
+- **Display** (Cinzel 400, 48px / 32px mobile, line-height 1.1, 0.08em tracking): screen-level titles.
+- **Headline** (Cinzel 400, 24px, 1.2, 0.05em, `.section-title`): section headers within screens.
+- **Title Small** (Cinzel 400, 15px, 1.3, 0.06em): book-cover placeholder titles; sheet and drawer titles (`SheetTitle` uses 0.18em tracking, uppercase).
+- **Reading Large / Medium** (Literata 400, 20px / 17px, 1.6): chapter text inside the reader iframe, capped at 68ch.
+- **UI** (Plus Jakarta Sans, 14px; 12px at weight 500 for compact controls): buttons, labels, nav, list items.
+- **Meta** (Plus Jakarta Sans, 11px, 0.05em tracking, uppercase): timestamps, badges, cover author labels.
 
 ### Named Rules
 
-**The Ramp-Only Rule.** Every font size comes from the `--text-*` scale (`text-display-lg` … `text-meta`) — never Tailwind's built-in `text-sm`/`text-base`/`text-xs`, even in shadcn-generated primitives, and never a literal px value. `cn()` is configured (`src/utils/cn.ts`) so tailwind-merge classifies these as font sizes; without that, a `cn("text-title-sm", …, "text-foreground")` silently drops the size.
+**The Ramp-Only Rule.** Every font size comes from the `--text-*` scale (`text-display-lg` … `text-meta`) — never Tailwind's built-in `text-sm`/`text-base`/`text-xs`, and never a literal px value. `cn()` is configured so tailwind-merge classifies these as font sizes.
 
-**The Serif-For-Content Rule.** Any text the reader is meant to actually _read_ (titles, chapter text) uses a serif; any text that helps them _operate_ the app (buttons, nav, meta labels) uses the sans. Don't cross the two.
+**The Serif-For-Content Rule.** Text the reader reads (titles, chapter text) is serif; text that operates the app (buttons, nav, meta) is sans.
+
+**The Wordmark Is Not Type Rule.** "Librune" is set only with the wordmark files, never in Cinzel or any font.
 
 ## Layout
 
-The library screen uses a fluid auto-fill grid for book covers (`grid-template-columns: repeat(auto-fill, minmax(160px, 1fr))`, `gap-x-4 gap-y-7`) rather than fixed breakpoint columns — density adapts continuously to viewport width instead of jumping between named breakpoints. The reading column inside the iframe is capped at `--reading-max-width: 68ch` and horizontally centered, independent of the outer viewport. The header is sticky (`position: sticky; top: 0`) with an 80px height and a translucent blurred backdrop (`backdrop-filter: blur(12px)`, `background: rgb(255 249 238 / 85%)` in light mode) so content scrolls beneath it without a hard seam.
+The library uses a fluid auto-fill grid for covers (`repeat(auto-fill, minmax(160px, 1fr))`, `gap-x-4 gap-y-7`) rather than fixed breakpoint columns, so density adapts continuously. Library, shelves and search sit behind pill tabs (Books / Shelves) on a `tab-strip` fill. The reading column in the iframe is capped at `--reading-max-width: 68ch` and centered. The header is sticky, 80px tall, with a translucent blurred backdrop (`backdrop-filter: blur(12px)`) over `header-bg` — secondary sand at 85% in light, card at 85% in dark — and 0.5px divider rules above and below. Header padding is 20px on the sides. The wordmark sits at `h-8`.
 
 ## Elevation & Depth
 
-Librune leans on soft ambient shadow as a constant resting-state signature rather than a hover-only effect — the "lifted paper" reading. `--shadow-soft` (`0 2px 8px rgba(31,28,15,0.04)` light / heavier alpha in dark) sits under book covers and similar content surfaces at rest via the `.elevated-soft` utility, and deepens slightly on hover (`group-hover:shadow-lg`). Bottom sheets (TOC drawer, reader toolbar) forgo shadow in favor of a hard top border plus rounded top corners — they read as physically sliding up from beneath the screen edge, not floating above it. A separate `--shadow-floating` token (`0 8px 40px rgba(0,0,0,0.5)`) is reserved for genuinely overlaid elements.
+Tonal layering first: four parchment steps and hairlines carry most of the depth. Content objects add a soft ambient shadow as a resting-state signature, not a hover effect — the "lifted paper" reading. Bottom sheets forgo shadow for a hard 1px top border, rounded top corners and a slide-up entrance, so they read as emerging from the screen edge. A heavier floating shadow is reserved for elements that overlay content.
 
 ### Shadow Vocabulary
 
-- **Soft** (`box-shadow: var(--shadow-soft)`): resting elevation for book covers and card-like content surfaces; class `.elevated-soft`.
-- **Floating** (`box-shadow: var(--shadow-floating)`): heavier lift for elements that overlay other content directly; class `.shadow-floating`.
+- **Soft** (`box-shadow: 0 2px 8px rgba(31,28,15,0.04)` light / `0 2px 8px rgba(0,0,0,0.35)` dark): book covers and card-like content; `.elevated-soft`. Deepens on hover (`shadow-lg`).
+- **Floating** (`box-shadow: 0 8px 40px rgba(0,0,0,0.5)` light / `0.65` dark): elements that overlay content; `.shadow-floating`. Never on bottom sheets.
 
 ### Named Rules
 
-**The Resting Lift Rule.** Content objects (book covers) carry `.elevated-soft` at rest, not only on hover — depth communicates "this is a physical object," not "this is interactive."
+**The Resting Lift Rule.** Covers carry `.elevated-soft` at rest, not only on hover — depth says "physical object," not "interactive."
 
 ## Shapes
 
-One corner language, graduated by role. **Controls take the small end of the scale**: buttons, dropdown/context menus, and dialogs use `rounded-sm` (0.225rem) — a disciplined, tool-like rounding, never sharp but never as generous as a content object. **Content objects take the large end**: book covers use `rounded-xl` (0.525rem), bottom sheets use `rounded-t-3xl` (0.825rem) on their top edge only. Borders are hairline (`border`, `0.5px` on the sticky header) in `border-mist`/`divider-parchment`, never heavy.
+One corner language, graduated by role. **Controls take the small end:** buttons, menus, dialogs and sheet list items use `rounded-sm` (0.225rem); the search field uses `rounded-md` (0.3rem). **Content objects take the large end:** covers use `rounded-xl` (0.525rem); sheets use `rounded-t-3xl` (0.825rem) on the top edge only. Borders are hairlines (`0.5px` on the header, 1px elsewhere) in `border`/`divider`, never heavy. The mark and wordmark are the exception: built from straight, hard-edged strokes, with the one deliberate lean of the book and the I.
 
 ### Named Rules
 
-**The Object/Control Split.** If it's something the user reads or holds (a book cover, a sheet, a popover), round it generously. If it's something the user presses (a button, a menu, a dialog), round it modestly. Both are always softly rounded — the split is in degree, not sharp-vs-round.
+**The Object/Control Split.** If the user reads or holds it (cover, sheet, popover), round it generously. If the user presses it (button, menu, dialog), round it modestly. The split is in degree, not sharp-vs-round.
 
 ## Components
 
 ### Buttons
 
-- **Shape:** `rounded-sm` (0.225rem), regardless of size variant — modest, not sharp.
-- **Primary:** `bg-primary` / `text-primary-foreground`, hover `bg-primary/80`; heights range `h-6` (xs) to `h-9` (lg), horizontal padding ~10px.
-- **Secondary:** `bg-secondary` / `text-secondary-foreground`, hover mixes 5% foreground into the secondary color via `color-mix(in oklch, ...)`.
-- **Outline / Ghost / Destructive / Link:** outline uses `border-border` with a transparent fill; ghost is borderless with a muted hover fill; destructive uses a low-opacity destructive tint (`bg-destructive/10`) rather than a solid fill; link is text-only with underline-on-hover.
-- **Active/press state:** buttons nudge down 1px on press (`active:translate-y-px`) — a tactile "pressed into the page" cue.
-- **Focus:** 1px ring in `ring` color plus a matching border color shift, not a glow.
+- **Shape:** `rounded-sm` (0.225rem), at every size.
+- **Sizes:** `xs` 24px, `sm` 28px, `default` 32px, `lg` 36px; icon buttons `icon` 32px, `icon-sm` 28px, `icon-lg` 36px square. Text is 12px at weight 500; `lg` is 14px.
+- **Primary:** `bg-primary` / `text-primary-foreground`, hover `bg-primary/80`.
+- **Secondary:** `bg-secondary` / `text-secondary-foreground`; hover mixes 5% foreground into the fill.
+- **Outline:** edge in `border-input` (a control boundary, not decoration), background on `background` in light and `surface-high` in dark; hover to `muted`.
+- **Ghost / Destructive / Link:** ghost is borderless with a muted hover fill; destructive uses a low-opacity tint (`bg-destructive/10`), not a solid fill; link is text-only with underline on hover.
+- **Press and focus:** buttons nudge down 1px on press (`translate-y-px`). Focus is a 1px `ring` border plus a 50% `ring` outer ring, not a glow.
+
+### Search Field
+
+- **Style:** `card` fill, `rounded-md`, 10px by 12px padding, a 16px search icon and muted placeholder. Focus adds the 50% `ring` outline.
+
+### Radio Rows
+
+- **Style:** full-width rows, 16px padding, a check on the selected row. Group sits on `card` with `rounded-sm`; the selected state uses `selected` for the ring and check. Focus is an inset 1.5px `ring`.
 
 ### Cards / Book Covers
 
-- **Corner Style:** `rounded-xl` (0.525rem), applied to the cover image wrapper.
-- **Background:** cover image, or a per-book gradient placeholder (`palette.gradient`) when no cover art exists.
-- **Shadow Strategy:** `.elevated-soft` at rest, deepening to `shadow-lg` on hover.
+- **Corner Style:** `rounded-xl`, 2:3 aspect ratio, on a 160px minimum grid track.
+- **Background:** cover image, or one of 30 palette gradients when there is no cover art.
+- **Shadow Strategy:** `.elevated-soft` at rest, `shadow-lg` on hover.
 - **Border:** hairline `border-border/40`.
-- **Badges:** "NEW" badge is a filled corner tab (`rounded-bl-xl`, translucent background) rather than a floating chip.
+- **Badges:** the "NEW" badge is a filled corner tab (`rounded-bl-xl`, translucent background), not a floating chip.
 
-### Sheets / Drawers (TOC, reader toolbar)
+### Sheets / Drawers
 
-- **Style:** slide up from the bottom edge, `rounded-t-3xl` top corners only, `bg-card`, no shadow — a hard `border-t` substitutes for elevation since they're anchored to the viewport edge.
-- **Header:** `border-b`, with a centered pill drag-handle (`h-1 w-16 rounded-full bg-border`) signaling draggability.
-- **List items:** rendered as `Button` variants (`secondary` when active, `ghost` otherwise) rather than a bespoke list-item component — inherits the square-cornered control language even inside a rounded sheet.
+- **Style:** slide up from the bottom edge, `rounded-t-3xl`, `bg-card`, no shadow, a hard top border.
+- **Header:** a centered pill drag handle (64px by 4px, `bg-border`), a title in Cinzel 15px at 0.18em tracking, uppercase, over a bottom divider.
+- **List items:** `Button` variants (`secondary` when active, `ghost` otherwise), left-aligned.
 
 ### Navigation / Header
 
-- **Style:** sticky, translucent, blurred (`backdrop-filter: blur(12px)`), divider-bordered top and bottom (`0.5px` hairlines).
-- **Controls:** icon-only ghost buttons (`Button variant="ghost" size="icon"`); no visible text labels in the primary nav.
+- **Style:** sticky, translucent, blurred, with 0.5px divider rules top and bottom. The wordmark sits at the left; icon-only ghost buttons at the right with `aria-label`s; no visible text labels.
+- **Tabs:** pill tabs in a `tab-strip` container, the active tab lifted onto a lighter fill with an underline.
+
+### Logo
+
+- **Mark:** three carved books (the right one leaning) over an open book, drawn in straight strokes. 16px minimum; below 48px the carved bands soften but the silhouette holds.
+- **Wordmark:** carved capitals LIBRUNE, with a leaning book-spine I and an open-book U. 16px cap height minimum. Light grounds take ink; dark grounds take paper with the I and U in `logo-accent` gold.
+- **App tile:** the gold mark on a rounded dark tile with a vertical `cover-dark` to background gradient; maskable icons are full-bleed with the mark inside an 80% safe zone.
+- **Source:** `docs/brand/` holds the master SVGs and `BRAND.md`; `public/` holds the generated favicon and PWA icons.
 
 ## Do's and Don'ts
 
 ### Do:
 
-- **Do** keep controls at the modest end of the radius scale (`rounded-sm`) — never sharp, never as generous as a content object's radius.
-- **Do** give content objects (covers, sheets) a rounded, soft-lifted treatment (`.elevated-soft` + `rounded-xl`/`rounded-3xl`).
-- **Do** pair serif type (Cinzel/Literata) with anything the user reads, and sans (Plus Jakarta Sans) with anything the user operates.
-- **Do** use the `--primary` token (never a hardcoded hex) for anything meant to invert correctly between light and dark mode.
-- **Do** reserve `cover-dark`/`cover-gold` strictly for book-cover-related surfaces.
-- **Do** use `selected` only to mark active/checked state (switches, radio rows, active-filter indicator) — never as a hover tint or decoration.
+- **Do** keep controls at the modest end of the radius scale (`rounded-sm`).
+- **Do** give content objects (covers, sheets) rounded, softly lifted treatment: `.elevated-soft` plus `rounded-xl` / `rounded-3xl`.
+- **Do** pair serif type (Cinzel, Literata) with anything the user reads, and sans (Plus Jakarta Sans) with anything the user operates.
+- **Do** use the `--primary` token, never a hardcoded hex, for anything that must invert between light and dark.
+- **Do** keep `cover-dark` and `cover-gold` to book-cover surfaces, the mark and the app tile.
+- **Do** use `selected` only to mark active or checked state.
+- **Do** use the logo files from `docs/brand/`, and leave the clear space of a quarter of the wordmark cap height around them.
 
 ### Don't:
 
-- **Don't** round a button or chip to match a content object's larger radius — it breaks the control/content split.
-- **Don't** add a drop shadow to bottom sheets; their elevation cue is the top border + rounded-top-corners + slide animation, not shadow.
-- **Don't** introduce a cold neutral gray; all neutrals in this system are warm parchment/ink tones.
-- **Don't** use the sans UI font for reading-surface body text, or the serif reading font for buttons/nav labels.
-- **Don't** use `warm-accent` or `selected` interchangeably with `cover-gold` — they're deliberately distinct hues so "book object," "CTA tile," and "active selection" stay three separate signals.
+- **Don't** round a button or chip to match a content object's radius.
+- **Don't** add a drop shadow to bottom sheets.
+- **Don't** introduce a cold neutral gray; all neutrals are warm parchment and ink tones.
+- **Don't** use the sans UI font for reading-surface text, or the serif for buttons and nav.
+- **Don't** use `warm-accent` or `selected` interchangeably with `cover-gold`: "book object," "CTA tile" and "active selection" are three separate signals.
+- **Don't** put gold on a light ground, add gradients, shadows or outlines to the mark, straighten its lean, or rearrange its books.
+- **Don't** reorder the cover palette list; book-to-palette assignment depends on it.
