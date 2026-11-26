@@ -48,8 +48,8 @@ describe("buildGroupingsWithMeta", () => {
     expect(result.effectiveUpdatedAt).toBe(300);
     expect(result.memberBookIds).toEqual(["b1", "b2"]);
     expect(result.coverSlots).toEqual([
-      { bookId: "b1", coverUrl: "cover-1" },
-      { bookId: "b2", coverUrl: "cover-2" },
+      { bookId: "b1", title: "Book", coverUrl: "cover-1" },
+      { bookId: "b2", title: "Book", coverUrl: "cover-2" },
     ]);
   });
 
@@ -74,7 +74,7 @@ describe("buildGroupingsWithMeta", () => {
     expect(result.coverSlots).toEqual([]);
   });
 
-  it("caps cover slots at 3, real covers first", () => {
+  it("caps cover slots at 6, real covers first", () => {
     const series: Grouping = {
       id: "g1",
       type: "series",
@@ -82,13 +82,13 @@ describe("buildGroupingsWithMeta", () => {
       createdAt: 1,
       updatedAt: 1,
     };
-    const members: GroupingMember[] = [1, 2, 3, 4, 5].map((n) => ({
+    const members: GroupingMember[] = [1, 2, 3, 4, 5, 6, 7, 8].map((n) => ({
       groupingId: "g1",
       bookId: `b${n}`,
       order: n,
     }));
     const books = new Map(
-      [1, 2, 3, 4, 5].map((n) => [
+      [1, 2, 3, 4, 5, 6, 7, 8].map((n) => [
         `b${n}`,
         makeBook({ id: `b${n}`, coverBg: n === 2 ? undefined : `cover-${n}` }),
       ]),
@@ -101,9 +101,12 @@ describe("buildGroupingsWithMeta", () => {
     );
 
     expect(result.coverSlots).toEqual([
-      { bookId: "b1", coverUrl: "cover-1" },
-      { bookId: "b3", coverUrl: "cover-3" },
-      { bookId: "b4", coverUrl: "cover-4" },
+      { bookId: "b1", title: "Book", coverUrl: "cover-1" },
+      { bookId: "b3", title: "Book", coverUrl: "cover-3" },
+      { bookId: "b4", title: "Book", coverUrl: "cover-4" },
+      { bookId: "b5", title: "Book", coverUrl: "cover-5" },
+      { bookId: "b6", title: "Book", coverUrl: "cover-6" },
+      { bookId: "b7", title: "Book", coverUrl: "cover-7" },
     ]);
   });
 
@@ -131,8 +134,8 @@ describe("buildGroupingsWithMeta", () => {
     );
 
     expect(result.coverSlots).toEqual([
-      { bookId: "b1", coverUrl: "cover-1" },
-      { bookId: "b2", coverUrl: undefined },
+      { bookId: "b1", title: "Book", coverUrl: "cover-1" },
+      { bookId: "b2", title: "Book", coverUrl: undefined },
     ]);
   });
 });

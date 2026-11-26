@@ -11,6 +11,9 @@ interface BookCoverProps {
   coverUrl?: string;
   /** Smaller type for list rows; the library grid uses the default. */
   compact?: boolean;
+  /** Mid-size for a shelf card's mosaic tile: tighter padding, small ornament,
+   * the title still shown. Ignored when `compact`. */
+  tile?: boolean;
 }
 
 /**
@@ -29,6 +32,7 @@ export const BookCover: FC<BookCoverProps> = ({
   author,
   coverUrl,
   compact = false,
+  tile = false,
 }) => {
   const { palette, OrnamentComponent } = getBookCoverVisual(id);
 
@@ -46,11 +50,15 @@ export const BookCover: FC<BookCoverProps> = ({
 
   return (
     <div
-      className={`size-full flex flex-col items-center justify-center relative ${
-        compact ? "gap-1 px-1.5 py-2" : "gap-2 px-5 py-6"
+      className={`size-full flex flex-col items-center justify-center relative overflow-hidden ${
+        compact
+          ? "gap-1 px-1.5 py-2"
+          : tile
+            ? "gap-1 px-2 py-2"
+            : "gap-2 px-5 py-6"
       } ${palette.gradient}`}
     >
-      {author && !compact && (
+      {author && !compact && !tile && (
         <p
           className={`text-center tracking-[0.16em] leading-none z-10 text-meta ${palette.subColor}`}
         >
@@ -69,13 +77,15 @@ export const BookCover: FC<BookCoverProps> = ({
         </span>
       ) : (
         <OrnamentComponent
-          className={`h-auto mx-auto w-30 my-2 ${palette.accent}`}
+          className={`h-auto mx-auto ${tile ? "w-2/5 my-1" : "w-30 my-2"} ${palette.accent}`}
         />
       )}
 
       {!compact && (
         <p
-          className={`text-center wrap-break-word leading-[1.2] tracking-[0.06em] text-title-sm z-10 body-display ${palette.accent}`}
+          className={`text-center wrap-break-word leading-[1.2] tracking-[0.06em] z-10 body-display ${
+            tile ? "text-ui-sm line-clamp-3" : "text-title-sm"
+          } ${palette.accent}`}
         >
           {title}
         </p>
