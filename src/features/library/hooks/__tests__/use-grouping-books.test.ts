@@ -1,6 +1,7 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { useGroupingBooks } from "../use-grouping-books";
+import { loadLibrary } from "../../actions/load-library";
 import { libraryStore } from "../../store/library-store";
 import type { StoredBook } from "@/services/storage/storage-types";
 
@@ -40,5 +41,21 @@ describe("useGroupingBooks error messaging", () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(notify.error).toHaveBeenCalled();
     expect(result.current.grouping).toBeNull();
+  });
+});
+
+describe("useGroupingBooks on a refresh", () => {
+  it("does a full (non-silent) library load when the store is empty", async () => {
+    vi.clearAllMocks();
+    libraryStore.setState({ books: [], isLoading: false, error: null });
+    const groupings = await import("@/services/storage/groupings");
+    vi.mocked(groupings.getGrouping).mockResolvedValueOnce(undefined);
+    vi.mocked(groupings.getMembersForGrouping).mockResolvedValueOnce([]);
+
+    renderHook(() => useGroupingBooks("g1"));
+
+    // A silent load only merges into books already in the store, so on a
+    // hard refresh it would leave the shelf empty.
+    await waitFor(() => expect(loadLibrary).toHaveBeenCalledWith());
   });
 });
