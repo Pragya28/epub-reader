@@ -19,16 +19,18 @@ type Layout = "empty" | "spines" | "single" | "pair" | "mosaic";
 const MAX_SPINES = 5;
 
 // The card art follows what the group actually has, so a group is never
-// padded out with blank tiles: a mosaic only when there are real covers to
-// show (coverless books alone would just be flat colour blocks), a shelf of
-// spines when there are none, and the one real cover full-size when there is
-// just one. Real covers sort first in coverSlots (see buildGroupingsWithMeta).
+// padded out with blank tiles. One or two books always get the same single /
+// side-by-side pattern, real cover or generated; only with real covers does a
+// third book bring the mosaic, and only with three or more coverless books do
+// we draw a shelf of spines (coverless books alone would just be flat colour
+// blocks). Real covers sort first in coverSlots (see buildGroupingsWithMeta).
 function pickLayout(slots: GroupingCoverSlot[]): Layout {
   if (slots.length === 0) return "empty";
+  if (slots.length === 1) return "single";
   const real = slots.filter((slot) => slot.coverUrl).length;
-  if (real === 0) return "spines";
   if (real === 1) return "single";
-  return slots.length === 2 ? "pair" : "mosaic";
+  if (slots.length === 2) return "pair";
+  return real === 0 ? "spines" : "mosaic";
 }
 
 function CoverSlot({
@@ -55,30 +57,45 @@ function CoverSlot({
       title={slot.title}
       author={slot.author}
       coverUrl={slot.coverUrl}
-      tile={size === "tile"}
+      tile={size === "tile" || (size === "full" && !slot.coverUrl)}
       compact={size === "compact"}
     />
   );
 }
 
-// A book's spine, coloured and ordered like its own cover. Height varies a
-// little per book (derived from its id, so it never shuffles) to read as a
-// real shelf instead of a uniform bar chart.
+// Spine width tracks the book's length like a real spine's thickness: about
+// 1px per 12k words on top of a 14px base, so a short fanfic is a thin
+// pamphlet (16px) and a doorstop is the widest (34px). Books with no word
+// count (imported before it was stored) get a middling width.
+const SPINE_MIN_PX = 16;
+const SPINE_MAX_PX = 34;
+const SPINE_FALLBACK_PX = 24;
+
+function spineWidth(wordCount?: number): number {
+  if (!wordCount) return SPINE_FALLBACK_PX;
+  const px = Math.round(14 + wordCount / 12000);
+  return Math.min(SPINE_MAX_PX, Math.max(SPINE_MIN_PX, px));
+}
+
+// A book's spine, coloured like its own cover. Width comes from the book's
+// length; height varies only a little (derived from its id, so it never
+// shuffles), so a row reads as books on a shelf rather than a bar chart. The
+// two foil bands near the ends are what make a bar look like a spine.
 function Spine({ slot }: { slot: GroupingCoverSlot }) {
   const { palette } = getBookCoverVisual(slot.bookId);
   const seed = [...slot.bookId].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
-  const height = 72 + (seed % 4) * 9;
+  const height = 88 + (seed % 3) * 6;
 
   return (
     <div
-      style={{ height: `${height}%` }}
-      className={`flex max-w-8 min-w-0 flex-1 items-center justify-center rounded-t-sm py-2 ${palette.gradient}`}
+      style={{ width: spineWidth(slot.wordCount), height: `${height}%` }}
+      className={`flex flex-none flex-col items-center rounded-t-[3px] shadow-[inset_-2px_0_0_rgb(0_0_0/0.18)] ${palette.gradient} ${palette.accent}`}
     >
-      <span
-        className={`max-h-full truncate text-meta tracking-wide [writing-mode:vertical-rl] ${palette.accent}`}
-      >
+      <span className="mt-1 h-0.5 w-3/4 shrink-0 rounded-full bg-current opacity-50" />
+      <span className="my-3 min-h-0 flex-1 truncate text-meta tracking-wide [writing-mode:vertical-rl]">
         {slot.title}
       </span>
+      <span className="mb-1 h-0.5 w-3/4 shrink-0 rounded-full bg-current opacity-50" />
     </div>
   );
 }
@@ -101,13 +118,13 @@ function CardArt({
       );
     case "spines":
       return (
-        <div className="flex size-full flex-col bg-card">
-          <div className="flex flex-1 items-end justify-center gap-1 px-4 pt-5">
+        <div className="flex size-full flex-col bg-muted">
+          <div className="flex flex-1 items-end justify-center gap-0.5 px-3 pt-8 shadow-[inset_0_10px_14px_-10px_rgb(0_0_0/0.3)]">
             {slots.slice(0, MAX_SPINES).map((slot) => (
               <Spine key={slot.bookId} slot={slot} />
             ))}
           </div>
-          <div className="h-1.5 bg-border" />
+          <div className="h-2 border-t border-foreground/20 bg-border shadow-[0_1px_0_rgb(0_0_0/0.15)]" />
         </div>
       );
     case "single":

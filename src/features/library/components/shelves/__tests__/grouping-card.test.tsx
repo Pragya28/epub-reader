@@ -55,7 +55,21 @@ describe("GroupingCard layout", () => {
     expect(art.querySelectorAll("img")).toHaveLength(0);
   });
 
-  it("draws one spine per book (up to 5) when no book has a cover", () => {
+  it("draws a generated cover for a single coverless book, same pattern as a real cover", () => {
+    const art = renderCard([noCover(1)]);
+    expect(art.dataset.layout).toBe("single");
+    expect(art.querySelectorAll("img")).toHaveLength(0);
+    expect(art.textContent).toContain("Book 1");
+  });
+
+  it("draws two generated covers side by side for two coverless books", () => {
+    const art = renderCard([noCover(1), noCover(2)]);
+    expect(art.dataset.layout).toBe("pair");
+    expect(art.textContent).toContain("Book 1");
+    expect(art.textContent).toContain("Book 2");
+  });
+
+  it("draws one spine per book (up to 5) when 3+ books have no cover", () => {
     const art = renderCard([1, 2, 3, 4, 5, 6].map(noCover));
     expect(art.dataset.layout).toBe("spines");
     expect(art.querySelectorAll("img")).toHaveLength(0);
@@ -82,5 +96,17 @@ describe("GroupingCard layout", () => {
     expect(art.querySelectorAll("img")).toHaveLength(2);
     // The coverless third book is drawn (its initial), not left blank.
     expect(art.textContent).toContain("B");
+  });
+
+  it("sizes spine widths from word count, within bounds, with a fallback", () => {
+    const words = [3_000, 100_000, 900_000, undefined];
+    const art = renderCard(
+      words.map((wordCount, i) => ({ ...noCover(i + 1), wordCount })),
+    );
+    expect(art.dataset.layout).toBe("spines");
+    const widths = [
+      ...art.querySelectorAll<HTMLElement>("[style*='width']"),
+    ].map((el) => Number.parseInt(el.style.width, 10));
+    expect(widths).toEqual([16, 22, 34, 24]);
   });
 });
