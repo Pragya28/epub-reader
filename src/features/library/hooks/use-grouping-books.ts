@@ -56,10 +56,11 @@ export function useGroupingBooks(groupingId: string | undefined) {
     let cancelled = false;
 
     // The detail screens filter libraryStore().books; on a deep-link or hard
-    // refresh that store is empty. Populate it (silent — this screen owns its
-    // own loading state) so a populated grouping doesn't render as empty.
+    // refresh that store is empty. Populate it so a populated grouping
+    // doesn't render as empty. Not silent: a silent load only merges fresh
+    // data into books already in the store, so it would leave it empty.
     if (libraryStore.getState().books.length === 0) {
-      void loadLibrary({ silent: true });
+      void loadLibrary();
     }
 
     void load((g, m) => {
