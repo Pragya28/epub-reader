@@ -61,24 +61,26 @@ function CoverSlot({
   );
 }
 
-// A book's spine, coloured and ordered like its own cover. Height varies a
-// little per book (derived from its id, so it never shuffles) to read as a
-// real shelf instead of a uniform bar chart.
+// A book's spine, coloured like its own cover. Width and height vary a little
+// per book (derived from its id, so they never shuffle) and the heights stay
+// close, so a row reads as books on a shelf rather than a bar chart. The two
+// foil bands near the ends are what make a bar look like a spine.
 function Spine({ slot }: { slot: GroupingCoverSlot }) {
   const { palette } = getBookCoverVisual(slot.bookId);
   const seed = [...slot.bookId].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
-  const height = 72 + (seed % 4) * 9;
+  const width = 20 + (seed % 3) * 5;
+  const height = 84 + (seed % 3) * 8;
 
   return (
     <div
-      style={{ height: `${height}%` }}
-      className={`flex max-w-8 min-w-0 flex-1 items-center justify-center rounded-t-sm py-2 ${palette.gradient}`}
+      style={{ width, height: `${height}%` }}
+      className={`flex flex-none flex-col items-center rounded-t-[3px] shadow-[inset_-2px_0_0_rgb(0_0_0/0.18)] ${palette.gradient} ${palette.accent}`}
     >
-      <span
-        className={`max-h-full truncate text-meta tracking-wide [writing-mode:vertical-rl] ${palette.accent}`}
-      >
+      <span className="mt-2 h-0.5 w-3/4 shrink-0 rounded-full bg-current opacity-50" />
+      <span className="my-2 min-h-0 flex-1 truncate text-meta tracking-wide [writing-mode:vertical-rl]">
         {slot.title}
       </span>
+      <span className="mb-2 h-0.5 w-3/4 shrink-0 rounded-full bg-current opacity-50" />
     </div>
   );
 }
@@ -101,13 +103,13 @@ function CardArt({
       );
     case "spines":
       return (
-        <div className="flex size-full flex-col bg-card">
-          <div className="flex flex-1 items-end justify-center gap-1 px-4 pt-5">
+        <div className="flex size-full flex-col bg-muted">
+          <div className="flex flex-1 items-end justify-center gap-0.5 px-3 pt-8 shadow-[inset_0_10px_14px_-10px_rgb(0_0_0/0.3)]">
             {slots.slice(0, MAX_SPINES).map((slot) => (
               <Spine key={slot.bookId} slot={slot} />
             ))}
           </div>
-          <div className="h-1.5 bg-border" />
+          <div className="h-2 border-t border-foreground/20 bg-border shadow-[0_1px_0_rgb(0_0_0/0.15)]" />
         </div>
       );
     case "single":
