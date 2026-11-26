@@ -63,8 +63,8 @@ describe("useShelvesScreen", () => {
 
     expect(result.current.merged).toHaveLength(1);
     expect(result.current.merged[0].coverSlots).toEqual([
-      { bookId: "b1", coverUrl: "cover-1" },
-      { bookId: "b2", coverUrl: "cover-2" },
+      { bookId: "b1", title: "Foundation", coverUrl: "cover-1" },
+      { bookId: "b2", title: "Foundation and Empire", coverUrl: "cover-2" },
     ]);
     expect(result.current.isEmpty).toBe(false);
   });

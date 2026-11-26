@@ -7,15 +7,17 @@ import type {
 export type ShelvesSortOption = "alphabetical" | "createdAt" | "updatedAt";
 export type ShelvesViewMode = "merged" | "grouped";
 
-// GroupingCard renders one large cover plus two stacked small ones — a
-// 4th cover would have nowhere to go.
-const MAX_COVER_SLOTS = 3;
+// The mosaic uses the first 3 slots; the spine shelf (a group with no real
+// covers) shows up to 5. Cap above both so neither layout is starved.
+const MAX_COVER_SLOTS = 6;
 
-/** One cover-stack slot: a real cover URL when the book has one, otherwise
- * just the book id so the card can fall back to that book's own derived
- * gradient (see getBookCoverVisual) instead of a generic placeholder. */
+/** One cover slot: a real cover URL when the book has one, otherwise just
+ * the book's id/title/author so the card can draw that book's own derived
+ * cover or spine (see BookCover, getBookCoverVisual). */
 export interface GroupingCoverSlot {
   bookId: string;
+  title: string;
+  author?: string;
   coverUrl?: string;
 }
 
@@ -34,9 +36,8 @@ export interface GroupingWithMeta {
  * see decision 3/4 of the Shelves tab spec. A collection uses its own
  * stored fields directly. Cover slots are derived here too: members with a
  * real cover fill slots first, then members without one (their gradient is
- * derived client-side from their id), capped at MAX_COVER_SLOTS — a slot
- * simply doesn't exist once there are fewer members than slots, which is
- * the only case GroupingCard falls back to a plain placeholder.
+ * derived client-side from their id), capped at MAX_COVER_SLOTS. GroupingCard
+ * picks its layout from how many slots hold a real cover.
  */
 export function buildGroupingsWithMeta(
   groupings: Grouping[],
@@ -50,8 +51,14 @@ export function buildGroupingsWithMeta(
     const withCover: GroupingCoverSlot[] = [];
     const withoutCover: GroupingCoverSlot[] = [];
     for (const bookId of memberBookIds) {
-      const coverUrl = booksById.get(bookId)?.coverBg;
-      (coverUrl ? withCover : withoutCover).push({ bookId, coverUrl });
+      const book = booksById.get(bookId);
+      const coverUrl = book?.coverBg;
+      (coverUrl ? withCover : withoutCover).push({
+        bookId,
+        title: book?.title ?? "",
+        author: book?.author,
+        coverUrl,
+      });
     }
     const coverSlots = [...withCover, ...withoutCover].slice(
       0,
