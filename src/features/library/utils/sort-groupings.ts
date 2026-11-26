@@ -18,6 +18,9 @@ export interface GroupingCoverSlot {
   bookId: string;
   title: string;
   author?: string;
+  /** Word count, when known — a spine's width follows it (thicker book,
+   * wider spine). */
+  wordCount?: number;
   coverUrl?: string;
 }
 
@@ -57,6 +60,7 @@ export function buildGroupingsWithMeta(
         bookId,
         title: book?.title ?? "",
         author: book?.author,
+        wordCount: book?.wordCount,
         coverUrl,
       });
     }
