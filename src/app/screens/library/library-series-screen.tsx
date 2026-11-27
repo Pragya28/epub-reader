@@ -11,7 +11,7 @@ export const LibrarySeriesScreen: FC = () => {
     isLoading,
     error,
     books,
-    totalBooks,
+    counts,
     isFiltering,
     filterOpen,
     setFilterOpen,
@@ -28,7 +28,7 @@ export const LibrarySeriesScreen: FC = () => {
       isLoading={isLoading}
       error={error}
       books={books}
-      totalBooks={totalBooks}
+      counts={counts}
       isFiltering={isFiltering}
       filterOpen={filterOpen}
       setFilterOpen={setFilterOpen}

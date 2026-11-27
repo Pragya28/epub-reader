@@ -9,6 +9,7 @@ import {
   filterBooksByAuthor,
   filterBooksByCriteria,
 } from "../utils/filter-books";
+import { countBooks } from "../utils/count-books";
 import { sortBooks } from "../utils/sort-books";
 import { useLibraryFilters } from "./use-library-filters";
 
@@ -38,7 +39,7 @@ export function useAuthorScreen() {
     isLoading,
     error,
     books: authorBooks,
-    totalBooks: byAuthor.length,
+    counts: countBooks(byAuthor),
     sortBy,
     filters,
     ...libraryFilters,

@@ -86,6 +86,6 @@ describe("LibraryScreen tabs", () => {
     });
     renderAt(ROUTES.LIBRARY);
 
-    expect(screen.getByText("2 books")).toBeInTheDocument();
+    expect(screen.getByText("2 books • 0 Finished")).toBeInTheDocument();
   });
 });

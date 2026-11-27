@@ -17,4 +17,9 @@ describe("BookCount", () => {
     render(<BookCount total={40} visible={12} />);
     expect(screen.getByText("12 / 40 books")).toBeInTheDocument();
   });
+
+  it("appends the finished count", () => {
+    render(<BookCount total={40} visible={12} finished={5} />);
+    expect(screen.getByText("12 / 40 books • 5 Finished")).toBeInTheDocument();
+  });
 });

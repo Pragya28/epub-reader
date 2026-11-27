@@ -48,7 +48,7 @@ export const LibraryScreen: FC = () => {
     currentBook,
     nextBook,
     visibleBooks,
-    totalBooks,
+    counts,
     isFiltering,
     headerVisible,
     revealHeader,
@@ -179,9 +179,10 @@ export const LibraryScreen: FC = () => {
             <ShelvesGrid />
           ) : (
             <>
-              {!isLoading && totalBooks > 0 && (
+              {!isLoading && counts.total > 0 && (
                 <BookCount
-                  total={totalBooks}
+                  total={counts.total}
+                  finished={counts.finished}
                   visible={isFiltering ? visibleBooks.length : undefined}
                 />
               )}

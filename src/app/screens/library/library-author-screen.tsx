@@ -20,7 +20,7 @@ export const LibraryAuthorScreen: FC = () => {
     isLoading,
     error,
     books,
-    totalBooks,
+    counts,
     isFiltering,
     filterOpen,
     setFilterOpen,
@@ -53,7 +53,9 @@ export const LibraryAuthorScreen: FC = () => {
       </header>
 
       <main className="flex flex-1 flex-col gap-4 px-4 pt-5 pb-10">
-        {!isLoading && totalBooks > 0 && <BookCount total={totalBooks} />}
+        {!isLoading && counts.total > 0 && (
+          <BookCount total={counts.total} finished={counts.finished} />
+        )}
         <BookGrid
           isLoading={isLoading}
           isSearch={isFiltering}

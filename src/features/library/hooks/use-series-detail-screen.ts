@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { isCollection } from "@/services/storage/groupings";
 import { seriesFilterStore } from "../store/filter-store";
 import { filterBooksByCriteria, hasActiveFilters } from "../utils/filter-books";
+import { countBooks } from "../utils/count-books";
 import { useGroupingBooks } from "./use-grouping-books";
 import { useLibraryFilters } from "./use-library-filters";
 
@@ -47,7 +48,7 @@ export function useSeriesDetailScreen() {
     isLoading,
     error: null,
     books: visibleBooks,
-    totalBooks: orderedBooks.length,
+    counts: countBooks(orderedBooks),
     isFiltering,
     filterOpen,
     setFilterOpen,

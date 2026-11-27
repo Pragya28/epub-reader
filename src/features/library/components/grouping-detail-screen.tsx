@@ -11,6 +11,7 @@ import {
   type FilterSheetSection,
 } from "@/features/library/components/filter-sheet";
 import { SortFilterButton } from "@/features/library/components/sort-filter-button";
+import type { BookCounts } from "../utils/count-books";
 import type { BookWithProgress } from "../types/library.types";
 
 interface GroupingDetailScreenProps {
@@ -20,7 +21,7 @@ interface GroupingDetailScreenProps {
   error: string | null;
   books: BookWithProgress[];
   /** Books in the grouping before filters; undefined hides the count. */
-  totalBooks?: number;
+  counts?: BookCounts;
   isFiltering: boolean;
   filterOpen: boolean;
   setFilterOpen: (open: boolean) => void;
@@ -47,7 +48,7 @@ export const GroupingDetailScreen: FC<GroupingDetailScreenProps> = ({
   isLoading,
   error,
   books,
-  totalBooks,
+  counts,
   isFiltering,
   filterOpen,
   setFilterOpen,
@@ -85,8 +86,8 @@ export const GroupingDetailScreen: FC<GroupingDetailScreenProps> = ({
       </header>
 
       <main className="flex flex-1 flex-col gap-4 px-4 pt-5 pb-10">
-        {!isLoading && totalBooks !== undefined && totalBooks > 0 && (
-          <BookCount total={totalBooks} />
+        {!isLoading && counts && counts.total > 0 && (
+          <BookCount total={counts.total} finished={counts.finished} />
         )}
         <BookGrid
           isLoading={isLoading}
