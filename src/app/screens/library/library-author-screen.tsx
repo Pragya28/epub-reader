@@ -4,6 +4,7 @@ import { CaretLeftIcon } from "@phosphor-icons/react";
 
 import { ROUTES } from "@/utils/routes";
 import { Button } from "@/components/ui/button";
+import { BookCount } from "@/features/library/components/book-count";
 import { BookGrid } from "@/features/library/components/book-grid";
 import { FilterSheet } from "@/features/library/components/filter-sheet";
 import { SortFilterButton } from "@/features/library/components/sort-filter-button";
@@ -19,6 +20,7 @@ export const LibraryAuthorScreen: FC = () => {
     isLoading,
     error,
     books,
+    totalBooks,
     isFiltering,
     filterOpen,
     setFilterOpen,
@@ -50,7 +52,8 @@ export const LibraryAuthorScreen: FC = () => {
         />
       </header>
 
-      <main className="flex-1 px-4 pt-5 pb-10">
+      <main className="flex flex-1 flex-col gap-4 px-4 pt-5 pb-10">
+        {!isLoading && totalBooks > 0 && <BookCount total={totalBooks} />}
         <BookGrid
           isLoading={isLoading}
           isSearch={isFiltering}

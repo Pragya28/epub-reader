@@ -10,6 +10,7 @@ import {
 } from "@/features/library/components/filter-sheet";
 import { SortFilterButton } from "@/features/library/components/sort-filter-button";
 import { ContinueReadingBanner } from "@/features/library/components/continue-reading-banner";
+import { BookCount } from "@/features/library/components/book-count";
 import { LibraryFab } from "@/features/library/components/library-fab";
 import { InstallBanner } from "@/features/pwa/components/install-banner";
 import { shelvesStore } from "@/features/library/store/shelves-store";
@@ -179,11 +180,10 @@ export const LibraryScreen: FC = () => {
           ) : (
             <>
               {!isLoading && totalBooks > 0 && (
-                <p aria-live="polite" className="text-sm text-muted-foreground">
-                  {isFiltering
-                    ? `${visibleBooks.length} / ${totalBooks} books`
-                    : `${totalBooks} ${totalBooks === 1 ? "book" : "books"}`}
-                </p>
+                <BookCount
+                  total={totalBooks}
+                  visible={isFiltering ? visibleBooks.length : undefined}
+                />
               )}
               <BookGrid
                 isLoading={isLoading}

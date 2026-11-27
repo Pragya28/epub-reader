@@ -27,8 +27,9 @@ export function useAuthorScreen() {
     enriched,
     authorFilterStore,
   );
+  const byAuthor = filterBooksByAuthor(enriched, author);
   const authorBooks = filterBooksByCriteria(
-    sortBooks(filterBooksByAuthor(enriched, author), sortBy),
+    sortBooks(byAuthor, sortBy),
     filters,
   );
 
@@ -37,6 +38,7 @@ export function useAuthorScreen() {
     isLoading,
     error,
     books: authorBooks,
+    totalBooks: byAuthor.length,
     sortBy,
     filters,
     ...libraryFilters,

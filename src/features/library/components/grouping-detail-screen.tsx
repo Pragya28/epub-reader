@@ -4,6 +4,7 @@ import { CaretLeftIcon } from "@phosphor-icons/react";
 
 import { ROUTES } from "@/utils/routes";
 import { Button } from "@/components/ui/button";
+import { BookCount } from "@/features/library/components/book-count";
 import { BookGrid } from "@/features/library/components/book-grid";
 import {
   FilterSheet,
@@ -18,6 +19,8 @@ interface GroupingDetailScreenProps {
   isLoading: boolean;
   error: string | null;
   books: BookWithProgress[];
+  /** Books in the grouping before filters; undefined hides the count. */
+  totalBooks?: number;
   isFiltering: boolean;
   filterOpen: boolean;
   setFilterOpen: (open: boolean) => void;
@@ -44,6 +47,7 @@ export const GroupingDetailScreen: FC<GroupingDetailScreenProps> = ({
   isLoading,
   error,
   books,
+  totalBooks,
   isFiltering,
   filterOpen,
   setFilterOpen,
@@ -80,7 +84,10 @@ export const GroupingDetailScreen: FC<GroupingDetailScreenProps> = ({
         {headerEnd}
       </header>
 
-      <main className="flex-1 px-4 pt-5 pb-10">
+      <main className="flex flex-1 flex-col gap-4 px-4 pt-5 pb-10">
+        {!isLoading && totalBooks !== undefined && totalBooks > 0 && (
+          <BookCount total={totalBooks} />
+        )}
         <BookGrid
           isLoading={isLoading}
           isSearch={isFiltering}
