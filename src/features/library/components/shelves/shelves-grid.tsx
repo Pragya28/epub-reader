@@ -62,10 +62,12 @@ export const ShelvesGrid: FC = () => {
     <div className="flex flex-col gap-5">
       <p className="flex items-center gap-4 text-ui-sm text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <StackIcon weight="light" className="size-4" /> Series
+          <StackIcon weight="light" className="size-4" /> {series.length} Series
         </span>
         <span className="flex items-center gap-1.5">
-          <BookmarkIcon weight="light" className="size-4" /> Collections
+          <BookmarkIcon weight="light" className="size-4" />{" "}
+          {collections.length}{" "}
+          {collections.length === 1 ? "Collection" : "Collections"}
         </span>
       </p>
 
