@@ -12,6 +12,7 @@ import {
   pickCurrentlyReadingBook,
 } from "../utils/derive-book-status";
 import { filterBooksByCriteria } from "../utils/filter-books";
+import { countBooks } from "../utils/count-books";
 import { sortBooks } from "../utils/sort-books";
 import { useLibraryFilters } from "./use-library-filters";
 
@@ -136,7 +137,7 @@ export function useLibraryScreen() {
     currentBook,
     nextBook,
     visibleBooks,
-    totalBooks: books.length,
+    counts: countBooks(enriched),
     isFiltering,
     headerVisible,
     revealHeader,

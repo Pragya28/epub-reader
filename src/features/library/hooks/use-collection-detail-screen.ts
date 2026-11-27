@@ -10,6 +10,7 @@ import {
 } from "../actions/collections";
 import { collectionFilterStore } from "../store/filter-store";
 import { filterBooksByCriteria } from "../utils/filter-books";
+import { countBooks } from "../utils/count-books";
 import { useGroupingBooks } from "./use-grouping-books";
 import { useLibraryFilters } from "./use-library-filters";
 import { notify } from "@/components/toast/toast";
@@ -74,7 +75,7 @@ export function useCollectionDetailScreen() {
     isLoading,
     error: null,
     books: visibleBooks,
-    totalBooks: orderedBooks.length,
+    counts: countBooks(orderedBooks),
     isFiltering,
     filterOpen,
     setFilterOpen,
