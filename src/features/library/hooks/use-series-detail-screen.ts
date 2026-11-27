@@ -47,6 +47,7 @@ export function useSeriesDetailScreen() {
     isLoading,
     error: null,
     books: visibleBooks,
+    totalBooks: orderedBooks.length,
     isFiltering,
     filterOpen,
     setFilterOpen,

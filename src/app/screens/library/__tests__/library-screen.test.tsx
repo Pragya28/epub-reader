@@ -4,6 +4,7 @@ import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { LibraryScreen } from "../library-screen";
 import { ROUTES } from "@/utils/routes";
 import { libraryStore } from "@/features/library/store/library-store";
+import type { StoredBook } from "@/services/storage/storage-types";
 import { shelvesStore } from "@/features/library/store/shelves-store";
 
 vi.mock("@/features/library/actions/load-library", () => ({
@@ -74,5 +75,17 @@ describe("LibraryScreen tabs", () => {
 
     expect(await screen.findByText("View")).toBeInTheDocument();
     expect(screen.queryByText("Hide Finished Books")).not.toBeInTheDocument();
+  });
+
+  it("shows the total book count on the Books tab", () => {
+    libraryStore.setState({
+      books: [
+        { id: "a", title: "A", createdAt: 1, fileHash: "ha" },
+        { id: "b", title: "B", createdAt: 2, fileHash: "hb" },
+      ] as StoredBook[],
+    });
+    renderAt(ROUTES.LIBRARY);
+
+    expect(screen.getByText("2 books")).toBeInTheDocument();
   });
 });

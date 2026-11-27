@@ -136,6 +136,7 @@ export function useLibraryScreen() {
     currentBook,
     nextBook,
     visibleBooks,
+    totalBooks: books.length,
     isFiltering,
     headerVisible,
     revealHeader,

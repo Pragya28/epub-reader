@@ -10,6 +10,7 @@ import {
 } from "@/features/library/components/filter-sheet";
 import { SortFilterButton } from "@/features/library/components/sort-filter-button";
 import { ContinueReadingBanner } from "@/features/library/components/continue-reading-banner";
+import { BookCount } from "@/features/library/components/book-count";
 import { LibraryFab } from "@/features/library/components/library-fab";
 import { InstallBanner } from "@/features/pwa/components/install-banner";
 import { shelvesStore } from "@/features/library/store/shelves-store";
@@ -47,6 +48,7 @@ export const LibraryScreen: FC = () => {
     currentBook,
     nextBook,
     visibleBooks,
+    totalBooks,
     isFiltering,
     headerVisible,
     revealHeader,
@@ -172,18 +174,26 @@ export const LibraryScreen: FC = () => {
           </Tabs>
         </div>
 
-        <div className="px-5">
+        <div className="flex flex-col gap-4 px-5">
           {isShelves ? (
             <ShelvesGrid />
           ) : (
-            <BookGrid
-              isLoading={isLoading}
-              isSearch={isFiltering}
-              error={error}
-              books={visibleBooks}
-              evicted={evicted}
-              onDismissEvicted={dismissEvicted}
-            />
+            <>
+              {!isLoading && totalBooks > 0 && (
+                <BookCount
+                  total={totalBooks}
+                  visible={isFiltering ? visibleBooks.length : undefined}
+                />
+              )}
+              <BookGrid
+                isLoading={isLoading}
+                isSearch={isFiltering}
+                error={error}
+                books={visibleBooks}
+                evicted={evicted}
+                onDismissEvicted={dismissEvicted}
+              />
+            </>
           )}
         </div>
       </main>
