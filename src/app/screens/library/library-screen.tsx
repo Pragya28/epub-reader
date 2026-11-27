@@ -47,6 +47,7 @@ export const LibraryScreen: FC = () => {
     currentBook,
     nextBook,
     visibleBooks,
+    totalBooks,
     isFiltering,
     headerVisible,
     revealHeader,
@@ -172,18 +173,27 @@ export const LibraryScreen: FC = () => {
           </Tabs>
         </div>
 
-        <div className="px-5">
+        <div className="flex flex-col gap-4 px-5">
           {isShelves ? (
             <ShelvesGrid />
           ) : (
-            <BookGrid
-              isLoading={isLoading}
-              isSearch={isFiltering}
-              error={error}
-              books={visibleBooks}
-              evicted={evicted}
-              onDismissEvicted={dismissEvicted}
-            />
+            <>
+              {!isLoading && totalBooks > 0 && (
+                <p aria-live="polite" className="text-sm text-muted-foreground">
+                  {isFiltering
+                    ? `${visibleBooks.length} / ${totalBooks} books`
+                    : `${totalBooks} ${totalBooks === 1 ? "book" : "books"}`}
+                </p>
+              )}
+              <BookGrid
+                isLoading={isLoading}
+                isSearch={isFiltering}
+                error={error}
+                books={visibleBooks}
+                evicted={evicted}
+                onDismissEvicted={dismissEvicted}
+              />
+            </>
           )}
         </div>
       </main>
